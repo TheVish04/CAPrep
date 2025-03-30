@@ -91,7 +91,6 @@ const LandingPage = () => {
                   end={questionCount} 
                   duration={2.5} 
                   separator="," 
-                  suffix="+" 
                   enableScrollSpy
                 />
               </span>
