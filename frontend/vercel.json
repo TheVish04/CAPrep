@@ -7,6 +7,8 @@
   "outputDirectory": "dist",
   "framework": null,
   "analytics": {
-    "enabled": true
+    "enabled": true,
+    "production": true,
+    "debug": true
   }
 } 

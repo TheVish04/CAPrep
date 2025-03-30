@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import LandingPage from './pages/LandingPage';
@@ -42,6 +42,17 @@ const ProtectedRoute = ({ element, requireAdmin = false }) => {
 };
 
 const App = () => {
+  useEffect(() => {
+    // Initialize Vercel Analytics manually if needed
+    try {
+      if (window.va) {
+        window.va('event', { name: 'app_initialized' });
+      }
+    } catch (error) {
+      console.error('Analytics error:', error);
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
@@ -60,7 +71,7 @@ const App = () => {
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-      <Analytics />
+      <Analytics debug={true} />
     </Router>
   );
 };
