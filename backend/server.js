@@ -76,19 +76,22 @@ const initializeDatabase = async () => {
     const conn = await connectDB();
     console.log('Database connection established successfully');
 
+    // Verify models (with more detailed logging)
+    let modelsValid = true;
+
     // Verify User model
     if (!User) {
       console.error('User model is undefined. Import path or file issue:', {
         filePath: './models/UserModel',
         cwd: process.cwd(),
       });
-      throw new Error('User model not loaded');
-    }
-    if (typeof User.findOne !== 'function') {
+      modelsValid = false;
+    } else if (typeof User.findOne !== 'function') {
       console.error('User model lacks findOne method:', User);
-      throw new Error('User model not initialized');
+      modelsValid = false;
+    } else {
+      console.log('User model loaded successfully');
     }
-    console.log('User model loaded successfully');
 
     // Verify Question model
     if (!Question) {
@@ -96,41 +99,98 @@ const initializeDatabase = async () => {
         filePath: './models/QuestionModel',
         cwd: process.cwd(),
       });
-      throw new Error('Question model not loaded');
-    }
-    if (typeof Question.findOne !== 'function') {
+      modelsValid = false;
+    } else if (typeof Question.findOne !== 'function') {
       console.error('Question model lacks findOne method:', Question);
-      throw new Error('Question model not initialized');
+      modelsValid = false;
+    } else {
+      console.log('Question model loaded successfully');
     }
-    console.log('Question model loaded successfully');
+
+    if (!modelsValid) {
+      throw new Error('One or more required models failed to initialize');
+    }
 
     // Check if an admin user exists, create one if not
-    await checkAndCreateAdmin();
+    try {
+      await checkAndCreateAdmin();
+    } catch (adminError) {
+      console.error('Admin creation failed but server initialization will continue:', adminError.message);
+      // Continue with server initialization despite admin creation failure
+    }
 
     // Log total number of users for debugging
-    const userCount = await User.countDocuments();
-    console.log(`Total users in database: ${userCount}`);
+    try {
+      const userCount = await User.countDocuments();
+      console.log(`Total users in database: ${userCount}`);
+    } catch (err) {
+      console.error('Error counting users:', err.message);
+    }
 
     // Log total number of questions for debugging
-    const questionCount = await Question.countDocuments();
-    console.log(`Total questions in database: ${questionCount}`);
+    try {
+      const questionCount = await Question.countDocuments();
+      console.log(`Total questions in database: ${questionCount}`);
+    } catch (err) {
+      console.error('Error counting questions:', err.message);
+    }
 
+    console.log('Setting up API routes...');
     // Set up routes after successful initialization
     app.use('/api/auth', authRoutes);
     app.use('/api/questions', questionRoutes);
+    console.log('API routes initialized successfully');
+
+    return true; // Signal successful initialization
   } catch (err) {
     console.error('Error initializing database or models:', {
       message: err.message,
       stack: err.stack,
     });
-    throw err;
+    
+    // Continue server initialization if possible
+    if (mongoose.connection.readyState === 1) {
+      console.warn('Attempting to continue server initialization despite errors');
+      app.use('/api/auth', authRoutes);
+      app.use('/api/questions', questionRoutes);
+      return true;
+    }
+    
+    return false; // Signal failed initialization
   }
 };
 
 // Separate function to check and create admin user
 const checkAndCreateAdmin = async () => {
   try {
-    const adminCount = await User.countDocuments({ role: 'admin' });
+    console.log('Checking for existing admin users...');
+    
+    // Handle possible model initialization issues
+    if (!User || typeof User.countDocuments !== 'function') {
+      throw new Error('User model not properly initialized');
+    }
+    
+    // Check database connection first
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('Cannot create admin user: Database not connected');
+    }
+    
+    // Count existing admins with retry logic
+    let adminCount = 0;
+    let retries = 3;
+    
+    while (retries > 0) {
+      try {
+        adminCount = await User.countDocuments({ role: 'admin' });
+        console.log(`Found ${adminCount} admin users in database`);
+        break;
+      } catch (err) {
+        retries--;
+        console.error(`Error counting admin users (retries left: ${retries}):`, err.message);
+        if (retries === 0) throw err;
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+      }
+    }
 
     if (adminCount === 0) {
       // Validate admin credentials from env
@@ -145,29 +205,84 @@ const checkAndCreateAdmin = async () => {
         throw new Error('Admin password must be at least 8 characters long');
       }
 
-      const admin = await User.create({
-        fullName: adminFullName,
-        email: adminEmail,
-        password: await bcrypt.hash(adminPassword, 12),
-        role: 'admin'
-      });
-      console.log('Admin user created:', {
-        fullName: admin.fullName,
-        email: admin.email,
-        role: admin.role
-      });
+      console.log('No admin user found. Creating default admin account...');
+      
+      // Hash password with proper error handling
+      let hashedPassword;
+      try {
+        hashedPassword = await bcrypt.hash(adminPassword, 12);
+      } catch (err) {
+        console.error('Failed to hash admin password:', err);
+        throw new Error('Admin creation failed: Password hashing error');
+      }
+      
+      // Create the admin user with retry logic
+      let admin = null;
+      retries = 3;
+      
+      while (retries > 0 && !admin) {
+        try {
+          admin = await User.create({
+            fullName: adminFullName,
+            email: adminEmail,
+            password: hashedPassword,
+            role: 'admin'
+          });
+          break;
+        } catch (err) {
+          retries--;
+          if (err.code === 11000) {
+            // Duplicate key error - admin might exist but query failed earlier
+            console.warn('Admin user appears to exist (duplicate key error). Rechecking...');
+            const existingAdmin = await User.findOne({ email: adminEmail });
+            if (existingAdmin) {
+              console.log('Admin user found on recheck:', {
+                fullName: existingAdmin.fullName,
+                email: existingAdmin.email,
+                role: existingAdmin.role
+              });
+              return; // Exit function if admin exists
+            }
+          }
+          
+          console.error(`Failed to create admin user (retries left: ${retries}):`, err.message);
+          if (retries === 0) throw err;
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+        }
+      }
+      
+      if (admin) {
+        console.log('✅ Admin user created successfully:', {
+          fullName: admin.fullName,
+          email: admin.email,
+          role: admin.role
+        });
+      } else {
+        throw new Error('Failed to create admin user after multiple attempts');
+      }
     } else {
       console.log('Admin user already exists, skipping creation.');
-      const existingAdmin = await User.findOne({ role: 'admin' });
-      console.log('Existing admin details:', {
-        fullName: existingAdmin.fullName,
-        email: existingAdmin.email,
-        role: existingAdmin.role,
-      });
+      try {
+        const existingAdmin = await User.findOne({ role: 'admin' });
+        if (existingAdmin) {
+          console.log('Existing admin details:', {
+            fullName: existingAdmin.fullName,
+            email: existingAdmin.email,
+            role: existingAdmin.role,
+          });
+        } else {
+          console.warn('Admin count is non-zero but findOne returned no results. This is unexpected.');
+        }
+      } catch (err) {
+        console.error('Error fetching existing admin details:', err.message);
+        // Don't throw here, as admin exists and this is just informational
+      }
     }
   } catch (error) {
-    console.error('Admin initialization error:', error);
-    throw error;
+    console.error('⚠️ Admin initialization error:', error.message);
+    console.error(error.stack);
+    // Don't throw the error, but log that server will continue without admin
+    console.warn('Server continuing without admin initialization. Admin features may not work correctly.');
   }
 };
 
@@ -208,20 +323,57 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server only if database and models initialize successfully
-const PORT = process.env.PORT || 5000;
-initializeDatabase()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+// Start server function with error handling
+const startServer = async () => {
+  try {
+    // Initialize database and models
+    const dbInitialized = await initializeDatabase();
+    
+    if (!dbInitialized) {
+      console.error('Database initialization failed. Starting server with limited functionality.');
+    }
+    
+    // Define port (with fallback)
+    const PORT = process.env.PORT || 5000;
+    
+    // Start the server
+    const server = app.listen(PORT, () => {
+      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+      console.log(`Health check available at: http://localhost:${PORT}/health`);
+      
+      if (dbInitialized) {
+        console.log('✅ Server started successfully with database connection');
+      } else {
+        console.log('⚠️ Server started with limited functionality (database connection issues)');
+      }
     });
-  })
-  .catch((err) => {
-    console.error('Failed to start server due to initialization error:', {
-      message: err.message,
-      stack: err.stack,
+    
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+      console.error('UNHANDLED REJECTION! 💥 Shutting down...');
+      console.error(err.name, err.message, err.stack);
+      
+      // Close server & exit process
+      server.close(() => {
+        process.exit(1);
+      });
     });
+    
+    // Handle SIGTERM signal (e.g. Heroku shutdown)
+    process.on('SIGTERM', () => {
+      console.log('👋 SIGTERM RECEIVED. Shutting down gracefully...');
+      server.close(() => {
+        console.log('💥 Process terminated!');
+      });
+    });
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
     process.exit(1);
-  });
+  }
+};
+
+// Start the server
+startServer();
 
 module.exports = app;
