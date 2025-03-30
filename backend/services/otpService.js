@@ -144,20 +144,7 @@ const sendOTPEmail = async (email, otp) => {
     from: process.env.EMAIL_USER,
     to: email,
     subject: 'Your OTP for CAPrep Registration',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <h2 style="color: #1a2a44;">CAPrep - Email Verification</h2>
-        <p>Thank you for registering with CAPrep. Please use the following OTP to verify your email address:</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
-          <h1 style="color: #00b4d8; letter-spacing: 5px; margin: 0;">${otp}</h1>
-        </div>
-        <p>This OTP is valid for 5 minutes.</p>
-        <p>If you didn't request this OTP, please ignore this email.</p>
-        <p style="margin-top: 30px; font-size: 12px; color: #777;">
-          This is an automated email. Please do not reply.
-        </p>
-      </div>
-    `
+    html: generateEmailTemplate(email, otp)
   };
 
   try {
@@ -177,6 +164,21 @@ const sendOTPEmail = async (email, otp) => {
       transportError: error.code || 'UNKNOWN'
     };
   }
+};
+
+const generateEmailTemplate = (name, otp) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+    <h2 style="color: #0288d1;">CAPrep - Email Verification</h2>
+    <p>Hello ${name}, please use the following OTP to verify your email address:</p>
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+    <h1 style="color: #03a9f4; letter-spacing: 5px; margin: 0;">${otp}</h1>
+    </div>
+    <p>This OTP will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+    <p>Thank you for using CA Prep Platform!</p>
+    <p style="margin-top: 30px; font-size: 12px; color: #777;">This is an automated message, please do not reply.</p>
+    </div>
+  `;
 };
 
 module.exports = {

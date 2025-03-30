@@ -1,5 +1,5 @@
 .navbar {
-  background: #0B0C10;
+  background: #121212;
   height: 70px;
   display: flex;
   justify-content: center;
@@ -21,7 +21,7 @@
 }
 
 .navbar-logo {
-  color: #45A29E;
+  color: #239ecf;
   font-size: 1.8rem;
   font-weight: 700;
   text-decoration: none;
@@ -37,7 +37,7 @@
 }
 
 .nav-link {
-  color: #9B9C9D;
+  color: #b0b0b0;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
@@ -52,7 +52,7 @@
   height: 2px;
   bottom: 0;
   left: 0;
-  background-color: #45A29E;
+  background-color: #03a9f4;
   transition: width 0.3s ease;
 }
 
@@ -60,12 +60,17 @@
   width: 100%;
 }
 
+.nav-link:hover {
+  color: #239ecf;
+  background-color: #121212;
+}
+
 .nav-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #45A29E;
-  color: #0B0C10;
+  background-color: #03a9f4;
+  color: #ffffff;
   border: none;
   padding: 10px 18px;
   border-radius: 50px;
@@ -79,35 +84,37 @@
 }
 
 .nav-button:hover {
-  background-color: #66FCF1;
+  background-color: #29b6f6;
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(69, 162, 158, 0.4);
+  box-shadow: none;
 }
 
 .nav-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(69, 162, 158, 0.4);
+  box-shadow: none;
 }
 
 .logout-btn {
   background-color: transparent;
-  color: #45A29E;
-  border: 2px solid #45A29E;
+  color: #239ecf;
+  border: 2px solid #03a9f4;
 }
 
 .logout-btn:hover {
-  background-color: #45A29E;
-  color: #0B0C10;
-  box-shadow: 0 4px 10px rgba(69, 162, 158, 0.4);
+  background-color: #03a9f4;
+  color: #ffffff;
+  box-shadow: none;
 }
 
 .register-btn {
-  background-color: #45A29E;
+  background-color: #03a9f4;
   margin-left: 10px;
+  color: #ffffff;
 }
 
 .register-btn:hover {
-  background-color: #66FCF1;
+  background-color: #29b6f6;
+  color: #ffffff;
 }
 
 .menu-icon {
@@ -126,7 +133,7 @@
   position: absolute;
   height: 3px;
   width: 100%;
-  background: #45A29E;
+  background: #239ecf;
   border-radius: 3px;
   opacity: 1;
   left: 0;
@@ -181,8 +188,8 @@
     opacity: 1;
     transition: all 0.5s ease;
     padding: 2rem 0;
-    background: #1F2833;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    background: #1e1e1e;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   }
 
   .nav-menu.active {
@@ -200,7 +207,7 @@
   }
 
   .nav-link:hover {
-    color: #45A29E;
-    background-color: #0B0C10;
+    color: #239ecf;
+    background-color: #121212;
   }
 }

@@ -3,7 +3,7 @@
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
-  background-color: #0B0C10;
+  background-color: #121212;
 }
 
 .content-container {
@@ -17,10 +17,10 @@
 }
 
 .hero {
-  background: linear-gradient(135deg, #0B0C10 0%, #1F2833 100%);
+  background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
   padding: 60px 20px;
   text-align: center;
-  color: #9B9C9D;
+  color: #b0b0b0;
   margin-bottom: 40px;
   width: 100%; /* Take full width */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -30,20 +30,20 @@
 }
 
 .hero-content {
-  background-color: #1F2833;
-  color: #9B9C9D;
+  background-color: #1e1e1e;
+  color: #b0b0b0;
   padding: 30px;
   border-radius: 10px;
   max-width: 800px;
   width: 100%;
-  border: 1px solid #45A29E;
+  border: 1px solid #03a9f4;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .hero-content h1 {
   font-size: 2.5rem;
   margin-bottom: 15px;
-  color: #45A29E;
+  color: #239ecf;
 }
 
 .hero-content p {
@@ -57,21 +57,22 @@
   width: 100%;
   max-width: 1200px; /* Increased max-width */
   margin: 0 auto; /* Center the section */
-  background-color: #1F2833;
+  background-color: #1e1e1e;
   border-radius: 10px;
   padding: 30px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2d2d2d;
 }
 
 .content-section h2 {
-  color: #45A29E;
+  color: #239ecf;
   margin-top: 30px;
   margin-bottom: 15px;
   font-size: 1.8rem;
 }
 
 .content-section h3 {
-  color: #45A29E;
+  color: #239ecf;
   margin-top: 20px;
   margin-bottom: 10px;
   font-size: 1.4rem;
@@ -80,7 +81,7 @@
 .content-section p {
   margin-bottom: 15px;
   line-height: 1.6;
-  color: #9B9C9D;
+  color: #b0b0b0;
 }
 
 .content-section ul {
@@ -91,7 +92,7 @@
 .content-section ul li {
   margin-bottom: 10px;
   line-height: 1.6;
-  color: #9B9C9D;
+  color: #b0b0b0;
 }
 
 /* Contact page specific styles */
@@ -109,21 +110,22 @@
   background-color: #0B0C10;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  border: 1px solid #45A29E;
+  border: 1px solid #03a9f4;
 }
 
 .contact-item h3 {
   margin-top: 0;
+  color: #239ecf;
 }
 
 .contact-item a {
-  color: #45A29E;
+  color: #03a9f4;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .contact-item a:hover {
-  color: #66FCF1;
+  color: #239ecf;
   text-decoration: underline;
 }
 
@@ -141,15 +143,15 @@
   display: inline-block;
   padding: 8px 15px;
   background-color: #0B0C10;
-  color: #45A29E;
+  color: #03a9f4;
   text-decoration: none;
   border-radius: 4px;
   transition: all 0.3s;
-  border: 1px solid #45A29E;
+  border: 1px solid #03a9f4;
 }
 
 .social-link:hover {
-  background-color: #45A29E;
+  background-color: #03a9f4;
   color: #0B0C10;
 }
 
@@ -165,4 +167,73 @@
   .contact-details {
     flex-direction: column;
   }
+}
+
+.section-card {
+  box-shadow: none;
+  border: 1px solid #03a9f4;
+}
+
+.section-title {
+  color: #239ecf;
+}
+
+.chapter-link {
+  color: #239ecf;
+}
+
+.chapter-content {
+  box-shadow: none;
+  border: 1px solid #03a9f4;
+}
+
+.chapter-heading {
+  color: #239ecf;
+  border: 1px solid #03a9f4;
+}
+
+.actions button {
+  color: #239ecf;
+  border: 1px solid #03a9f4;
+}
+
+.actions button.active {
+  background-color: #03a9f4;
+  color: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #239ecf;
+  margin-bottom: 1rem;
+}
+
+.content-subtitle {
+  color: #239ecf;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.content-link {
+  color: #239ecf;
+  text-decoration: underline;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  color: #239ecf;
+}
+
+.about-content h3 {
+  color: #239ecf;
+  margin-bottom: 1rem;
+}
+
+.faq-title {
+  color: #239ecf;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

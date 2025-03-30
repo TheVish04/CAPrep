@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  background: #0B0C10;
+  background: #121212;
 }
 
 /* Admin Section */
@@ -25,7 +25,7 @@
   max-width: 1200px;
   width: 90%;
   padding: 40px;
-  background: #1F2833;
+  background: #1e1e1e;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   text-align: center;
@@ -35,11 +35,11 @@
 .admin-container h1 {
   font-size: 2.5rem;
   margin-bottom: 2.5rem;
-  color: #45A29E;
+  color: #239ecf;
   font-weight: 700;
   position: relative;
   padding-bottom: 15px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+  text-shadow: none;
 }
 
 .admin-container h1::after {
@@ -50,15 +50,15 @@
   transform: translateX(-50%);
   width: 100px;
   height: 4px;
-  background: linear-gradient(90deg, #45A29E, #2E7B78);
+  background: linear-gradient(90deg, #03a9f4, #239ecf);
   border-radius: 4px;
 }
 
 /* Error Styling */
 .error {
-  background: rgba(31, 40, 51, 0.8);
-  border-left: 4px solid #45A29E;
-  color: #45A29E;
+  background: rgba(229, 115, 115, 0.1);
+  border-left: 4px solid #e57373;
+  color: #e57373;
   padding: 15px 20px;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -75,17 +75,17 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
-  color: #45A29E;
+  color: #e57373;
 }
 
 .error-list {
   list-style: disc;
   padding-left: 20px;
-  color: #9B9C9D;
+  color: #b0b0b0;
 }
 
 .error-message {
-  color: #45A29E;
+  color: #e57373;
   font-size: 0.9rem;
   margin-top: 0.25rem;
 }
@@ -97,12 +97,12 @@
 
 .form-section {
   margin-bottom: 2.5rem;
-  background: #0B0C10;
+  background: #121212;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
-  border: 1px solid #2E7B78;
+  border: 1px solid #239ecf;
 }
 
 .form-section:hover {
@@ -112,9 +112,9 @@
 
 .form-section h2 {
   font-size: 1.8rem;
-  color: #45A29E;
+  color: #239ecf;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #2E7B78;
+  border-bottom: 2px solid #03a9f4;
   padding-bottom: 0.8rem;
   position: relative;
 }
@@ -126,7 +126,7 @@
   left: 0;
   width: 60px;
   height: 4px;
-  background: #45A29E;
+  background: #239ecf;
   border-radius: 2px;
 }
 
@@ -145,7 +145,7 @@
 
 .form-group label {
   font-size: 1.1rem;
-  color: #9B9C9D;
+  color: #b0b0b0;
   margin-bottom: 0.6rem;
   font-weight: 500;
   display: flex;
@@ -155,18 +155,18 @@
 .form-input {
   padding: 14px 16px;
   font-size: 1rem;
-  border: 1px solid #2E7B78;
+  border: 1px solid #03a9f4;
   border-radius: 10px;
-  background: #0B0C10;
-  color: #9B9C9D;
+  background: #121212;
+  color: #b0b0b0;
   transition: all 0.3s ease;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #45A29E;
-  box-shadow: 0 0 0 3px rgba(69, 162, 158, 0.2);
+  border-color: #239ecf;
+  box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
 }
 
 textarea.form-input {
@@ -177,11 +177,11 @@ textarea.form-input {
 
 /* Sub-Question and Options */
 .sub-question-section {
-  border: 1px solid #2E7B78;
+  border: 1px solid #03a9f4;
   padding: 1.8rem;
   border-radius: 12px;
   margin-bottom: 1.8rem;
-  background: #1F2833;
+  background: #1e1e1e;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   position: relative;
@@ -189,7 +189,7 @@ textarea.form-input {
 
 .sub-question-section:hover {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-  border-color: #45A29E;
+  border-color: #239ecf;
 }
 
 .sub-question-section::before {
@@ -199,13 +199,13 @@ textarea.form-input {
   left: 0;
   width: 4px;
   height: 100%;
-  background: #45A29E;
+  background: #239ecf;
   border-radius: 12px 0 0 12px;
 }
 
 .sub-options-section {
   margin-top: 1.5rem;
-  border-top: 1px solid #2E7B78;
+  border-top: 1px solid #03a9f4;
   padding-top: 1.5rem;
 }
 
@@ -238,9 +238,9 @@ textarea.form-input {
 }
 
 .mark-correct-btn {
-  background-color: #1F2833;
-  color: #9B9C9D;
-  border: 1px solid #2E7B78;
+  background-color: #1e1e1e;
+  color: #b0b0b0;
+  border: 1px solid #03a9f4;
 }
 
 .mark-correct-btn::before {
@@ -249,15 +249,15 @@ textarea.form-input {
 }
 
 .mark-correct-btn:hover {
-  background-color: #45A29E;
-  color: #0B0C10;
-  border-color: #45A29E;
+  background-color: #239ecf;
+  color: #121212;
+  border-color: #239ecf;
   transform: translateY(-2px);
 }
 
 .add-btn {
-  background-color: #2E7B78;
-  color: #0B0C10;
+  background-color: #03a9f4;
+  color: #ffffff;
   border: none;
   margin-top: 1rem;
 }
@@ -269,15 +269,15 @@ textarea.form-input {
 }
 
 .add-btn:hover {
-  background-color: #45A29E;
+  background-color: #239ecf;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(69, 162, 158, 0.2);
+  box-shadow: none;
 }
 
 .remove-btn {
-  background-color: #1F2833;
-  color: #9B9C9D;
-  border: 1px solid #2E7B78;
+  background-color: #1e1e1e;
+  color: #b0b0b0;
+  border: 1px solid #03a9f4;
 }
 
 .remove-btn::before {
@@ -286,9 +286,9 @@ textarea.form-input {
 }
 
 .remove-btn:hover {
-  background-color: #45A29E;
-  color: #0B0C10;
-  border-color: #45A29E;
+  background-color: #e57373;
+  color: #121212;
+  border-color: #e57373;
   transform: translateY(-2px);
 }
 
@@ -303,9 +303,9 @@ textarea.form-input {
 }
 
 .preview-btn {
-  background-color: #1F2833;
-  color: #9B9C9D;
-  border: 2px solid #2E7B78;
+  background-color: #1e1e1e;
+  color: #b0b0b0;
+  border: 2px solid #03a9f4;
   padding: 14px 22px;
   border-radius: 8px;
   cursor: pointer;
@@ -324,9 +324,9 @@ textarea.form-input {
 }
 
 .preview-btn:hover {
-  background-color: #45A29E;
-  color: #0B0C10;
-  border-color: #45A29E;
+  background-color: #239ecf;
+  color: #121212;
+  border-color: #239ecf;
   transform: translateY(-2px);
 }
 
@@ -337,7 +337,7 @@ textarea.form-input {
 }
 
 .submit-btn {
-  background-color: #2E7B78;
+  background-color: #03a9f4;
   color: #0B0C10;
   border: none;
   padding: 14px 22px;
@@ -358,9 +358,9 @@ textarea.form-input {
 }
 
 .submit-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(69, 162, 158, 0.3);
+  box-shadow: none;
 }
 
 .submit-btn:disabled {
@@ -373,7 +373,7 @@ textarea.form-input {
 .cancel-btn {
   background-color: #1F2833;
   color: #9B9C9D;
-  border: 2px solid #2E7B78;
+  border: 2px solid #03a9f4;
   padding: 14px 22px;
   border-radius: 8px;
   cursor: pointer;
@@ -392,9 +392,9 @@ textarea.form-input {
 }
 
 .cancel-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
   color: #0B0C10;
-  border-color: #45A29E;
+  border-color: #0288d1;
   transform: translateY(-2px);
 }
 
@@ -415,14 +415,14 @@ textarea.form-input {
 }
 
 .filter-section:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }
 
 .filter-section h2 {
   font-size: 1.8rem;
-  color: #45A29E;
+  color: white;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #2E7B78;
+  border-bottom: 2px solid #03a9f4;
   padding-bottom: 0.8rem;
   position: relative;
 }
@@ -434,12 +434,12 @@ textarea.form-input {
   left: 0;
   width: 60px;
   height: 4px;
-  background: #45A29E;
+  background: #0288d1;
   border-radius: 2px;
 }
 
 .apply-filter-btn {
-  background-color: #2E7B78;
+  background-color: #03a9f4;
   color: #0B0C10;
   border: none;
   padding: 12px 24px;
@@ -458,7 +458,7 @@ textarea.form-input {
 }
 
 .apply-filter-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
   transform: translateY(-2px);
 }
 
@@ -469,9 +469,9 @@ textarea.form-input {
 
 .stored-questions-section h2 {
   font-size: 1.8rem;
-  color: #45A29E;
+  color: white;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #2E7B78;
+  border-bottom: 2px solid #03a9f4;
   padding-bottom: 0.8rem;
   position: relative;
 }
@@ -483,7 +483,7 @@ textarea.form-input {
   left: 0;
   width: 60px;
   height: 4px;
-  background: #45A29E;
+  background: #0288d1;
   border-radius: 2px;
 }
 
@@ -492,7 +492,7 @@ textarea.form-input {
   text-align: center;
   background: #0B0C10;
   border-radius: 10px;
-  border: 1px dashed #2E7B78;
+  border: 1px dashed #03a9f4;
   color: #9B9C9D;
   font-size: 1.2rem;
 }
@@ -511,7 +511,7 @@ textarea.form-input {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  border: 1px solid #2E7B78;
+  border: 1px solid #03a9f4;
 }
 
 .question-card::after {
@@ -521,7 +521,7 @@ textarea.form-input {
   left: 0;
   width: 100%;
   height: 6px;
-  background: linear-gradient(90deg, #45A29E, #2E7B78);
+  background: linear-gradient(90deg, #0288d1, #03a9f4);
   transform: scaleX(0);
   transform-origin: 0 50%;
   transition: transform 0.5s ease;
@@ -543,7 +543,7 @@ textarea.form-input {
 }
 
 .question-card h3 {
-  color: #45A29E;
+  color: #0288d1;
   font-size: 1.3rem;
   margin-bottom: 15px;
   line-height: 1.4;
@@ -562,7 +562,7 @@ textarea.form-input {
 .sub-question {
   font-size: 0.95rem;
   margin-top: 10px;
-  color: #45A29E;
+  color: #0288d1;
 }
 
 .sub-options {
@@ -572,12 +572,12 @@ textarea.form-input {
 
 .correct-answer {
   font-weight: 600;
-  color: #45A29E;
+  color: #0288d1;
   padding: 2px 8px;
   border-radius: 4px;
   display: inline-block;
   margin-left: 8px;
-  background-color: rgba(69, 162, 158, 0.1);
+  background-color: rgba(3, 169, 244, 0.1);
 }
 
 .question-actions {
@@ -587,7 +587,7 @@ textarea.form-input {
 }
 
 .edit-btn {
-  background-color: #2E7B78;
+  background-color: #03a9f4;
   color: #0B0C10;
   border: none;
   padding: 8px 16px;
@@ -605,14 +605,14 @@ textarea.form-input {
 }
 
 .edit-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
   transform: translateY(-2px);
 }
 
 .delete-btn {
   background-color: #1F2833;
   color: #9B9C9D;
-  border: 1px solid #2E7B78;
+  border: 1px solid #03a9f4;
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -628,7 +628,7 @@ textarea.form-input {
 }
 
 .delete-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
   color: #0B0C10;
 }
 
@@ -747,7 +747,7 @@ textarea.form-input {
 }
 
 @keyframes highlight {
-  0% { background-color: rgba(69, 162, 158, 0.3); }
+  0% { background-color: rgba(3, 169, 244, 0.3); }
   100% { background-color: transparent; }
 }
 
@@ -765,9 +765,9 @@ textarea.form-input {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(69, 162, 158, 0.3);
+  border: 4px solid rgba(3, 169, 244, 0.3);
   border-radius: 50%;
-  border-top-color: #45A29E;
+  border-top-color: #0288d1;
   animation: spin 1s linear infinite;
 }
 
@@ -777,13 +777,13 @@ textarea.form-input {
 }
 
 .success-message {
-  background-color: rgba(46, 123, 120, 0.2);
-  color: #45A29E;
+  background-color: rgba(3, 169, 244, 0.2);
+  color: #0288d1;
   padding: 15px 20px;
   border-radius: 8px;
   margin-bottom: 1.5rem;
   font-weight: 500;
-  border-left: 4px solid #45A29E;
+  border-left: 4px solid #0288d1;
   display: flex;
   align-items: center;
 }
@@ -793,7 +793,7 @@ textarea.form-input {
   padding: 12px 20px;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #45A29E;
+  border-left: 4px solid #0288d1;
   transition: all 0.3s ease;
 }
 
@@ -802,7 +802,7 @@ textarea.form-input {
 }
 
 .form-mode-indicator h2 {
-  color: #45A29E;
+  color: #0288d1;
   font-size: 1.3rem;
   margin: 0;
 }
@@ -814,9 +814,9 @@ textarea.form-input {
 }
 
 form.edit-mode .submit-btn {
-  background-color: #2E7B78;
+  background-color: #03a9f4;
 }
 
 form.edit-mode .submit-btn:hover {
-  background-color: #45A29E;
+  background-color: #0288d1;
 }
