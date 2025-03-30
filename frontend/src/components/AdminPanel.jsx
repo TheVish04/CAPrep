@@ -766,20 +766,22 @@ const AdminPanel = () => {
                           onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
                           className="form-input"
                         />
-                        <button
-                          type="button"
-                          onClick={() => markCorrectSubOption(subIndex, optIndex)}
-                          className="mark-correct-btn"
-                        >
-                          Mark as Correct
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeSubOption(subIndex, optIndex)}
-                          className="remove-btn"
-                        >
-                          Remove Option
-                        </button>
+                        <div className="option-actions">
+                          <button
+                            type="button"
+                            onClick={() => markCorrectSubOption(subIndex, optIndex)}
+                            className="mark-correct-btn"
+                          >
+                            Mark as Correct
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeSubOption(subIndex, optIndex)}
+                            className="remove-btn"
+                          >
+                            Remove Option
+                          </button>
+                        </div>
                         {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
                       </div>
                     ))}
@@ -787,9 +789,11 @@ const AdminPanel = () => {
                       Add Sub Option
                     </button>
                   </div>
-                  <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
-                    Remove This Sub Question
-                  </button>
+                  <div className="sub-question-actions">
+                    <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
+                      Remove This Sub Question
+                    </button>
+                  </div>
                 </div>
               ))}
               <button type="button" onClick={addSubQuestion} className="add-btn">

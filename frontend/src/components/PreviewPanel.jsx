@@ -47,36 +47,72 @@ const PreviewPanel = ({ data, onClose }) => {
         aria-labelledby="preview-title"
         aria-modal="true"
       >
-        <h2 className="preview-title" id="preview-title">Question Preview</h2>
+        <h2 className="preview-title" id="preview-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Question Preview
+        </h2>
+        <button className="preview-close" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+        
         <div className="preview-content">
           <div className="preview-info-grid">
-            <p><strong>Subject:</strong> {data.subject || 'N/A'}</p>
-            <p><strong>Exam Stage:</strong> {data.examStage || 'N/A'}</p>
-            <p><strong>Paper Type:</strong> {data.paperType || 'N/A'}</p>
-            <p><strong>Year:</strong> {data.year || 'N/A'}</p>
-            <p><strong>Month:</strong> {data.month || 'N/A'}</p>
-            <p><strong>Paper No.:</strong> {data.paperNo || 'N/A'}</p>
-            <p><strong>Question Number:</strong> {data.questionNumber || 'N/A'}</p>
-            {data.pageNumber && <p><strong>Page Number:</strong> {data.pageNumber}</p>}
+            <div className="preview-info-item">
+              <span className="preview-label">Subject</span>
+              <span className="preview-value">{data.subject || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Exam Stage</span>
+              <span className="preview-value">{data.examStage || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Paper Type</span>
+              <span className="preview-value">{data.paperType || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Year</span>
+              <span className="preview-value">{data.year || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Month</span>
+              <span className="preview-value">{data.month || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Paper No.</span>
+              <span className="preview-value">{data.paperNo || 'N/A'}</span>
+            </div>
+            <div className="preview-info-item">
+              <span className="preview-label">Question Number</span>
+              <span className="preview-value">{data.questionNumber || 'N/A'}</span>
+            </div>
+            {data.pageNumber && (
+              <div className="preview-info-item">
+                <span className="preview-label">Page Number</span>
+                <span className="preview-value">{data.pageNumber}</span>
+              </div>
+            )}
           </div>
 
-          <h3 className="preview-subtitle">Question Text:</h3>
-          <div
-            className="preview-text"
-            dangerouslySetInnerHTML={{ 
-              __html: DOMPurify.sanitize(
-                data.questionText ? 
-                  data.questionText.replace(/\n/g, '<br>') : 
-                  'N/A'
-              ) 
-            }}
-          />
+          <div className="preview-section">
+            <h3 className="preview-section-title">Question Text</h3>
+            <div className="preview-question-text" 
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(
+                    data.questionText ? 
+                      data.questionText.replace(/\n/g, '<br>') : 
+                      'N/A'
+                  ) 
+                }}
+            />
+          </div>
 
           {data.answerText && (
-            <>
-              <h3 className="preview-subtitle">Answer Text:</h3>
-              <div
-                className="preview-text"
+            <div className="preview-section">
+              <h3 className="preview-section-title">Answer Text</h3>
+              <div className="preview-question-text"
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
                     data.answerText ? 
@@ -85,47 +121,56 @@ const PreviewPanel = ({ data, onClose }) => {
                   ) 
                 }}
               />
-            </>
+            </div>
           )}
 
           {data.subQuestions && data.subQuestions.length > 0 && (
-            <div className="preview-subquestions-container">
-              <h3 className="preview-subtitle">Sub-Questions:</h3>
+            <div className="preview-sub-questions">
+              <h3 className="preview-section-title">Sub-Questions</h3>
               {data.subQuestions.map((subQ, subIdx) => (
-                <div
-                  key={subIdx}
-                  className="preview-subquestion"
-                >
-                  <p><strong>Sub Question Number:</strong> {subQ.subQuestionNumber || 'N/A'}</p>
-                  <p><strong>Sub Question Text:</strong> {subQ.subQuestionText || 'N/A'}</p>
+                <div key={subIdx} className="preview-sub-question">
+                  <div className="preview-sub-question-header">
+                    <strong>Sub Question {subQ.subQuestionNumber || (subIdx + 1)}</strong>
+                  </div>
+                  <div className="preview-sub-question-text">
+                    {subQ.subQuestionText || 'N/A'}
+                  </div>
                   {subQ.subOptions && subQ.subOptions.length > 0 && (
-                    <div className="preview-options-container">
-                      <h4 className="preview-subheading">Sub MCQ Options:</h4>
-                      <ul className="preview-options">
-                        {subQ.subOptions.map((subOpt, optIdx) => (
-                          <li key={optIdx}>
-                            {subOpt.optionText || 'N/A'}{' '}
-                            {subOpt.isCorrect && <span className="preview-correct">Correct</span>}
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="preview-options">
+                      {subQ.subOptions.map((subOpt, optIdx) => (
+                        <div 
+                          key={optIdx} 
+                          className={`preview-option ${subOpt.isCorrect ? 'correct' : ''}`}
+                        >
+                          <div className="preview-option-letter">
+                            {String.fromCharCode(65 + optIdx)}
+                          </div>
+                          <div className="preview-option-text">
+                            {subOpt.optionText || 'N/A'}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
               ))}
             </div>
           )}
-
-          {/* Preview content ends here */}
         </div>
 
-        <button
-          onClick={onClose}
-          className="preview-close-btn"
-          aria-label="Close preview"
-        >
-          Close Preview
-        </button>
+        <div className="preview-actions">
+          <button
+            onClick={onClose}
+            className="preview-close-btn"
+            aria-label="Close preview"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+            Close Preview
+          </button>
+        </div>
       </div>
     </>
   );
