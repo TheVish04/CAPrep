@@ -274,7 +274,7 @@ const LandingPage = () => {
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <h3>CA Exam Platform</h3>
+            <h3>CAPrep</h3>
             <p>Your companion for CA exam success</p>
           </div>
           <div className="footer-links">
@@ -299,14 +299,14 @@ const LandingPage = () => {
             <div className="footer-column">
               <h4>Contact Us</h4>
               <ul className="contact-info">
-                <li><i className="fas fa-envelope"></i> support@caexamplatform.com</li>
+                <li><i className="fas fa-envelope"></i> support@caprep.com</li>
                 <li><i className="fas fa-phone"></i> +91 9876543210</li>
               </ul>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} CA Exam Platform. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CAPrep. All rights reserved.</p>
         </div>
       </footer>
     </div>

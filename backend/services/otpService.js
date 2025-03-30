@@ -143,11 +143,11 @@ const sendOTPEmail = async (email, otp) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Your OTP for CA Exam Platform Registration',
+    subject: 'Your OTP for CAPrep Registration',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <h2 style="color: #1a2a44;">CA Exam Platform - Email Verification</h2>
-        <p>Thank you for registering with CA Exam Platform. Please use the following OTP to verify your email address:</p>
+        <h2 style="color: #1a2a44;">CAPrep - Email Verification</h2>
+        <p>Thank you for registering with CAPrep. Please use the following OTP to verify your email address:</p>
         <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
           <h1 style="color: #00b4d8; letter-spacing: 5px; margin: 0;">${otp}</h1>
         </div>

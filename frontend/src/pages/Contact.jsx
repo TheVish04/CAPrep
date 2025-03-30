@@ -26,7 +26,7 @@ const Contact = () => {
             <div className="contact-details">
               <div className="contact-item">
                 <h3>Email</h3>
-                <p><a href="mailto:support@caexamplatform.com">support@caexamplatform.com</a></p>
+                <p><a href="mailto:support@caprep.com">support@caprep.com</a></p>
               </div>
               
               <div className="contact-item">
@@ -37,7 +37,7 @@ const Contact = () => {
               <div className="contact-item">
                 <h3>Address</h3>
                 <p>
-                  CA Exam Platform<br />
+                  CAPrep<br />
                   123 Education Street<br />
                   Mumbai, Maharashtra 400001<br />
                   India

@@ -34,7 +34,7 @@ const Questions = () => {
     } else {
       const fetchQuestions = async () => {
         try {
-          const response = await fetch('https://ca-project-new.onrender.com/api/questions', {
+          const response = await fetch('https://caprep.onrender.com/api/questions', {
             headers: {
               'Authorization': `Bearer ${token}`,
             },

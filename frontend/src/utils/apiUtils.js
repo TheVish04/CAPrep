@@ -9,7 +9,7 @@ const apiUtils = {
    * @returns {string} The API base URL without trailing slash
    */
   getApiBaseUrl: () => {
-    let apiUrl = import.meta.env.VITE_API_URL || 'https://ca-project-new.onrender.com';
+    let apiUrl = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
     // Remove trailing slash if it exists
     if (apiUrl.endsWith('/')) {
       apiUrl = apiUrl.slice(0, -1);

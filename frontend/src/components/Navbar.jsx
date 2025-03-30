@@ -58,7 +58,7 @@ const Navbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            CA Exam Platform
+            CAPrep
           </motion.span>
         </Link>
 

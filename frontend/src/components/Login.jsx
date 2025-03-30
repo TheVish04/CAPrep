@@ -21,7 +21,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://ca-project-new.onrender.com/api/auth/login', credentials);
+      const response = await axios.post('https://caprep.onrender.com/api/auth/login', credentials);
       const { token } = response.data;
 
       localStorage.setItem('token', token);

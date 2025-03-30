@@ -56,7 +56,7 @@ const AdminPanel = () => {
   // Modified fetchQuestions with pagination (if needed) and applying all filters
   const fetchQuestions = async (token, query = '') => {
     try {
-      const response = await fetch(`https://ca-project-new.onrender.com/api/questions${query ? `?${query}` : ''}`, {
+      const response = await fetch(`https://caprep.onrender.com/api/questions${query ? `?${query}` : ''}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -303,7 +303,7 @@ const AdminPanel = () => {
     console.log('Sanitized Data:', sanitizedData);
 
     try {
-      const response = await fetch('https://ca-project-new.onrender.com/api/questions', {
+      const response = await fetch('https://caprep.onrender.com/api/questions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -364,7 +364,7 @@ const AdminPanel = () => {
     };
 
     try {
-      const response = await fetch(`https://ca-project-new.onrender.com/api/questions/${editingQuestionId}`, {
+      const response = await fetch(`https://caprep.onrender.com/api/questions/${editingQuestionId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -452,7 +452,7 @@ const AdminPanel = () => {
     try {
       // Display a loading indicator or disable the delete button here if needed
       
-      const response = await fetch(`https://ca-project-new.onrender.com/api/questions/${id}`, {
+      const response = await fetch(`https://caprep.onrender.com/api/questions/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

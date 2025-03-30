@@ -18,7 +18,7 @@ const About = () => {
         <section className="content-section">
           <h2>Our Mission</h2>
           <p>
-            At CA Exam Platform, we are dedicated to providing high-quality resources and tools
+            At CAPrep, we are dedicated to providing high-quality resources and tools
             to help Chartered Accountancy students prepare effectively for their exams.
             Our platform offers a comprehensive collection of past question papers, organized
             by subject, exam type, and year to facilitate focused study.
