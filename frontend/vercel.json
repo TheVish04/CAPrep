@@ -5,5 +5,8 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
-  "framework": null
+  "framework": null,
+  "analytics": {
+    "enabled": true
+  }
 } 
