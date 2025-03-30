@@ -92,6 +92,7 @@ const LandingPage = () => {
                   duration={2.5} 
                   separator="," 
                   enableScrollSpy
+                  style={{ color: 'var(--primary-color)' }}
                 />
               </span>
               <span className="stat-label">QUESTIONS</span>
