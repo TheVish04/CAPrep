@@ -68,15 +68,15 @@ const LandingPage = () => {
           <div className="hero-stats">
             <div className="stat-item">
               <span className="stat-number">1000+</span>
-              <span className="stat-label">Questions</span>
+              <span className="stat-label">QUESTIONS</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">3</span>
-              <span className="stat-label">Exam Levels</span>
+              <span className="stat-label">EXAM LEVELS</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">24/7</span>
-              <span className="stat-label">Access</span>
+              <span className="stat-label">ACCESS</span>
             </div>
           </div>
         </div>
