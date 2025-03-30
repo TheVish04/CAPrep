@@ -335,7 +335,7 @@ const Register = () => {
                 type="button" 
                 onClick={handleVerifyOtp}
                 disabled={verifyingOtp || !otp.trim()}
-                className="primary-button"
+                className="otp-button verify-otp"
               >
                 {verifyingOtp ? 'Verifying...' : 'Verify OTP'}
               </button>
@@ -454,7 +454,7 @@ const Register = () => {
       <button 
         type="button" 
         onClick={() => setStep(1)}
-        className="back-button"
+        className="otp-button back-button"
       >
         Back to Email Verification
       </button>
