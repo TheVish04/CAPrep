@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
-import AuthToggle from './AuthToggle';
 import './Login.css';
 
 const Login = () => {
@@ -50,7 +49,6 @@ const Login = () => {
       <Navbar />
       <div className="auth-container">
         <div className="auth-form">
-          <AuthToggle />
           <h2>Login</h2>
           {error && <p className="error">{error}</p>}
           <form onSubmit={handleSubmit} id="login-form" aria-labelledby="login-tab">

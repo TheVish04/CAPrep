@@ -4,7 +4,6 @@ import axios from 'axios';
 import Navbar from './Navbar';
 import apiUtils from '../utils/apiUtils';
 import './Register.css';
-import AuthToggle from './AuthToggle';
 
 const Register = () => {
   // Step tracking
@@ -276,7 +275,6 @@ const Register = () => {
   // Render OTP verification step
   const renderOtpStep = () => (
     <div id="register-form" aria-labelledby="register-tab">
-      <h2>Email Verification</h2>
       {otpError && <p className="error">{otpError}</p>}
       
       <form>
@@ -355,7 +353,6 @@ const Register = () => {
   // Render registration form step
   const renderRegistrationStep = () => (
     <div id="register-form" aria-labelledby="register-tab">
-      <h2>Create Account</h2>
       {error && <p className="error">{error}</p>}
       
       <form onSubmit={handleSubmit}>
@@ -460,12 +457,17 @@ const Register = () => {
     </div>
   );
 
+  // Get title based on current step
+  const getStepTitle = () => {
+    return step === 1 ? "Email Verification" : "Create Account";
+  };
+
   return (
     <div>
       <Navbar />
       <div className="auth-container">
         <div className="auth-form">
-          <AuthToggle />
+          <h2>{getStepTitle()}</h2>
           {step === 1 ? renderOtpStep() : renderRegistrationStep()}
         </div>
       </div>
