@@ -43,7 +43,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // Enhanced CORS configuration
 const corsOptions = {
-  origin: ['https://caprep.onrender.com', 'https://ca-prep.vercel.app', 'http://localhost:5173'],
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://caprep.onrender.com', 'https://ca-prep.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 'AccessToken'],
   exposedHeaders: ['Access-Control-Allow-Origin'],
