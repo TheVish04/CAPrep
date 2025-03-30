@@ -291,25 +291,40 @@ const Register = () => {
         </div>
         
         {!otpSent ? (
-          <button 
-            type="button" 
-            onClick={handleSendOtp}
-            disabled={sendingOtp || !email.trim()}
-          >
-            {sendingOtp ? 'Sending...' : 'Send OTP'}
-          </button>
+          <div className="otp-form-group">
+            <button 
+              type="button" 
+              onClick={handleSendOtp}
+              disabled={sendingOtp || !email.trim()}
+              className="otp-button"
+            >
+              {sendingOtp ? 'Sending...' : 'Send OTP'}
+            </button>
+          </div>
         ) : !otpVerified ? (
           <>
-            <div>
+            <div className="otp-form-group">
               <label>Enter OTP:</label>
-              <input
-                type="text"
-                value={otp}
-                onChange={handleOtpChange}
-                placeholder="Enter 6-digit OTP"
-                maxLength={6}
-                required
-              />
+              <div className="otp-input-container">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={handleOtpChange}
+                  placeholder="Enter 6-digit OTP"
+                  maxLength={6}
+                  required
+                />
+                {countdown === 0 && (
+                  <button 
+                    type="button" 
+                    onClick={handleSendOtp}
+                    disabled={sendingOtp}
+                    className="otp-button resend"
+                  >
+                    {sendingOtp ? 'Sending...' : 'Resend'}
+                  </button>
+                )}
+              </div>
               {countdown > 0 && (
                 <p className="resend-timer">Resend OTP in {countdown}s</p>
               )}
@@ -324,17 +339,6 @@ const Register = () => {
               >
                 {verifyingOtp ? 'Verifying...' : 'Verify OTP'}
               </button>
-              
-              {countdown === 0 && (
-                <button 
-                  type="button" 
-                  onClick={handleSendOtp}
-                  disabled={sendingOtp}
-                  className="secondary-button"
-                >
-                  {sendingOtp ? 'Sending...' : 'Resend OTP'}
-                </button>
-              )}
             </div>
           </>
         ) : (

@@ -61,35 +61,49 @@
 }
 
 .nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: #45A29E;
   color: #0B0C10;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  min-width: 100px;
+  text-decoration: none;
 }
 
 .nav-button:hover {
   background-color: #66FCF1;
   transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(69, 162, 158, 0.4);
+}
+
+.nav-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(69, 162, 158, 0.4);
 }
 
 .logout-btn {
   background-color: transparent;
   color: #45A29E;
-  border: 1px solid #45A29E;
+  border: 2px solid #45A29E;
 }
 
 .logout-btn:hover {
   background-color: #45A29E;
   color: #0B0C10;
+  box-shadow: 0 4px 10px rgba(69, 162, 158, 0.4);
 }
 
 .register-btn {
   background-color: #45A29E;
+  margin-left: 10px;
 }
 
 .register-btn:hover {
