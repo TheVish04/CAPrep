@@ -4,9 +4,11 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './LandingPage.css';
 import Navbar from '../components/Navbar';
+import CountUp from 'react-countup';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
 
   useEffect(() => {
     AOS.init({
@@ -24,6 +26,23 @@ const LandingPage = () => {
     // Show elements after a small delay for better animation effect
     setTimeout(() => setIsVisible(true), 100);
     
+    // Fetch question count from the backend
+    const fetchQuestionCount = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/questions/count`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch question count');
+        }
+        const data = await response.json();
+        setQuestionCount(data.count);
+      } catch (error) {
+        console.error('Error fetching question count:', error);
+        // Set a fallback value if fetch fails
+        setQuestionCount(1000);
+      }
+    };
+    
+    fetchQuestionCount();
     AOS.refresh();
   }, []);
 
@@ -67,7 +86,15 @@ const LandingPage = () => {
           </div>
           <div className="hero-stats">
             <div className="stat-item">
-              <span className="stat-number">1000+</span>
+              <span className="stat-number">
+                <CountUp 
+                  end={questionCount} 
+                  duration={2.5} 
+                  separator="," 
+                  suffix="+" 
+                  enableScrollSpy
+                />
+              </span>
               <span className="stat-label">QUESTIONS</span>
             </div>
             <div className="stat-item">

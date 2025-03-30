@@ -268,4 +268,15 @@ router.delete('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
   }
 });
 
+// Route to get the total count of questions
+router.get('/count', async (req, res) => {
+  try {
+    const count = await Question.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching question count:', error);
+    res.status(500).json({ error: `Failed to fetch question count: ${error.message}` });
+  }
+});
+
 module.exports = router;
