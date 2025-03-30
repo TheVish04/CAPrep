@@ -18,10 +18,6 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// Trust proxy - required for apps behind reverse proxies (like Render, Heroku, etc.)
-// Enables express-rate-limit to use X-Forwarded-For header for client IP
-app.set('trust proxy', 1);
-
 // Create database folder if it doesn't exist
 const dbFolder = path.join(__dirname, 'database');
 if (!fs.existsSync(dbFolder)) {
