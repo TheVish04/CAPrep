@@ -92,8 +92,9 @@ router.post('/send-otp', async (req, res) => {
     
     // Set CORS headers explicitly
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Access-Control-Allow-Origin, AccessToken');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     res.json({ 
       message: 'OTP sent successfully',
