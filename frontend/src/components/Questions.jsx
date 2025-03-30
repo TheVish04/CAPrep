@@ -359,7 +359,6 @@ const Questions = () => {
                         ))}
                       </>
                     )}
-                    {/* Remove the preview button completely */}
                   </div>
                 ))}
               </div>
