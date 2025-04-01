@@ -143,7 +143,7 @@ const sendOTPEmail = async (email, otp) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Your OTP for CAPrep Registration',
+    subject: 'Your OTP for CAprep Registration',
     html: generateEmailTemplate(email, otp)
   };
 
@@ -169,7 +169,7 @@ const sendOTPEmail = async (email, otp) => {
 const generateEmailTemplate = (name, otp) => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-    <h2 style="color: #0288d1;">CAPrep - Email Verification</h2>
+    <h2 style="color: #0288d1;">CAprep - Email Verification</h2>
     <p>Hello ${name}, please use the following OTP to verify your email address:</p>
     <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
     <h1 style="color: #03a9f4; letter-spacing: 5px; margin: 0;">${otp}</h1>
@@ -186,7 +186,7 @@ const sendPasswordResetEmail = async (email, otp) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Password Reset OTP for CAPrep',
+    subject: 'Password Reset OTP for CAprep',
     html: generatePasswordResetTemplate(email, otp)
   };
 
@@ -212,7 +212,7 @@ const sendPasswordResetEmail = async (email, otp) => {
 const generatePasswordResetTemplate = (email, otp) => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-    <h2 style="color: #0288d1;">CAPrep - Password Reset</h2>
+    <h2 style="color: #0288d1;">CAprep - Password Reset</h2>
     <p>Hello ${email}, we received a request to reset your password. Please use the following OTP to reset your password:</p>
     <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
     <h1 style="color: #03a9f4; letter-spacing: 5px; margin: 0;">${otp}</h1>

@@ -4,7 +4,8 @@ const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const { generateOTP, verifyOTP, sendOTPEmail, isEmailVerified, removeVerifiedEmail, markEmailAsVerified } = require('../services/otpService');
+const { generateOTP, verifyOTP, sendOTPEmail, isEmailVerified, removeVerifiedEmail, markEmailAsVerified, sendPasswordResetEmail } = require('../services/otpService');
+const otpGenerator = require('otp-generator');
 require('dotenv').config();
 
 // Rate limiting for login attempts
@@ -518,16 +519,21 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(200).json({ message: 'If your email is registered, you will receive a password reset link shortly.' });
     }
     
-    // Generate OTP for password reset
-    const otp = generateOTP(email);
+    // Generate a 6-digit numeric OTP for password reset
+    const otp = otpGenerator.generate(6, { 
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false
+    });
     
-    // Store the token and expiry in the user document
+    console.log(`Generated OTP for password reset: ${otp} for email: ${email}`);
+    
+    // Store the actual OTP (not hashed) and expiry in the user document
     user.resetPasswordToken = otp;
-    user.resetPasswordExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await user.save();
     
     // Send OTP via email
-    const emailSubject = 'Password Reset OTP - CAPrep';
     const emailResult = await sendPasswordResetEmail(email, otp);
     
     if (!emailResult.success) {
@@ -560,6 +566,8 @@ router.post('/verify-reset-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
     
+    console.log('Verify reset OTP request:', { email, otp: otp ? '****' : null });
+    
     if (!email || !otp) {
       return res.status(400).json({ 
         error: 'Email and OTP are required',
@@ -567,17 +575,36 @@ router.post('/verify-reset-otp', async (req, res) => {
       });
     }
     
-    // Find user by email
-    const user = await User.findOne({ 
-      email: email.trim().toLowerCase(),
-      resetPasswordToken: otp,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
+    // Find user by email first
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     
     if (!user) {
+      console.log(`User not found for email: ${email}`);
       return res.status(400).json({ 
         success: false,
-        error: 'Invalid or expired OTP'
+        error: 'Invalid email address'
+      });
+    }
+    
+    console.log('User found, checking OTP:', { 
+      userToken: user.resetPasswordToken ? 'exists' : 'missing',
+      tokenExpiry: user.resetPasswordExpires,
+      isExpired: user.resetPasswordExpires < new Date(),
+      otpMatch: user.resetPasswordToken === otp
+    });
+    
+    // Verify that resetPasswordToken exists, matches OTP, and has not expired
+    if (!user.resetPasswordToken || user.resetPasswordToken !== otp) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid OTP'
+      });
+    }
+    
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'OTP has expired'
       });
     }
     
@@ -600,6 +627,8 @@ router.post('/reset-password', async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
     
+    console.log('Reset password request received:', { email, otpProvided: !!otp, passwordLength: newPassword?.length });
+    
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ 
         error: 'All fields are required',
@@ -612,25 +641,41 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters long' });
     }
     
-    // Find user with matching email and valid reset token
-    const user = await User.findOne({ 
-      email: email.trim().toLowerCase(),
-      resetPasswordToken: otp,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
+    // Find user by email first
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     
     if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired password reset token' });
+      console.log(`User not found for email: ${email}`);
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+    
+    // Verify reset token
+    console.log('User found, checking OTP:', { 
+      userToken: user.resetPasswordToken ? 'exists' : 'missing',
+      tokenExpiry: user.resetPasswordExpires,
+      isExpired: user.resetPasswordExpires < new Date(),
+      otpMatch: user.resetPasswordToken === otp
+    });
+    
+    // Verify that resetPasswordToken exists, matches OTP, and has not expired
+    if (!user.resetPasswordToken || user.resetPasswordToken !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+    
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      return res.status(400).json({ error: 'OTP has expired' });
     }
     
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
+    console.log('Password hashed successfully');
     
     // Update user with new password and remove reset token fields
     user.password = hashedPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
     await user.save();
+    console.log('Password reset successful for user:', email);
     
     res.status(200).json({ message: 'Password has been reset successfully' });
     

@@ -301,7 +301,7 @@ const LandingPage = () => {
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <h3>CAPrep</h3>
+            <h3>CAprep</h3>
             <p>Your companion for CA exam success</p>
           </div>
           <div className="footer-links">
@@ -333,7 +333,7 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} CAPrep. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CAprep. All rights reserved.</p>
         </div>
       </footer>
     </div>

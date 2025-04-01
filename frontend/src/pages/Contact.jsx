@@ -37,7 +37,7 @@ const Contact = () => {
               <div className="contact-item">
                 <h3>Address</h3>
                 <p>
-                  CAPrep<br />
+                  CAprep<br />
                   123 Education Street<br />
                   Mumbai, Maharashtra 400001<br />
                   India

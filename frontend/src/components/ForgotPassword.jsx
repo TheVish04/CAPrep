@@ -25,13 +25,14 @@ const ForgotPassword = () => {
 
       const response = await axios.post('https://caprep.onrender.com/api/auth/forgot-password', { email });
       
+      console.log('Forgot password response:', response.data);
       setSuccess(true);
       setTimeout(() => {
         navigate(`/reset-password?email=${encodeURIComponent(email)}`);
       }, 3000);
     } catch (err) {
-      setError('An error occurred. Please try again later.');
-      console.error('Forgot password error:', err);
+      console.error('Forgot password error:', err.response?.data || err.message);
+      setError(err.response?.data?.error || 'An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }

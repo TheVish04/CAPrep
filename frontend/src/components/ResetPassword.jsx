@@ -25,6 +25,7 @@ const ResetPassword = () => {
     const email = params.get('email');
     if (email) {
       setFormData(prev => ({ ...prev, email }));
+      console.log('Email found in URL params:', email);
     }
   }, [location]);
 
@@ -44,11 +45,15 @@ const ResetPassword = () => {
         return;
       }
 
+      console.log('Verifying OTP:', { email: formData.email, otp: formData.otp });
+      
       const response = await axios.post('https://caprep.onrender.com/api/auth/verify-reset-otp', {
         email: formData.email,
         otp: formData.otp
       });
 
+      console.log('OTP verification response:', response.data);
+      
       if (response.data.success) {
         setOtpVerified(true);
         setError('');
@@ -56,8 +61,8 @@ const ResetPassword = () => {
         setError('Invalid or expired OTP');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to verify OTP');
-      console.error('OTP verification error:', err);
+      console.error('OTP verification error:', err.response?.data || err.message);
+      setError(err.response?.data?.error || 'Failed to verify OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -81,19 +86,22 @@ const ResetPassword = () => {
         return;
       }
 
+      console.log('Resetting password for:', { email: formData.email });
+      
       const response = await axios.post('https://caprep.onrender.com/api/auth/reset-password', {
         email: formData.email,
         otp: formData.otp,
         newPassword: formData.newPassword
       });
 
+      console.log('Password reset response:', response.data);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to reset password');
-      console.error('Password reset error:', err);
+      console.error('Password reset error:', err.response?.data || err.message);
+      setError(err.response?.data?.error || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -140,6 +148,7 @@ const ResetPassword = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter OTP sent to your email"
+                    autoComplete="one-time-code"
                   />
                 </div>
                 <button 
@@ -163,6 +172,7 @@ const ResetPassword = () => {
                       required
                       placeholder="Enter new password"
                       minLength="8"
+                      autoComplete="new-password"
                     />
                     <span 
                       className="toggle-password" 
@@ -182,6 +192,7 @@ const ResetPassword = () => {
                       onChange={handleChange}
                       required
                       placeholder="Confirm new password"
+                      autoComplete="new-password"
                     />
                   </div>
                 </div>
