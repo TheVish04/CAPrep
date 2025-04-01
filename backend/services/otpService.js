@@ -28,12 +28,29 @@ setInterval(() => {
   }
 }, 60000); // Clean up every minute
 
-// Configure nodemailer
+// Configure nodemailer with more robust settings
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // use SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
+  },
+  debug: true, // Enable debug logging
+  logger: true, // Log information about the transport mechanism
+  tls: {
+    rejectUnauthorized: false // Accept self-signed certificates
+  }
+});
+
+// Verify connection configuration
+transporter.verify(function(error, success) {
+  if (error) {
+    console.error('SMTP connection error:', error);
+  } else {
+    console.log('SMTP server is ready to take our messages');
   }
 });
 
@@ -66,10 +83,10 @@ const generateOTP = (email) => {
   // Hash the OTP for storage (don't store in plain text)
   const hashedOTP = crypto.createHash('sha256').update(otp).digest('hex');
   
-  // Store OTP with expiry time (5 minutes)
+  // Store OTP with expiry time (increased to 15 minutes)
   otpStore.set(email, {
     hashedOTP,
-    expiresAt: now + 5 * 60 * 1000, // 5 minutes
+    expiresAt: now + 15 * 60 * 1000, // 15 minutes (increased from 5)
     attempts: 0 // Track failed verification attempts
   });
   
@@ -140,11 +157,29 @@ const removeVerifiedEmail = (email) => {
 
 // Send OTP via email
 const sendOTPEmail = async (email, otp) => {
+  // Validate email format first
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.error(`Invalid email format: ${email}`);
+    return { 
+      success: false, 
+      error: 'Invalid email format',
+      transportError: 'INVALID_EMAIL'
+    };
+  }
+
+  // Check if email exists using a simple regex validation
+  // More comprehensive validation would require API calls to email validation services
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `"CAprep Support" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'Your OTP for CAprep Registration',
-    html: generateEmailTemplate(email, otp)
+    html: generateEmailTemplate(email, otp),
+    priority: 'high',
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High'
+    }
   };
 
   try {
@@ -155,12 +190,26 @@ const sendOTPEmail = async (email, otp) => {
   } catch (error) {
     console.error('Error sending OTP email:', {
       error: error.message,
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode,
       stack: error.stack,
       email: email
     });
+    
+    // More descriptive error based on the code
+    let errorMessage = 'Failed to send email';
+    if (error.code === 'EENVELOPE' || error.code === 'ERECIPIENT') {
+      errorMessage = 'Email address appears to be invalid or not reachable';
+    } else if (error.code === 'ESOCKET') {
+      errorMessage = 'Network error when connecting to email server';
+    } else if (error.code === 'EAUTH') {
+      errorMessage = 'Email authentication failed, check sender credentials';
+    }
+    
     return { 
       success: false, 
-      error: error.message,
+      error: errorMessage,
       transportError: error.code || 'UNKNOWN'
     };
   }
@@ -183,11 +232,27 @@ const generateEmailTemplate = (name, otp) => {
 
 // Send password reset email with OTP
 const sendPasswordResetEmail = async (email, otp) => {
+  // Validate email format first
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.error(`Invalid email format: ${email}`);
+    return { 
+      success: false, 
+      error: 'Invalid email format',
+      transportError: 'INVALID_EMAIL'
+    };
+  }
+  
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `"CAprep Support" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'Password Reset OTP for CAprep',
-    html: generatePasswordResetTemplate(email, otp)
+    html: generatePasswordResetTemplate(email, otp),
+    priority: 'high',
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High'
+    }
   };
 
   try {
@@ -198,12 +263,26 @@ const sendPasswordResetEmail = async (email, otp) => {
   } catch (error) {
     console.error('Error sending password reset email:', {
       error: error.message,
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode,
       stack: error.stack,
       email: email
     });
+    
+    // More descriptive error based on the code
+    let errorMessage = 'Failed to send email';
+    if (error.code === 'EENVELOPE' || error.code === 'ERECIPIENT') {
+      errorMessage = 'Email address appears to be invalid or not reachable';
+    } else if (error.code === 'ESOCKET') {
+      errorMessage = 'Network error when connecting to email server';
+    } else if (error.code === 'EAUTH') {
+      errorMessage = 'Email authentication failed, check sender credentials';
+    }
+    
     return { 
       success: false, 
-      error: error.message,
+      error: errorMessage,
       transportError: error.code || 'UNKNOWN'
     };
   }

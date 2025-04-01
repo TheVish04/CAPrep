@@ -32,7 +32,18 @@ const ForgotPassword = () => {
       }, 3000);
     } catch (err) {
       console.error('Forgot password error:', err.response?.data || err.message);
-      setError(err.response?.data?.error || 'An error occurred. Please try again later.');
+      
+      // Handle specific error messages from backend
+      if (err.response?.data?.error) {
+        if (err.response.data.error.includes('does not exist') || 
+            err.response.data.error.includes('cannot receive emails')) {
+          setError('This email address appears to be invalid or cannot receive emails. Please check and try again.');
+        } else {
+          setError(err.response.data.error);
+        }
+      } else {
+        setError('An error occurred. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }

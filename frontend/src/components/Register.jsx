@@ -60,9 +60,9 @@ const Register = () => {
   
   // Send OTP to email
   const handleSendOtp = async () => {
-    // Validate email (must be Gmail)
-    if (!email.trim() || !email.trim().toLowerCase().endsWith('@gmail.com')) {
-      setOtpError('Please enter a valid Gmail address');
+    // Validate email
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setOtpError('Please enter a valid email address');
       return;
     }
     
@@ -70,7 +70,7 @@ const Register = () => {
     setOtpError('');
     
     try {
-      const response = await apiUtils.post('api/auth/send-otp', { email: email.trim() });
+      const response = await axios.post('https://caprep.onrender.com/api/auth/send-otp', { email: email.trim() });
       
       console.log("OTP send response:", response.data);
       
@@ -80,15 +80,23 @@ const Register = () => {
       // Show success message
       setOtpError('');
     } catch (err) {
-      console.error('Error sending OTP:', err);
+      console.error('Error sending OTP:', err.response?.data || err);
       
-      setOtpError(err.message || 'Failed to send OTP. Please try again later.');
-      
-      // If email already registered, suggest login
-      if (err.redirect === '/login') {
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
+      // Handle specific error messages from backend
+      if (err.response?.data?.error) {
+        if (err.response.data.error.includes('does not exist') || 
+            err.response.data.error.includes('cannot receive emails')) {
+          setOtpError('This email address appears to be invalid or cannot receive emails. Please check and try again.');
+        } else if (err.response.data.error.includes('already registered')) {
+          setOtpError('Email already registered. Redirecting to login...');
+          setTimeout(() => {
+            navigate('/login');
+          }, 3000);
+        } else {
+          setOtpError(err.response.data.error);
+        }
+      } else {
+        setOtpError('Failed to send OTP. Please try again later.');
       }
     } finally {
       setSendingOtp(false);
