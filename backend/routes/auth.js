@@ -501,4 +501,146 @@ router.post('/refresh-token', authMiddleware, async (req, res) => {
   }
 });
 
+// Forgot Password - Request password reset
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+    
+    // Find user by email
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    
+    if (!user) {
+      // Don't reveal that the user does not exist for security reasons
+      return res.status(200).json({ message: 'If your email is registered, you will receive a password reset link shortly.' });
+    }
+    
+    // Generate OTP for password reset
+    const otp = generateOTP(email);
+    
+    // Store the token and expiry in the user document
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    await user.save();
+    
+    // Send OTP via email
+    const emailSubject = 'Password Reset OTP - CAPrep';
+    const emailResult = await sendPasswordResetEmail(email, otp);
+    
+    if (!emailResult.success) {
+      console.error('Failed to send password reset email:', emailResult);
+      return res.status(500).json({ 
+        error: 'Failed to send password reset email',
+        details: emailResult.error
+      });
+    }
+    
+    res.status(200).json({ 
+      message: 'Password reset instructions sent to your email',
+      email 
+    });
+    
+  } catch (error) {
+    console.error('Forgot password error:', {
+      message: error.message, 
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      error: 'Failed to process password reset request',
+      details: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+});
+
+// Verify Reset Password OTP
+router.post('/verify-reset-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    if (!email || !otp) {
+      return res.status(400).json({ 
+        error: 'Email and OTP are required',
+        requiredFields: ['email', 'otp']
+      });
+    }
+    
+    // Find user by email
+    const user = await User.findOne({ 
+      email: email.trim().toLowerCase(),
+      resetPasswordToken: otp,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid or expired OTP'
+      });
+    }
+    
+    return res.status(200).json({ 
+      success: true,
+      message: 'OTP verified successfully'
+    });
+    
+  } catch (error) {
+    console.error('Reset OTP verification error:', error);
+    return res.status(500).json({ 
+      error: 'OTP verification failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Reset Password - Set new password after OTP verification
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ 
+        error: 'All fields are required',
+        requiredFields: ['email', 'otp', 'newPassword']
+      });
+    }
+    
+    // Check password strength
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+    
+    // Find user with matching email and valid reset token
+    const user = await User.findOne({ 
+      email: email.trim().toLowerCase(),
+      resetPasswordToken: otp,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired password reset token' });
+    }
+    
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    
+    // Update user with new password and remove reset token fields
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+    
+    res.status(200).json({ message: 'Password has been reset successfully' });
+    
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ 
+      error: 'Failed to reset password',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 module.exports = router;

@@ -80,6 +80,9 @@ const Login = () => {
                 </span>
               </div>
             </div>
+            <div className="forgot-password-link">
+              <Link to="/forgot-password">Forgot Password?</Link>
+            </div>
             <button type="submit">Login</button>
           </form>
           <p className="auth-link">

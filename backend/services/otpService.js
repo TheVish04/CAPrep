@@ -181,11 +181,55 @@ const generateEmailTemplate = (name, otp) => {
   `;
 };
 
+// Send password reset email with OTP
+const sendPasswordResetEmail = async (email, otp) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Password Reset OTP for CAPrep',
+    html: generatePasswordResetTemplate(email, otp)
+  };
+
+  try {
+    console.log(`Attempting to send password reset email to: ${email}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Password reset email sent successfully to ${email}. Message ID: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending password reset email:', {
+      error: error.message,
+      stack: error.stack,
+      email: email
+    });
+    return { 
+      success: false, 
+      error: error.message,
+      transportError: error.code || 'UNKNOWN'
+    };
+  }
+};
+
+const generatePasswordResetTemplate = (email, otp) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+    <h2 style="color: #0288d1;">CAPrep - Password Reset</h2>
+    <p>Hello ${email}, we received a request to reset your password. Please use the following OTP to reset your password:</p>
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+    <h1 style="color: #03a9f4; letter-spacing: 5px; margin: 0;">${otp}</h1>
+    </div>
+    <p>This OTP will expire in 5 minutes. If you did not request this password reset, please ignore this email or contact support if you believe this is unauthorized activity.</p>
+    <p>Thank you for using CA Prep Platform!</p>
+    <p style="margin-top: 30px; font-size: 12px; color: #777;">This is an automated message, please do not reply.</p>
+    </div>
+  `;
+};
+
 module.exports = {
   generateOTP,
   verifyOTP,
   sendOTPEmail,
   isEmailVerified,
   markEmailAsVerified,
-  removeVerifiedEmail
+  removeVerifiedEmail,
+  sendPasswordResetEmail
 };
