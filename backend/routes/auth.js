@@ -360,7 +360,11 @@ router.post('/register', async (req, res) => {
     
     // Check if the email has been verified with OTP
     const isVerified = isEmailVerified(email);
+    console.log(`Email verification status for ${email}: ${isVerified ? 'Verified' : 'Not verified'}`);
+    
     if (!isVerified) {
+      console.log(`Verification failed for ${email}. Checking verified emails list...`);
+      
       return res.status(400).json({ 
         error: 'Email verification required. Please verify your email with OTP first.',
         field: 'email',

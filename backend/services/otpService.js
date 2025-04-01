@@ -1,13 +1,55 @@
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
+
+// Path to store verified emails
+const verifiedEmailsFilePath = path.join(__dirname, '../database/verified_emails.json');
 
 // Enhanced in-memory OTP storage with rate limiting and cleanup
 // For production, use Redis or a database
 const otpStore = new Map();
 const rateLimit = new Map(); // Store attempt counts per email
 const verifiedEmails = new Map(); // Store verified emails
+
+// Load verified emails from disk if exists
+try {
+  if (fs.existsSync(verifiedEmailsFilePath)) {
+    const data = fs.readFileSync(verifiedEmailsFilePath, 'utf8');
+    const parsed = JSON.parse(data);
+    Object.entries(parsed).forEach(([email, timestamp]) => {
+      verifiedEmails.set(email, timestamp);
+    });
+    console.log(`Loaded ${verifiedEmails.size} verified emails from disk`);
+  } else {
+    console.log('No verified emails file found, starting with empty set');
+    // Create directory if it doesn't exist
+    const dir = path.dirname(verifiedEmailsFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    // Initialize empty file
+    fs.writeFileSync(verifiedEmailsFilePath, '{}', 'utf8');
+  }
+} catch (error) {
+  console.error('Error loading verified emails from disk:', error);
+}
+
+// Function to save verified emails to disk
+const saveVerifiedEmailsToDisk = () => {
+  try {
+    const data = {};
+    verifiedEmails.forEach((timestamp, email) => {
+      data[email] = timestamp;
+    });
+    fs.writeFileSync(verifiedEmailsFilePath, JSON.stringify(data, null, 2), 'utf8');
+    console.log(`Saved ${verifiedEmails.size} verified emails to disk`);
+  } catch (error) {
+    console.error('Error saving verified emails to disk:', error);
+  }
+};
 
 // Regularly clean up expired OTPs and verified emails to prevent memory leaks
 setInterval(() => {
@@ -20,11 +62,18 @@ setInterval(() => {
     }
   }
   
-  // Clean up old verified emails (keep for 30 minutes)
+  // Clean up old verified emails (keep for 2 hours instead of 30 minutes)
+  let modified = false;
   for (const [email, timestamp] of verifiedEmails.entries()) {
-    if (now - timestamp > 30 * 60 * 1000) { // 30 minutes
+    if (now - timestamp > 2 * 60 * 60 * 1000) { // 2 hours
       verifiedEmails.delete(email);
+      modified = true;
     }
+  }
+  
+  // Save to disk if verified emails changed
+  if (modified) {
+    saveVerifiedEmailsToDisk();
   }
 }, 60000); // Clean up every minute
 
@@ -142,17 +191,41 @@ const verifyOTP = (email, otp) => {
 // Check if an email has been verified by OTP
 const isEmailVerified = (email) => {
   const lowercaseEmail = email.toLowerCase();
-  return verifiedEmails.has(lowercaseEmail);
+  // First check in-memory Map
+  if (verifiedEmails.has(lowercaseEmail)) {
+    return true;
+  }
+  
+  // If not in memory, try to load from disk as a fallback
+  try {
+    if (fs.existsSync(verifiedEmailsFilePath)) {
+      const data = fs.readFileSync(verifiedEmailsFilePath, 'utf8');
+      const parsed = JSON.parse(data);
+      if (parsed[lowercaseEmail]) {
+        // Add it back to memory for future checks
+        verifiedEmails.set(lowercaseEmail, parsed[lowercaseEmail]);
+        return true;
+      }
+    }
+  } catch (error) {
+    console.error('Error checking verified email from disk:', error);
+  }
+  
+  return false;
 };
 
 // Mark an email as verified (for testing purposes)
 const markEmailAsVerified = (email) => {
-  verifiedEmails.set(email.toLowerCase(), Date.now());
+  const lowercaseEmail = email.toLowerCase();
+  verifiedEmails.set(lowercaseEmail, Date.now());
+  saveVerifiedEmailsToDisk(); // Save to disk immediately
 };
 
 // Remove email from verified list
 const removeVerifiedEmail = (email) => {
-  verifiedEmails.delete(email.toLowerCase());
+  const lowercaseEmail = email.toLowerCase();
+  verifiedEmails.delete(lowercaseEmail);
+  saveVerifiedEmailsToDisk(); // Save to disk immediately
 };
 
 // Send OTP via email
