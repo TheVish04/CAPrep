@@ -41,17 +41,42 @@ app.use('/api/', apiLimiter);
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
-// Enhanced CORS configuration
+// Enhanced CORS configuration with more permissive settings
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://caprep.onrender.com', 'https://ca-prep.vercel.app', 'http://localhost:5173'],
+  origin: ['https://caprep.onrender.com', 'https://ca-prep.vercel.app', 'http://localhost:5173', 'https://ca-exam-platform.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 'AccessToken'],
-  exposedHeaders: ['Access-Control-Allow-Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 'AccessToken', 'Origin', 'Accept', 'X-Requested-With'],
   credentials: true,
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 204,
   preflightContinue: false,
+  maxAge: 86400 // 24 hours
 };
+
+// Add CORS preflight handling
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
+
+// Add a manual CORS middleware as backup for handling preflight requests
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (
+    origin === 'https://caprep.onrender.com' || 
+    origin === 'https://ca-prep.vercel.app' || 
+    origin === 'http://localhost:5173' ||
+    origin === 'https://ca-exam-platform.vercel.app'
+  ) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Preflight request handling
+    if (req.method === 'OPTIONS') {
+      return res.status(204).send();
+    }
+  }
+  next();
+});
 
 // Add a middleware to log all requests for debugging
 app.use((req, res, next) => {

@@ -114,7 +114,7 @@ const Register = () => {
     setOtpError('');
     
     try {
-      const response = await apiUtils.post('api/auth/verify-otp', { 
+      const response = await axios.post('https://caprep.onrender.com/api/auth/verify-otp', { 
         email: email.trim(),
         otp: otp.trim() 
       });
@@ -128,8 +128,13 @@ const Register = () => {
       setFormData(prev => ({ ...prev, email: email.trim() }));
       
     } catch (err) {
-      console.error('Error verifying OTP:', err);
-      setOtpError(err.message || 'Failed to verify OTP. Please try again later.');
+      console.error('Error verifying OTP:', err.response?.data || err);
+      
+      if (err.response?.data?.error) {
+        setOtpError(err.response.data.error);
+      } else {
+        setOtpError('Failed to verify OTP. Please try again later.');
+      }
     } finally {
       setVerifyingOtp(false);
     }
@@ -251,20 +256,25 @@ const Register = () => {
       
       console.log('Sending registration data:', {...dataToSend, password: '***HIDDEN***'});
       
-      const response = await apiUtils.post('api/auth/register', dataToSend);
+      const response = await axios.post('https://caprep.onrender.com/api/auth/register', dataToSend);
       console.log('Registration response:', response.data);
       
       // Registration successful
       alert('Registration successful! Redirecting to login page...');
       navigate('/login');
     } catch (err) {
-      console.error('Registration error:', err);
+      console.error('Registration error:', err.response?.data || err);
       
-      setError(err.message || 'Registration failed. Please try again later.');
-      
-      // If email verification required, go back to step 1
-      if (err.redirect === '/register') {
-        setStep(1);
+      // Handle specific error messages from backend
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+        
+        // If email verification required, go back to step 1
+        if (err.response.data.redirect === '/register') {
+          setStep(1);
+        }
+      } else {
+        setError('Registration failed. Please try again later.');
       }
     } finally {
       setIsSubmitting(false);
