@@ -52,13 +52,28 @@ const corsOptions = {
   maxAge: 86400 // 24 hours
 };
 
-// Add CORS preflight handling
+// Add CORS preflight handling for all routes
 app.options('*', cors(corsOptions));
+
+// Special handler for verify-otp which seems to have issues
+app.options('/api/auth/verify-otp', (req, res) => {
+  console.log('Handling OPTIONS preflight for verify-otp specifically');
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  res.status(204).end();
+});
+
 app.use(cors(corsOptions));
 
 // Add a manual CORS middleware as backup for handling preflight requests
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  // Log all requests to help debug CORS issues
+  console.log(`[CORS] ${req.method} ${req.path} - Origin: ${origin || 'No origin'}`);
+  
   if (
     origin === 'https://caprep.onrender.com' || 
     origin === 'https://ca-prep.vercel.app' || 
@@ -72,7 +87,8 @@ app.use((req, res, next) => {
     
     // Preflight request handling
     if (req.method === 'OPTIONS') {
-      return res.status(204).send();
+      console.log(`Handling OPTIONS preflight for ${req.path} in backup middleware`);
+      return res.status(204).end();
     }
   }
   next();

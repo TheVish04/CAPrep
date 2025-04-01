@@ -146,6 +146,12 @@ router.post('/send-otp', async (req, res) => {
 // Verify OTP
 router.post('/verify-otp', async (req, res) => {
   try {
+    console.log('Verify OTP request received:', {
+      body: req.body,
+      origin: req.headers.origin,
+      contentType: req.headers['content-type']
+    });
+    
     const { email, otp } = req.body;
     
     if (!email || !otp) {
@@ -156,6 +162,12 @@ router.post('/verify-otp', async (req, res) => {
     }
     
     const verification = verifyOTP(email, otp);
+    
+    // Set CORS headers explicitly
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Access-Control-Allow-Origin, AccessToken, Origin, Accept, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     if (verification.valid) {
       // Mark email as verified
@@ -299,11 +311,13 @@ router.post('/login', async (req, res) => {
 // User registration
 router.post('/register', async (req, res) => {
   try {
-    console.log('Register request received:', req.body);
+    console.log('Register request received:', {
+      body: { ...req.body, password: '***HIDDEN***' },
+      origin: req.headers.origin,
+      contentType: req.headers['content-type']
+    });
     
     const { fullName, email, password } = req.body;
-    
-    console.log('Fields extracted:', { fullName, email, password: '***HIDDEN***' });
     
     // Validate all required fields
     if (!fullName || !email || !password) {
@@ -412,6 +426,12 @@ router.post('/register', async (req, res) => {
       : 24 * 60 * 60; // Default 1 day
     
     expiry.setSeconds(expiry.getSeconds() + expirySeconds);
+    
+    // Set CORS headers explicitly
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Access-Control-Allow-Origin, AccessToken, Origin, Accept, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     // Return success with user data
     res.status(201).json({

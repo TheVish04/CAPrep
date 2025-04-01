@@ -70,7 +70,17 @@ const Register = () => {
     setOtpError('');
     
     try {
-      const response = await axios.post('https://caprep.onrender.com/api/auth/send-otp', { email: email.trim() });
+      const response = await axios.post('https://caprep.onrender.com/api/auth/send-otp', 
+        { email: email.trim() },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': window.location.origin
+          },
+          withCredentials: true
+        }
+      );
       
       console.log("OTP send response:", response.data);
       
@@ -82,8 +92,12 @@ const Register = () => {
     } catch (err) {
       console.error('Error sending OTP:', err.response?.data || err);
       
+      // Network errors
+      if (err.message && err.message.includes('Network Error')) {
+        setOtpError('Network error. Please check your internet connection and try again.');
+      }
       // Handle specific error messages from backend
-      if (err.response?.data?.error) {
+      else if (err.response?.data?.error) {
         if (err.response.data.error.includes('does not exist') || 
             err.response.data.error.includes('cannot receive emails')) {
           setOtpError('This email address appears to be invalid or cannot receive emails. Please check and try again.');
@@ -114,10 +128,22 @@ const Register = () => {
     setOtpError('');
     
     try {
-      const response = await axios.post('https://caprep.onrender.com/api/auth/verify-otp', { 
-        email: email.trim(),
-        otp: otp.trim() 
-      });
+      console.log(`Sending OTP verification request to caprep.onrender.com for email: ${email.trim()}`);
+      
+      const response = await axios.post('https://caprep.onrender.com/api/auth/verify-otp', 
+        { 
+          email: email.trim(),
+          otp: otp.trim() 
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': window.location.origin
+          },
+          withCredentials: true
+        }
+      );
       
       console.log("OTP verification response:", response.data);
       
@@ -130,7 +156,10 @@ const Register = () => {
     } catch (err) {
       console.error('Error verifying OTP:', err.response?.data || err);
       
-      if (err.response?.data?.error) {
+      // Network errors
+      if (err.message && err.message.includes('Network Error')) {
+        setOtpError('Network error. Please check your internet connection and try again.');
+      } else if (err.response?.data?.error) {
         setOtpError(err.response.data.error);
       } else {
         setOtpError('Failed to verify OTP. Please try again later.');
@@ -256,7 +285,18 @@ const Register = () => {
       
       console.log('Sending registration data:', {...dataToSend, password: '***HIDDEN***'});
       
-      const response = await axios.post('https://caprep.onrender.com/api/auth/register', dataToSend);
+      const response = await axios.post('https://caprep.onrender.com/api/auth/register', 
+        dataToSend,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': window.location.origin
+          },
+          withCredentials: true
+        }
+      );
+      
       console.log('Registration response:', response.data);
       
       // Registration successful
@@ -265,8 +305,12 @@ const Register = () => {
     } catch (err) {
       console.error('Registration error:', err.response?.data || err);
       
+      // Network errors
+      if (err.message && err.message.includes('Network Error')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } 
       // Handle specific error messages from backend
-      if (err.response?.data?.error) {
+      else if (err.response?.data?.error) {
         setError(err.response.data.error);
         
         // If email verification required, go back to step 1
