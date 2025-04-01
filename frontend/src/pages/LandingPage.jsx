@@ -126,10 +126,14 @@ const LandingPage = () => {
             </div>
             <h3>Foundation</h3>
             <ul>
-              <li>Principles of Accounting</li>
+              <li>Principles and Practices of Accounting</li>
               <li>Business Law</li>
               <li>Business Mathematics</li>
               <li>Business Economics</li>
+              <li>Business Correspondence and Reporting</li>
+              <li>Logical Reasoning</li>
+              <li>Statistics</li>
+              <li>Business and Commercial Knowledge</li>
             </ul>
             <Link to="/register" className="level-btn">Start Learning</Link>
           </div>
@@ -142,8 +146,10 @@ const LandingPage = () => {
             <ul>
               <li>Advanced Accounting</li>
               <li>Corporate Laws</li>
-              <li>Cost Management</li>
+              <li>Cost and Management Accounting</li>
               <li>Taxation</li>
+              <li>Auditing and Code of Ethics</li>
+              <li>Financial and Strategic Management</li>
             </ul>
             <Link to="/register" className="level-btn">Start Learning</Link>
           </div>
@@ -155,9 +161,11 @@ const LandingPage = () => {
             <h3>Final</h3>
             <ul>
               <li>Financial Reporting</li>
-              <li>Strategic Management</li>
+              <li>Advanced Financial Management</li>
               <li>Advanced Auditing</li>
-              <li>Direct Tax Laws</li>
+              <li>Direct and International Tax Laws</li>
+              <li>Indirect Tax Laws</li>
+              <li>Integrated Business Solutions</li>
             </ul>
             <Link to="/register" className="level-btn">Start Learning</Link>
           </div>
