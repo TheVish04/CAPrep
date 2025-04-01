@@ -43,13 +43,36 @@ const ProtectedRoute = ({ element, requireAdmin = false }) => {
   return element;
 };
 
+// Redirect already logged in users away from auth pages
+const RedirectIfLoggedIn = ({ element }) => {
+  const token = localStorage.getItem('token');
+  
+  if (token) {
+    try {
+      // Validate token format
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        // Token seems valid, redirect to questions page
+        return <Navigate to="/questions" />;
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      // If token is invalid, remove it
+      localStorage.removeItem('token');
+    }
+  }
+  
+  // No valid token, render the requested auth page
+  return element;
+};
+
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
+        <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/about" element={<About />} />
