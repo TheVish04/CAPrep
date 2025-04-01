@@ -9,6 +9,7 @@ import CountUp from 'react-countup';
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -25,6 +26,10 @@ const LandingPage = () => {
     
     // Show elements after a small delay for better animation effect
     setTimeout(() => setIsVisible(true), 100);
+    
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
     
     // Fetch question count from the backend
     const fetchQuestionCount = async () => {
@@ -81,7 +86,9 @@ const LandingPage = () => {
           <h1>Master Your CA Journey</h1>
           <p>Access organized question papers, practice strategically, and excel in your CA examinations with our comprehensive preparation platform.</p>
           <div className="cta-buttons">
-            <Link to="/register" className="cta-btn primary-btn">Get Started</Link>
+            {!isLoggedIn && (
+              <Link to="/register" className="cta-btn primary-btn">Get Started</Link>
+            )}
             <Link to="/about" className="cta-btn secondary-btn">Learn More</Link>
           </div>
           <div className="hero-stats">
@@ -135,7 +142,7 @@ const LandingPage = () => {
               <li>Statistics</li>
               <li>Business and Commercial Knowledge</li>
             </ul>
-            <Link to="/register" className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
           </div>
           
           <div className="level-card" data-aos="fade-up" data-aos-delay="200">
@@ -151,7 +158,7 @@ const LandingPage = () => {
               <li>Auditing and Code of Ethics</li>
               <li>Financial and Strategic Management</li>
             </ul>
-            <Link to="/register" className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
           </div>
           
           <div className="level-card" data-aos="fade-up" data-aos-delay="300">
@@ -167,7 +174,7 @@ const LandingPage = () => {
               <li>Indirect Tax Laws</li>
               <li>Integrated Business Solutions</li>
             </ul>
-            <Link to="/register" className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
           </div>
         </div>
       </section>
@@ -302,7 +309,9 @@ const LandingPage = () => {
         <div className="cta-content">
           <h2>Ready to Excel in Your CA Exams?</h2>
           <p>Join thousands of successful CA students who have transformed their exam preparation.</p>
-          <Link to="/register" className="cta-btn primary-btn">Start Your Journey Today</Link>
+          {!isLoggedIn && (
+            <Link to="/register" className="cta-btn primary-btn">Start Your Journey Today</Link>
+          )}
         </div>
       </section>
 
