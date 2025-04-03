@@ -815,35 +815,37 @@ const AdminPanel = () => {
               </button>
             </div>
 
-            <div className="form-actions">
-              <button
-                type="button"
-                onClick={handlePreview}
-                className="preview-btn"
-                disabled={isSubmitting}
-              >
-                Preview
-              </button>
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : editingQuestionId ? 'Update' : 'Submit'}
-              </button>
-              {editingQuestionId && (
+            <div className="form-actions-container">
+              <div className="form-actions">
                 <button
                   type="button"
-                  onClick={() => {
-                    resetForm();
-                    setEditingQuestionId(null);
-                  }}
-                  className="cancel-btn"
+                  onClick={handlePreview}
+                  className="preview-btn"
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  Preview
                 </button>
-              )}
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : editingQuestionId ? 'Update' : 'Submit'}
+                </button>
+                {editingQuestionId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetForm();
+                      setEditingQuestionId(null);
+                    }}
+                    className="cancel-btn"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </form>
 

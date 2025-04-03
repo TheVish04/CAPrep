@@ -328,6 +328,17 @@ textarea.form-input {
   align-items: center;
   margin-top: 30px;
   gap: 15px;
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.admin-form .form-actions {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin: 30px auto;
 }
 
 .preview-btn,
@@ -869,4 +880,11 @@ form.edit-mode .submit-btn:hover {
   color: #121212;
   border-color: #239ecf;
   transform: translateY(-2px);
+}
+
+.form-actions-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto;
 }
