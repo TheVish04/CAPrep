@@ -114,6 +114,15 @@ const Navbar = () => {
                 </Link>
               </motion.li>
               
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/quiz" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Quiz
+                </Link>
+              </motion.li>
+              
               {isAdmin && (
                 <motion.li 
                   whileHover={{ scale: 1.1 }}

@@ -279,4 +279,47 @@ router.get('/count', async (req, res) => {
   }
 });
 
+// Route to fetch MCQ questions for quiz
+router.get('/quiz', authMiddleware, async (req, res) => {
+  try {
+    const { examStage, subject, limit = 10 } = req.query;
+    
+    // Validate required parameters
+    if (!examStage || !subject) {
+      return res.status(400).json({ error: 'Exam stage and subject are required parameters' });
+    }
+    
+    // Create filter to find questions with MCQ (questions that have subQuestions with subOptions)
+    const filter = {
+      examStage,
+      subject,
+      'subQuestions.0': { $exists: true },  // Has at least one subQuestion
+      'subQuestions.subOptions.0': { $exists: true }  // Has at least one option in the first subQuestion
+    };
+    
+    // Fetch MCQ questions with aggregation to ensure we get questions with valid MCQs
+    const mcqQuestions = await Question.aggregate([
+      { $match: filter },
+      { $match: { 'subQuestions.subOptions': { $exists: true, $ne: [] } } },
+      // Ensure at least one option is marked as correct
+      { $match: { 'subQuestions.subOptions.isCorrect': true } },
+      // Randomly select questions
+      { $sample: { size: parseInt(limit) } }
+    ]);
+    
+    if (mcqQuestions.length === 0) {
+      return res.status(404).json({ 
+        error: 'No MCQ questions found for the selected exam stage and subject',
+        examStage,
+        subject
+      });
+    }
+    
+    res.json(mcqQuestions);
+  } catch (error) {
+    console.error('Error fetching MCQ questions for quiz:', error);
+    res.status(500).json({ error: `Failed to fetch quiz questions: ${error.message}` });
+  }
+});
+
 module.exports = router;
