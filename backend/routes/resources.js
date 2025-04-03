@@ -6,7 +6,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 const Resource = require('../models/ResourceModel');
-const { verifyToken, isAdmin } = require('../middleware/auth');
+const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -41,7 +41,7 @@ const upload = multer({
 });
 
 // GET all resources with optional filtering
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const filters = {};
     
@@ -71,7 +71,7 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // GET a single resource by ID
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
     
@@ -87,7 +87,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 });
 
 // POST - Create a new resource (admin only)
-router.post('/', verifyToken, isAdmin, upload.single('file'), async (req, res) => {
+router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file uploaded' });
@@ -126,7 +126,7 @@ router.post('/', verifyToken, isAdmin, upload.single('file'), async (req, res) =
 });
 
 // PUT - Update a resource (admin only)
-router.put('/:id', verifyToken, isAdmin, async (req, res) => {
+router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const allowedUpdates = [
       'title', 'description', 'subject', 'paperType', 
@@ -158,7 +158,7 @@ router.put('/:id', verifyToken, isAdmin, async (req, res) => {
 });
 
 // DELETE - Remove a resource (admin only)
-router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
+router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
     
@@ -183,7 +183,7 @@ router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
 });
 
 // POST - Increment download count
-router.post('/:id/download', verifyToken, async (req, res) => {
+router.post('/:id/download', authMiddleware, async (req, res) => {
   try {
     const resource = await Resource.findByIdAndUpdate(
       req.params.id,
