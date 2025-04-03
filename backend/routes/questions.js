@@ -322,4 +322,47 @@ router.get('/quiz', authMiddleware, async (req, res) => {
   }
 });
 
+// Route to get available subjects with MCQ questions for an exam stage
+router.get('/available-subjects', authMiddleware, async (req, res) => {
+  try {
+    const { examStage } = req.query;
+    
+    if (!examStage) {
+      return res.status(400).json({ error: 'Exam stage is required' });
+    }
+    
+    // Find all unique subjects for the given exam stage that have MCQ questions
+    const availableSubjects = await Question.aggregate([
+      {
+        $match: {
+          examStage,
+          'subQuestions.0': { $exists: true },  // Has at least one subQuestion
+          'subQuestions.subOptions.0': { $exists: true }  // Has at least one option
+        }
+      },
+      {
+        $group: {
+          _id: '$subject',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }  // Sort alphabetically by subject name
+      },
+      {
+        $project: {
+          subject: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]);
+    
+    res.json(availableSubjects);
+  } catch (error) {
+    console.error('Error fetching available subjects:', error);
+    res.status(500).json({ error: `Failed to fetch available subjects: ${error.message}` });
+  }
+});
+
 module.exports = router;

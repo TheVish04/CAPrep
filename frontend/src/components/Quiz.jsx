@@ -16,6 +16,8 @@ const Quiz = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [warning, setWarning] = useState(null); // New state for warnings
+  const [availableSubjects, setAvailableSubjects] = useState([]); // State for available subjects
+  const [loadingSubjects, setLoadingSubjects] = useState(false); // Loading state for subjects
   
   // State for quiz questions and results
   const [questions, setQuestions] = useState([]);
@@ -33,6 +35,50 @@ const Quiz = () => {
       navigate('/login');
     }
   }, [navigate]);
+  
+  // Fetch available subjects when exam stage changes
+  useEffect(() => {
+    if (!examStage) {
+      setAvailableSubjects([]);
+      return;
+    }
+    
+    const fetchAvailableSubjects = async () => {
+      setLoadingSubjects(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `https://caprep.onrender.com/api/questions/available-subjects?examStage=${encodeURIComponent(examStage)}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch available subjects');
+        }
+        
+        const data = await response.json();
+        setAvailableSubjects(data);
+        
+        if (data.length === 0) {
+          setWarning(`No subjects with MCQ questions available for ${examStage} exam stage.`);
+        } else {
+          setWarning(null);
+        }
+      } catch (error) {
+        console.error('Error fetching available subjects:', error);
+        setError(`Failed to load subjects: ${error.message}`);
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+    
+    fetchAvailableSubjects();
+  }, [examStage]);
   
   // Timer effect to count down when quiz is active
   useEffect(() => {
@@ -207,6 +253,7 @@ const Quiz = () => {
       <p>Select the exam stage and subject to start a quiz with multiple-choice questions.</p>
       
       {error && <div className="error-message">{error}</div>}
+      {warning && <div className="warning-message">{warning}</div>}
       
       <div className="setup-form">
         <div className="form-group">
@@ -232,42 +279,19 @@ const Quiz = () => {
             id="subject" 
             value={subject} 
             onChange={(e) => setSubject(e.target.value)}
-            disabled={!examStage}
+            disabled={!examStage || loadingSubjects || availableSubjects.length === 0}
           >
-            <option value="">Select Subject</option>
-            {examStage === 'Foundation' ? (
-              // Foundation subjects
-              <>
-                <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                <option value="Business Law">Business Law</option>
-                <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                <option value="Business Mathematics">Business Mathematics</option>
-                <option value="Logical Reasoning">Logical Reasoning</option>
-                <option value="Statistics">Statistics</option>
-                <option value="Business Economics">Business Economics</option>
-                <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
-              </>
-            ) : examStage === 'Intermediate' ? (
-              // Intermediate subjects
-              <>
-                <option value="Advanced Accounting">Advanced Accounting</option>
-                <option value="Corporate Laws">Corporate Laws</option>
-                <option value="Cost and Management Accounting">Cost and Management Accounting</option>
-                <option value="Taxation">Taxation</option>
-                <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
-                <option value="Financial and Strategic Management">Financial and Strategic Management</option>
-              </>
-            ) : examStage === 'Final' ? (
-              // Final subjects
-              <>
-                <option value="Financial Reporting">Financial Reporting</option>
-                <option value="Advanced Financial Management">Advanced Financial Management</option>
-                <option value="Advanced Auditing">Advanced Auditing</option>
-                <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
-                <option value="Indirect Tax Laws">Indirect Tax Laws</option>
-                <option value="Integrated Business Solutions">Integrated Business Solutions</option>
-              </>
-            ) : null}
+            <option value="">
+              {loadingSubjects ? 'Loading subjects...' : 
+               availableSubjects.length === 0 && examStage ? 'No subjects with MCQs available' : 
+               'Select Subject'}
+            </option>
+            
+            {availableSubjects.map(subj => (
+              <option key={subj.subject} value={subj.subject}>
+                {subj.subject} ({subj.count} MCQs)
+              </option>
+            ))}
           </select>
         </div>
 
