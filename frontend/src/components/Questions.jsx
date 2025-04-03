@@ -33,12 +33,20 @@ const Questions = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const examStageParam = params.get('examStage');
+    const subjectParam = params.get('subject');
+    
+    const newFilters = { ...filters };
     
     if (examStageParam) {
-      setFilters(prev => ({
-        ...prev,
-        examStage: examStageParam
-      }));
+      newFilters.examStage = examStageParam;
+    }
+    
+    if (subjectParam) {
+      newFilters.subject = subjectParam;
+    }
+    
+    if (examStageParam || subjectParam) {
+      setFilters(newFilters);
     }
   }, [location.search]);
 

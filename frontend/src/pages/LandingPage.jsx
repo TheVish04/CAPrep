@@ -102,14 +102,14 @@ const LandingPage = () => {
             </div>
             <h3>Foundation</h3>
             <ul>
-              <li>Principles and Practices of Accounting</li>
-              <li>Business Law</li>
-              <li>Business Mathematics</li>
-              <li>Business Economics</li>
-              <li>Business Correspondence and Reporting</li>
-              <li>Logical Reasoning</li>
-              <li>Statistics</li>
-              <li>Business and Commercial Knowledge</li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Principles and Practices of Accounting" : "/register"}>Principles and Practices of Accounting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Law" : "/register"}>Business Law</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Mathematics" : "/register"}>Business Mathematics</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Economics" : "/register"}>Business Economics</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Correspondence and Reporting" : "/register"}>Business Correspondence and Reporting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Logical Reasoning" : "/register"}>Logical Reasoning</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Statistics" : "/register"}>Statistics</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business and Commercial Knowledge" : "/register"}>Business and Commercial Knowledge</Link></li>
             </ul>
             <Link to={isLoggedIn ? "/questions?examStage=Foundation" : "/register"} className="level-btn">Start Learning</Link>
           </div>
@@ -120,12 +120,12 @@ const LandingPage = () => {
             </div>
             <h3>Intermediate</h3>
             <ul>
-              <li>Advanced Accounting</li>
-              <li>Corporate Laws</li>
-              <li>Cost and Management Accounting</li>
-              <li>Taxation</li>
-              <li>Auditing and Code of Ethics</li>
-              <li>Financial and Strategic Management</li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Advanced Accounting" : "/register"}>Advanced Accounting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Corporate Laws" : "/register"}>Corporate Laws</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Cost and Management Accounting" : "/register"}>Cost and Management Accounting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Taxation" : "/register"}>Taxation</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Auditing and Code of Ethics" : "/register"}>Auditing and Code of Ethics</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Intermediate&subject=Financial and Strategic Management" : "/register"}>Financial and Strategic Management</Link></li>
             </ul>
             <Link to={isLoggedIn ? "/questions?examStage=Intermediate" : "/register"} className="level-btn">Start Learning</Link>
           </div>
@@ -136,12 +136,12 @@ const LandingPage = () => {
             </div>
             <h3>Final</h3>
             <ul>
-              <li>Financial Reporting</li>
-              <li>Advanced Financial Management</li>
-              <li>Advanced Auditing</li>
-              <li>Direct and International Tax Laws</li>
-              <li>Indirect Tax Laws</li>
-              <li>Integrated Business Solutions</li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Financial Reporting" : "/register"}>Financial Reporting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Advanced Financial Management" : "/register"}>Advanced Financial Management</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Advanced Auditing" : "/register"}>Advanced Auditing</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Direct and International Tax Laws" : "/register"}>Direct and International Tax Laws</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Indirect Tax Laws" : "/register"}>Indirect Tax Laws</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Final&subject=Integrated Business Solutions" : "/register"}>Integrated Business Solutions</Link></li>
             </ul>
             <Link to={isLoggedIn ? "/questions?examStage=Final" : "/register"} className="level-btn">Start Learning</Link>
           </div>
