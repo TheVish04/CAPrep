@@ -11,6 +11,8 @@ const Quiz = () => {
   const [step, setStep] = useState('setup'); // setup, quiz, result
   const [examStage, setExamStage] = useState('');
   const [subject, setSubject] = useState('');
+  const [questionCount, setQuestionCount] = useState(10); // Default to 10 questions
+  const [timeLimit, setTimeLimit] = useState(30); // Default to 30 minutes
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -20,6 +22,8 @@ const Quiz = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0); // Time remaining in seconds
+  const [timerInterval, setTimerInterval] = useState(null);
   
   useEffect(() => {
     // Check if user is logged in
@@ -29,10 +33,43 @@ const Quiz = () => {
     }
   }, [navigate]);
   
+  // Timer effect to count down when quiz is active
+  useEffect(() => {
+    if (step === 'quiz' && timeRemaining > 0) {
+      const interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            // Time's up, calculate score and show results
+            calculateScore();
+            setStep('result');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimerInterval(interval);
+      
+      // Cleanup timer when component unmounts or quiz ends
+      return () => clearInterval(interval);
+    }
+  }, [step, timeRemaining]);
+  
   const handleStartQuiz = async () => {
     // Validate selections
     if (!examStage || !subject) {
       setError('Please select both exam stage and subject');
+      return;
+    }
+    
+    if (questionCount < 1 || questionCount > 50) {
+      setError('Please enter a valid number of questions (1-50)');
+      return;
+    }
+    
+    if (timeLimit < 1 || timeLimit > 180) {
+      setError('Please enter a valid time limit (1-180 minutes)');
       return;
     }
     
@@ -42,7 +79,7 @@ const Quiz = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `https://caprep.onrender.com/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}`,
+        `https://caprep.onrender.com/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}&limit=${questionCount}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -66,6 +103,8 @@ const Quiz = () => {
       setSelectedOptions({});
       setScore(0);
       setShowResults(false);
+      // Set time limit in seconds
+      setTimeRemaining(timeLimit * 60);
       setStep('quiz');
     } catch (error) {
       console.error('Error starting quiz:', error);
@@ -87,6 +126,8 @@ const Quiz = () => {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       calculateScore();
+      // Clear the timer when quiz ends
+      if (timerInterval) clearInterval(timerInterval);
       setStep('result');
     }
   };
@@ -123,6 +164,8 @@ const Quiz = () => {
     setCurrentQuestionIndex(0);
     setSelectedOptions({});
     setScore(0);
+    // Reset the timer
+    setTimeRemaining(timeLimit * 60);
     setStep('quiz');
   };
   
@@ -131,6 +174,24 @@ const Quiz = () => {
     setExamStage('');
     setSubject('');
     setQuestions([]);
+    // Keep the last used values for questionCount and timeLimit
+  };
+  
+  // Format time from seconds to MM:SS and determine timer class
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
+  // Get timer class based on remaining time
+  const getTimerClass = () => {
+    const totalSeconds = timeLimit * 60;
+    const percentage = (timeRemaining / totalSeconds) * 100;
+    
+    if (percentage <= 10) return 'quiz-timer danger';
+    if (percentage <= 25) return 'quiz-timer warning';
+    return 'quiz-timer';
   };
   
   const renderQuizSetup = () => (
@@ -202,6 +263,30 @@ const Quiz = () => {
             ) : null}
           </select>
         </div>
+
+        <div className="form-group">
+          <label htmlFor="questionCount">Number of Questions:</label>
+          <input 
+            type="number" 
+            id="questionCount" 
+            min="1" 
+            max="50" 
+            value={questionCount} 
+            onChange={(e) => setQuestionCount(parseInt(e.target.value) || 1)} 
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="timeLimit">Time Limit (minutes):</label>
+          <input 
+            type="number" 
+            id="timeLimit" 
+            min="1" 
+            max="180" 
+            value={timeLimit} 
+            onChange={(e) => setTimeLimit(parseInt(e.target.value) || 1)} 
+          />
+        </div>
         
         <button 
           className="start-quiz-btn" 
@@ -224,6 +309,7 @@ const Quiz = () => {
       <div className="quiz-container">
         <div className="quiz-header">
           <h2>Question {questionNumber} of {questions.length}</h2>
+          <div className={getTimerClass()}>Time Remaining: {formatTime(timeRemaining)}</div>
           <div className="quiz-progress">
             <div 
               className="progress-bar" 
@@ -237,7 +323,7 @@ const Quiz = () => {
           
           {currentQuestion.subQuestions.map((subQuestion, subIndex) => (
             <div key={subIndex} className="sub-question">
-              <h3>{subQuestion.subQuestionNumber}: {subQuestion.subQuestionText}</h3>
+              <h3>{subQuestion.subQuestionText}</h3>
               
               <div className="options-list">
                 {subQuestion.subOptions.map((option, optIndex) => (
