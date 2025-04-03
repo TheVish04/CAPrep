@@ -406,6 +406,7 @@ section {
   background: var(--primary-color);
   transform: translateY(-3px);
   box-shadow: none;
+  color: #ffffff;
 }
 
 /* Features Section */
