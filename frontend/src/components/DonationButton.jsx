@@ -25,55 +25,34 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       setLoading(true);
       setError(null);
       
-      // Default donation amount in paise (₹100)
-      const amount = 10000;
-      
       // Load Razorpay script
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         throw new Error('Razorpay SDK failed to load');
       }
       
-      // Create order
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, { 
-        amount 
-      });
+      // Temporary direct implementation until backend API is deployed
+      // In production, this should come from your backend
+      const amount = 10000; // ₹100
+      const currency = 'INR';
+      const receipt = `receipt_${Date.now()}`;
       
-      if (!response.data.success) {
-        throw new Error('Failed to create payment order');
-      }
+      // Use test key directly - replace with your test key
+      // In production, this should be sent from the backend
+      const key_id = 'rzp_test_CBzKjbXtksqg4U';
       
-      const { order, key_id } = response.data;
-      
-      // Open Razorpay checkout
+      // Open Razorpay checkout with temporary order details
       const options = {
         key: key_id,
-        amount: order.amount,
-        currency: order.currency,
+        amount: amount,
+        currency: currency,
         name: 'CA Exam Platform',
         description: 'Donation to support CA Exam Platform',
-        order_id: order.id,
-        handler: async function (response) {
-          try {
-            // Verify payment
-            const verifyResponse = await axios.post(
-              `${import.meta.env.VITE_API_URL}/api/payment/verify-payment`,
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              }
-            );
-            
-            if (verifyResponse.data.success) {
-              alert('Thank you for your donation!');
-            } else {
-              alert('Payment verification failed. Please contact support.');
-            }
-          } catch (error) {
-            console.error('Payment verification error:', error);
-            alert('An error occurred during payment verification.');
-          }
+        order_id: receipt, // This is not a real order ID from Razorpay
+        handler: function (response) {
+          // Simulate success
+          alert('Thank you for your donation!');
+          console.log('Payment successful', response);
         },
         prefill: {
           name: '',
@@ -81,7 +60,12 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
           contact: ''
         },
         theme: {
-          color: '#3399cc'
+          color: '#03a9f4'
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+          }
         }
       };
       
@@ -89,8 +73,9 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       razorpay.open();
       
       razorpay.on('payment.failed', function (response) {
-        alert('Payment failed. Please try again.');
+        setError('Payment failed. Please try again.');
         console.error('Payment failed:', response.error);
+        setLoading(false);
       });
       
     } catch (error) {
