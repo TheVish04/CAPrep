@@ -11,6 +11,8 @@ import ResetPassword from './components/ResetPassword';
 import Questions from './components/Questions';
 import AdminPanel from './components/AdminPanel';
 import Quiz from './components/Quiz';
+import Resources from './components/Resources';
+import ResourceUploader from './components/ResourceUploader';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -87,8 +89,16 @@ const App = () => {
           element={<ProtectedRoute element={<Quiz />} />}
         />
         <Route
+          path="/resources"
+          element={<ProtectedRoute element={<Resources />} />}
+        />
+        <Route
           path="/admin"
           element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
+        />
+        <Route
+          path="/admin/resources"
+          element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

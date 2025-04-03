@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import PreviewPanel from './PreviewPanel';
 import Navbar from './Navbar';
 import DOMPurify from 'dompurify';
@@ -488,6 +488,12 @@ const AdminPanel = () => {
       <section className="admin-section">
         <div className="admin-container">
           <h1>Admin Panel</h1>
+          
+          <div className="admin-navigation">
+            <Link to="/admin" className="admin-nav-link active">Manage Questions</Link>
+            <Link to="/admin/resources" className="admin-nav-link">Manage PDF Resources</Link>
+          </div>
+          
           {visibleErrors.length > 0 && (
             <div className="error">
               <h3 className="error-title">Validation Errors:</h3>

@@ -123,15 +123,35 @@ const Navbar = () => {
                 </Link>
               </motion.li>
               
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/resources" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Resources
+                </Link>
+              </motion.li>
+              
               {isAdmin && (
-                <motion.li 
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link to="/admin" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    Admin
-                  </Link>
-                </motion.li>
+                <>
+                  <motion.li 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link to="/admin" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                      Admin
+                    </Link>
+                  </motion.li>
+                  
+                  <motion.li 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link to="/admin/resources" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                      Manage PDFs
+                    </Link>
+                  </motion.li>
+                </>
               )}
               
               <motion.li 

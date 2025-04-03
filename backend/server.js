@@ -2,9 +2,11 @@ const express = require('express');
 const connectDB = require('./config/database');
 const User = require('./models/UserModel');
 const Question = require('./models/QuestionModel');
+const Resource = require('./models/ResourceModel');
 const authRoutes = require('./routes/auth');
 const questionRoutes = require('./routes/questions');
 const paymentRoutes = require('./routes/payment');
+const resourceRoutes = require('./routes/resources');
 const { authMiddleware, adminMiddleware } = require('./middleware/authMiddleware');
 const cors = require('cors');
 const path = require('path');
@@ -148,6 +150,20 @@ const initializeDatabase = async () => {
     } else {
       console.log('Question model loaded successfully');
     }
+    
+    // Verify Resource model
+    if (!Resource) {
+      console.error('Resource model is undefined. Import path or file issue:', {
+        filePath: './models/ResourceModel',
+        cwd: process.cwd(),
+      });
+      modelsValid = false;
+    } else if (typeof Resource.findOne !== 'function') {
+      console.error('Resource model lacks findOne method:', Resource);
+      modelsValid = false;
+    } else {
+      console.log('Resource model loaded successfully');
+    }
 
     if (!modelsValid) {
       throw new Error('One or more required models failed to initialize');
@@ -176,12 +192,32 @@ const initializeDatabase = async () => {
     } catch (err) {
       console.error('Error counting questions:', err.message);
     }
+    
+    // Log total number of resources for debugging
+    try {
+      const resourceCount = await Resource.countDocuments();
+      console.log(`Total resources in database: ${resourceCount}`);
+    } catch (err) {
+      console.error('Error counting resources:', err.message);
+    }
 
     console.log('Setting up API routes...');
     // Set up routes after successful initialization
     app.use('/api/auth', authRoutes);
     app.use('/api/questions', questionRoutes);
     app.use('/api/payment', paymentRoutes);
+    app.use('/api/resources', resourceRoutes);
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      console.log('Creating uploads folder:', uploadsDir);
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    // Serve uploaded files statically
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+    
     console.log('API routes initialized successfully');
 
     return true; // Signal successful initialization
@@ -197,6 +233,7 @@ const initializeDatabase = async () => {
       app.use('/api/auth', authRoutes);
       app.use('/api/questions', questionRoutes);
       app.use('/api/payment', paymentRoutes);
+      app.use('/api/resources', resourceRoutes);
       return true;
     }
     
