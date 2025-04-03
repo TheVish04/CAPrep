@@ -8,6 +8,19 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// Test the connection
+(async function testRazorpayConnection() {
+  try {
+    const response = await razorpay.orders.all({ count: 1 });
+    console.log('Razorpay connection successful');
+  } catch (error) {
+    console.error('Razorpay connection error:', error.message);
+    if (error.description) {
+      console.error('Error description:', error.description);
+    }
+  }
+})();
+
 /**
  * Create a new payment order
  * @param {number} amount - Amount in the smallest currency unit (paise for INR)
@@ -17,6 +30,12 @@ const razorpay = new Razorpay({
  */
 const createOrder = async (amount, currency = 'INR', notes = {}) => {
   try {
+    if (!amount || amount < 100) {
+      throw new Error('Amount must be at least 100 paise (₹1)');
+    }
+    
+    console.log(`Creating Razorpay order for amount: ${amount} ${currency}`);
+    
     const options = {
       amount: amount, // amount in paise
       currency,
@@ -28,9 +47,14 @@ const createOrder = async (amount, currency = 'INR', notes = {}) => {
     };
     
     const order = await razorpay.orders.create(options);
+    console.log('Razorpay order created successfully:', order.id);
     return order;
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
+    if (error.error && error.error.description) {
+      console.error('Razorpay error details:', error.error.description);
+      throw new Error(`Failed to create payment order: ${error.error.description}`);
+    }
     throw new Error('Failed to create payment order');
   }
 };
@@ -44,20 +68,47 @@ const createOrder = async (amount, currency = 'INR', notes = {}) => {
  */
 const verifyPaymentSignature = (razorpayOrderId, razorpayPaymentId, signature) => {
   try {
+    console.log('Verifying payment signature for order:', razorpayOrderId);
+    
+    if (!razorpayOrderId || !razorpayPaymentId || !signature) {
+      console.error('Missing required parameters for signature verification');
+      return false;
+    }
+    
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest('hex');
-      
-    return generatedSignature === signature;
+    
+    const isValid = generatedSignature === signature;
+    console.log('Signature verification result:', isValid ? 'Valid' : 'Invalid');
+    
+    return isValid;
   } catch (error) {
     console.error('Error verifying payment signature:', error);
     return false;
   }
 };
 
+/**
+ * Retrieve payment details by payment ID
+ * @param {string} paymentId - Razorpay payment ID
+ * @returns {Promise} Payment details
+ */
+const getPaymentDetails = async (paymentId) => {
+  try {
+    console.log('Fetching payment details for ID:', paymentId);
+    const payment = await razorpay.payments.fetch(paymentId);
+    return payment;
+  } catch (error) {
+    console.error('Error fetching payment details:', error);
+    throw new Error('Failed to fetch payment details');
+  }
+};
+
 module.exports = {
   createOrder,
   verifyPaymentSignature,
+  getPaymentDetails,
   razorpay
 }; 

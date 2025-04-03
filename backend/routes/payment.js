@@ -1,10 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, verifyPaymentSignature, razorpay } = require('../services/razorpayService');
+const { createOrder, verifyPaymentSignature, getPaymentDetails, razorpay } = require('../services/razorpayService');
 
-// Create a new donation order
+// GET /api/payment/health - Check Razorpay connection
+router.get('/health', async (req, res) => {
+  try {
+    // Ping Razorpay API to check connection
+    await razorpay.orders.all({ count: 1 });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Razorpay connection is healthy',
+      key_id: process.env.RAZORPAY_KEY_ID
+    });
+  } catch (error) {
+    console.error('Razorpay health check failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Razorpay connection error',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/payment/create-order - Create a new donation order
 router.post('/create-order', async (req, res) => {
   try {
+    console.log('Create order request received:', req.body);
     const { amount } = req.body;
     
     if (!amount || amount < 100) {
@@ -31,9 +53,10 @@ router.post('/create-order', async (req, res) => {
   }
 });
 
-// Verify payment after successful payment
+// POST /api/payment/verify-payment - Verify payment after successful payment
 router.post('/verify-payment', async (req, res) => {
   try {
+    console.log('Verify payment request received:', req.body);
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -50,6 +73,19 @@ router.post('/verify-payment', async (req, res) => {
     );
     
     if (isValid) {
+      try {
+        // Get payment details for additional verification and logging
+        const paymentDetails = await getPaymentDetails(razorpay_payment_id);
+        console.log('Payment successful:', {
+          order_id: razorpay_order_id,
+          payment_id: razorpay_payment_id,
+          amount: paymentDetails.amount,
+          status: paymentDetails.status
+        });
+      } catch (detailsError) {
+        console.error('Error fetching payment details, but payment was verified:', detailsError);
+      }
+      
       return res.status(200).json({
         success: true,
         message: 'Payment verified successfully'
