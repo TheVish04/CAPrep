@@ -158,7 +158,7 @@ const LandingPage = () => {
         <div className="feature-grid">
           <div className="feature-item" data-aos="fade-up" data-aos-delay="100">
             <div className="feature-icon">
-              <i className="fas fa-file-alt"></i>
+              <i className="fas fa-file-alt animated-icon"></i>
             </div>
             <h3>Extensive Question Bank</h3>
             <p>Access thousands of previous year questions categorized by subject, topic, and difficulty level.</p>
@@ -166,7 +166,7 @@ const LandingPage = () => {
           
           <div className="feature-item" data-aos="fade-up" data-aos-delay="150">
             <div className="feature-icon">
-              <i className="fas fa-tasks"></i>
+              <i className="fas fa-tasks animated-icon"></i>
             </div>
             <h3>Structured Practice</h3>
             <p>Study with MTP, RTP, and PYQS papers organized systematically for effective preparation.</p>
@@ -174,7 +174,7 @@ const LandingPage = () => {
           
           <div className="feature-item" data-aos="fade-up" data-aos-delay="200">
             <div className="feature-icon">
-              <i className="fas fa-search"></i>
+              <i className="fas fa-search animated-icon"></i>
             </div>
             <h3>Smart Search</h3>
             <p>Find relevant questions instantly using our advanced filtering and search capabilities.</p>
@@ -182,7 +182,7 @@ const LandingPage = () => {
           
           <div className="feature-item" data-aos="fade-up" data-aos-delay="250">
             <div className="feature-icon">
-              <i className="fas fa-laptop-code"></i>
+              <i className="fas fa-laptop-code animated-icon"></i>
             </div>
             <h3>Digital Experience</h3>
             <p>Enjoy a seamless, intuitive interface designed specifically for CA exam preparation.</p>
@@ -190,18 +190,42 @@ const LandingPage = () => {
           
           <div className="feature-item" data-aos="fade-up" data-aos-delay="300">
             <div className="feature-icon">
-              <i className="fas fa-file-export"></i>
+              <i className="fas fa-file-export animated-icon"></i>
             </div>
-            <h3>PDF Export</h3>
-            <p>Download customized question sets with answers for offline study and revision.</p>
+            <h3>PDF Resources</h3>
+            <p>Access and download study materials and question sets with answers for offline revision.</p>
           </div>
           
           <div className="feature-item" data-aos="fade-up" data-aos-delay="350">
             <div className="feature-icon">
-              <i className="fas fa-book-reader"></i>
+              <i className="fas fa-stopwatch animated-icon"></i>
             </div>
-            <h3>Conceptual Clarity</h3>
-            <p>Develop a deeper understanding with detailed, expert-verified answers to complex questions.</p>
+            <h3>Timed Quizzes</h3>
+            <p>Set custom time limits from 1-180 minutes to practice under exam-like conditions.</p>
+          </div>
+
+          <div className="feature-item" data-aos="fade-up" data-aos-delay="400">
+            <div className="feature-icon">
+              <i className="fas fa-question-circle animated-icon"></i>
+            </div>
+            <h3>Adjustable MCQ Count</h3>
+            <p>Choose exactly how many questions you want in your quiz, from quick sessions to comprehensive tests.</p>
+          </div>
+          
+          <div className="feature-item" data-aos="fade-up" data-aos-delay="450">
+            <div className="feature-icon">
+              <i className="fas fa-magic animated-icon"></i>
+            </div>
+            <h3>Intelligent Subject Selection</h3>
+            <p>Our system displays only subjects with available MCQs, showing the exact count for each.</p>
+          </div>
+          
+          <div className="feature-item" data-aos="fade-up" data-aos-delay="500">
+            <div className="feature-icon">
+              <i className="fas fa-chart-pie animated-icon"></i>
+            </div>
+            <h3>Performance Analytics</h3>
+            <p>Get immediate feedback on quiz performance with detailed score breakdowns and percentages.</p>
           </div>
         </div>
       </section>
