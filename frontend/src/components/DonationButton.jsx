@@ -71,8 +71,8 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
         key: key_id,
         amount: order.amount,
         currency: order.currency,
-        name: 'CA Exam Platform',
-        description: `Donation of ₹${amount} to support CA Exam Platform`,
+        name: 'CAprep',
+        description: `Donation of ₹${amount} to support CAprep`,
         order_id: order.id,
         handler: async function (response) {
           try {
