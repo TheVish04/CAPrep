@@ -59,6 +59,12 @@
   margin-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 320px;
+  z-index: 1000;
 }
 
 .donation-amount-label {
