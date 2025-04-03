@@ -23,6 +23,12 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
   };
   
   const handleAmountChange = (e) => {
+    // Check if input is empty
+    if (e.target.value === '') {
+      setAmount(''); // Allow empty field temporarily
+      return;
+    }
+    
     const value = parseInt(e.target.value, 10);
     if (isNaN(value)) {
       setAmount(20); // Set to minimum if not a valid number
@@ -145,6 +151,7 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
               className="donation-amount-input"
             />
           </label>
+          {error && <div className="donation-error">{error}</div>}
           <div className="donation-actions">
             <button 
               className="donation-button proceed-button" 
@@ -171,7 +178,6 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
           {loading ? 'Processing...' : buttonText}
         </button>
       )}
-      {error && <div className="donation-error">{error}</div>}
     </div>
   );
 };
