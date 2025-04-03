@@ -67,7 +67,10 @@ const AdminPanel = () => {
       if (response.ok) {
         const questions = Array.isArray(data) ? data : [data];
         console.log('Fetched questions with all fields:', questions);
-        const sortedQuestions = questions.sort((a, b) => b.id - a.id);
+        // Sort questions by createdAt date in descending order (newest first)
+        const sortedQuestions = questions.sort((a, b) => 
+          new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        );
         setStoredQuestions(sortedQuestions);
         if (lastSubmittedId && sortedQuestions.some(q => q.id === lastSubmittedId)) {
           resetForm();
@@ -178,12 +181,21 @@ const AdminPanel = () => {
       setErrors(validation);
       alert('Please fix the validation errors before previewing.');
     } else {
+      // Save the current scroll position before showing preview
+      window.scrollPreviewPosition = window.scrollY;
       setPreviewVisible(true);
     }
   };
 
   const closePreview = () => {
     setPreviewVisible(false);
+    // Restore scroll position after closing preview
+    setTimeout(() => {
+      if (window.scrollPreviewPosition !== undefined) {
+        window.scrollTo(0, window.scrollPreviewPosition);
+        window.scrollPreviewPosition = undefined;
+      }
+    }, 10);
   };
 
   const validateField = (name, value) => {
@@ -259,8 +271,8 @@ const AdminPanel = () => {
   };
 
   const cleanSubQuestions = (subQuestions) => {
-    return subQuestions.map((subQ) => ({
-      subQuestionNumber: subQ.subQuestionNumber || '',
+    return subQuestions.map((subQ, index) => ({
+      // Don't send subQuestionNumber to the server, it's handled automatically now
       subQuestionText: subQ.subQuestionText || '',
       subOptions: subQ.subOptions.map((opt) => ({
         optionText: opt.optionText || '',

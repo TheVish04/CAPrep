@@ -15,7 +15,8 @@ const SubOptionSchema = new Schema({
 const SubQuestionSchema = new Schema({
   subQuestionNumber: {
     type: String,
-    default: ''
+    default: null,
+    select: false
   },
   subQuestionText: {
     type: String,
