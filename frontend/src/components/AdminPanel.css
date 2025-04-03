@@ -621,6 +621,7 @@ textarea.form-input {
   display: inline-flex;
   align-items: center;
   transition: all 0.3s ease;
+  margin-right: 10px;
 }
 
 .edit-btn::before {
