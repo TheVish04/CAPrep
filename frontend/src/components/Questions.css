@@ -1050,3 +1050,83 @@
     font-weight: 700;
     color: #239ecf;
   }
+
+  /* Questions Actions */
+  .questions-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .export-btn, .toggle-answers-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .export-btn {
+    background-color: #ff9800;
+    color: white;
+  }
+
+  .export-btn:hover {
+    background-color: #f57c00;
+  }
+
+  .toggle-answers-btn {
+    background-color: #2196f3;
+    color: white;
+  }
+
+  .toggle-answers-btn:hover {
+    background-color: #1976d2;
+  }
+
+  .toggle-answers-btn.active {
+    background-color: #1565c0;
+  }
+
+  /* Support section for donation in About and Contact pages */
+  .support-section {
+    margin-top: 40px;
+    padding: 30px;
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+    border: 1px solid #2d2d2d;
+    border-left: 5px solid var(--primary-color);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+  }
+
+  .support-section:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+  }
+
+  .support-section h2, .support-section h3 {
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+  }
+
+  /* Media queries for mobile responsiveness */
+  @media (max-width: 768px) {
+    .questions-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .questions-actions button,
+    .questions-actions .donation-button-container {
+      width: 100%;
+    }
+  }

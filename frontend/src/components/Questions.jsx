@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import PreviewPanel from './PreviewPanel'; // We'll keep this import for now
 import { generateQuestionsPDF, savePDF } from '../utils/pdfGenerator';
 import './Questions.css';
+import DonationButton from './DonationButton';
 
 const Questions = () => {
   const navigate = useNavigate();
@@ -129,6 +130,19 @@ const Questions = () => {
               <p>Error: {error}</p>
             </div>
           )}
+
+          <div className="questions-actions">
+            <button className="export-btn" onClick={handleExportPDF}>
+              Export to PDF
+            </button>
+            <button 
+              className={`toggle-answers-btn ${showAnswers ? 'active' : ''}`}
+              onClick={() => setShowAnswers(!showAnswers)}
+            >
+              {showAnswers ? 'Hide All Answers' : 'Show All Answers'}
+            </button>
+            <DonationButton buttonText="Support Us 📚" />
+          </div>
 
           {/* Filters Section */}
           <div className="filters">
@@ -276,27 +290,6 @@ const Questions = () => {
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 placeholder="Enter keywords"
               />
-            </div>
-            <div className="filter-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={showAnswers}
-                  onChange={(e) => setShowAnswers(e.target.checked)}
-                />
-                Show Answers
-              </label>
-            </div>
-            
-            {/* Export PDF Button */}
-            <div className="filter-group export-pdf">
-              <button 
-                className="export-pdf-btn" 
-                onClick={handleExportPDF}
-                title="Export filtered questions to PDF"
-              >
-                Export to PDF
-              </button>
             </div>
           </div>
 

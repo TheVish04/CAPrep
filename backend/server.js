@@ -4,6 +4,7 @@ const User = require('./models/UserModel');
 const Question = require('./models/QuestionModel');
 const authRoutes = require('./routes/auth');
 const questionRoutes = require('./routes/questions');
+const paymentRoutes = require('./routes/payment');
 const { authMiddleware, adminMiddleware } = require('./middleware/authMiddleware');
 const cors = require('cors');
 const path = require('path');
@@ -180,6 +181,7 @@ const initializeDatabase = async () => {
     // Set up routes after successful initialization
     app.use('/api/auth', authRoutes);
     app.use('/api/questions', questionRoutes);
+    app.use('/api/payment', paymentRoutes);
     console.log('API routes initialized successfully');
 
     return true; // Signal successful initialization
@@ -194,6 +196,7 @@ const initializeDatabase = async () => {
       console.warn('Attempting to continue server initialization despite errors');
       app.use('/api/auth', authRoutes);
       app.use('/api/questions', questionRoutes);
+      app.use('/api/payment', paymentRoutes);
       return true;
     }
     

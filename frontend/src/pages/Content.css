@@ -237,3 +237,33 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   align-items: center;
 }
+
+/* Adding support section styling for donation area */
+.support-section {
+  margin-top: 40px;
+  padding: 30px;
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  border: 1px solid #2d2d2d;
+  border-left: 5px solid var(--primary-color);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.support-section:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+}
+
+.support-section h2, .support-section h3 {
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.support-section p {
+  color: var(--light-color);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}

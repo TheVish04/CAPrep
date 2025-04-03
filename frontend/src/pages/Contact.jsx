@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import './Content.css';
+import DonationButton from '../components/DonationButton';
 
 const Contact = () => {
   return (
@@ -62,6 +63,15 @@ const Contact = () => {
               <a href="#" className="social-link">LinkedIn</a>
               <a href="#" className="social-link">Instagram</a>
             </div>
+          </div>
+          
+          <div className="support-section">
+            <h3>Support Our Mission</h3>
+            <p>
+              If you find our platform helpful, consider supporting us with a small donation.
+              Your contribution helps us continue providing quality resources to CA students.
+            </p>
+            <DonationButton buttonText="Donate ❤️" />
           </div>
         </section>
       </div>

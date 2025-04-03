@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import './Content.css';
+import DonationButton from '../components/DonationButton';
 
 const About = () => {
   return (
@@ -40,6 +41,16 @@ const About = () => {
             <li>Regular updates with the latest exam papers</li>
             <li>Secure and reliable platform for your study needs</li>
           </ul>
+          
+          <div className="support-section">
+            <h2>Support Our Work</h2>
+            <p>
+              We are committed to keeping our platform accessible to all CA students. Your support
+              helps us maintain and improve our services. Consider making a small donation if you
+              find our platform valuable.
+            </p>
+            <DonationButton buttonText="Buy Us a Coffee ☕" />
+          </div>
         </section>
       </div>
     </div>

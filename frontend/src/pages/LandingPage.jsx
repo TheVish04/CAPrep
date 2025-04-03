@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import './LandingPage.css';
 import Navbar from '../components/Navbar';
 import CountUp from 'react-countup';
+import DonationButton from '../components/DonationButton';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -51,31 +52,6 @@ const LandingPage = () => {
     AOS.refresh();
   }, []);
 
-  // Testimonial data
-  const testimonials = [
-    {
-      id: 1,
-      name: "Priya Sharma",
-      role: "CA Final Student",
-      text: "This platform transformed my exam preparation. Having all the past papers organized by topic saved me countless hours!",
-      image: "https://randomuser.me/api/portraits/women/32.jpg"
-    },
-    {
-      id: 2,
-      name: "Raj Patel",
-      role: "CA Inter Qualifier",
-      text: "I credit my success in CA Inter to this platform. The ability to practice with actual exam patterns made all the difference.",
-      image: "https://randomuser.me/api/portraits/men/44.jpg"
-    },
-    {
-      id: 3,
-      name: "Ananya Desai",
-      role: "CA Foundation Student",
-      text: "As a beginner, I found the organized structure and detailed answers incredibly helpful for building my foundation.",
-      image: "https://randomuser.me/api/portraits/women/65.jpg"
-    }
-  ];
-
   return (
     <div className={`landing-page ${isVisible ? 'visible' : ''}`}>
       <Navbar />
@@ -90,6 +66,7 @@ const LandingPage = () => {
               <Link to="/register" className="cta-btn primary-btn">Get Started</Link>
             )}
             <Link to="/about" className="cta-btn secondary-btn">Learn More</Link>
+            <DonationButton buttonText="Support Us ❤️" />
           </div>
           <div className="hero-stats">
             <div className="stat-item">
@@ -240,11 +217,11 @@ const LandingPage = () => {
       <section className="how-it-works" data-aos="fade-up">
         <div className="section-heading">
           <span className="section-subtitle">Simple Process</span>
-          <h2>How It Works</h2>
+          <h2>How CAprep Works</h2>
           <div className="heading-underline"></div>
         </div>
         
-        <div className="steps">
+        <div className="steps-container">
           <div className="step" data-aos="fade-right" data-aos-delay="100">
             <div className="step-number">1</div>
             <div className="step-content">
@@ -276,32 +253,6 @@ const LandingPage = () => {
               <p>Monitor your preparation and identify areas that need more attention.</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="testimonials" data-aos="fade-up">
-        <div className="section-heading">
-          <span className="section-subtitle">Success Stories</span>
-          <h2>What Our Students Say</h2>
-          <div className="heading-underline"></div>
-        </div>
-        
-        <div className="testimonial-carousel">
-          {testimonials.map(testimonial => (
-            <div className="testimonial-card" key={testimonial.id} data-aos="fade-up" data-aos-delay={testimonial.id * 100}>
-              <div className="testimonial-content">
-                <div className="quote-icon">❝</div>
-                <p>{testimonial.text}</p>
-              </div>
-              <div className="testimonial-author">
-                <img src={testimonial.image} alt={testimonial.name} className="author-image" />
-                <div className="author-info">
-                  <h4>{testimonial.name}</h4>
-                  <p>{testimonial.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
