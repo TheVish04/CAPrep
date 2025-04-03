@@ -111,7 +111,7 @@ const LandingPage = () => {
               <li>Statistics</li>
               <li>Business and Commercial Knowledge</li>
             </ul>
-            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions?examStage=Foundation" : "/register"} className="level-btn">Start Learning</Link>
           </div>
           
           <div className="level-card" data-aos="fade-up" data-aos-delay="200">
@@ -127,7 +127,7 @@ const LandingPage = () => {
               <li>Auditing and Code of Ethics</li>
               <li>Financial and Strategic Management</li>
             </ul>
-            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions?examStage=Intermediate" : "/register"} className="level-btn">Start Learning</Link>
           </div>
           
           <div className="level-card" data-aos="fade-up" data-aos-delay="300">
@@ -143,7 +143,7 @@ const LandingPage = () => {
               <li>Indirect Tax Laws</li>
               <li>Integrated Business Solutions</li>
             </ul>
-            <Link to={isLoggedIn ? "/questions" : "/register"} className="level-btn">Start Learning</Link>
+            <Link to={isLoggedIn ? "/questions?examStage=Final" : "/register"} className="level-btn">Start Learning</Link>
           </div>
         </div>
       </section>

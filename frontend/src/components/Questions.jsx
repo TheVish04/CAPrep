@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import Navbar from './Navbar';
 import PreviewPanel from './PreviewPanel'; // We'll keep this import for now
@@ -9,6 +9,7 @@ import DonationButton from './DonationButton';
 
 const Questions = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState(null);
   // Updated filters state with new criteria
@@ -27,6 +28,19 @@ const Questions = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null); // State for selected question
   const [individualShowAnswers, setIndividualShowAnswers] = useState({}); // Track individual question answer visibility
   const questionsPerPage = 5;
+
+  // Apply query parameters to filters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const examStageParam = params.get('examStage');
+    
+    if (examStageParam) {
+      setFilters(prev => ({
+        ...prev,
+        examStage: examStageParam
+      }));
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
