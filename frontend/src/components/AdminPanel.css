@@ -579,6 +579,7 @@ textarea.form-input {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   margin-bottom: 15px !important;
 }
