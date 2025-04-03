@@ -159,15 +159,17 @@ const AdminPanel = () => {
     // Add a delay to allow state update before updating the UI classes
     setTimeout(() => {
       // Remove correct-option class from all options in this sub-question
-      const subOptionsGroup = document.querySelectorAll(`.sub-question-${subIndex} .form-group`);
-      subOptionsGroup.forEach((el) => el.classList.remove('correct-option'));
+      const subOptionsElements = document.querySelectorAll(`.sub-question-${subIndex} .option-item`);
+      subOptionsElements.forEach((el) => {
+        el.classList.remove('correct-option');
+      });
       
       // Add correct-option class to the selected option
-      const selectedOption = document.querySelector(`.sub-question-${subIndex} .form-group:nth-child(${optionIndex + 1})`);
+      const selectedOption = document.querySelector(`.option-item-${subIndex}-${optionIndex}`);
       if (selectedOption) {
         selectedOption.classList.add('correct-option');
       }
-    }, 0);
+    }, 10);
   };
 
   const handlePreview = () => {
@@ -766,7 +768,10 @@ const AdminPanel = () => {
                   </div>
                   <div className="sub-options-section">
                     {subQ.subOptions.map((subOpt, optIndex) => (
-                      <div key={optIndex} className={`form-group ${subOpt.isCorrect ? 'correct-option' : ''}`}>
+                      <div 
+                        key={optIndex} 
+                        className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
+                      >
                         <label>Option {optIndex + 1}:</label>
                         <input
                           type="text"
