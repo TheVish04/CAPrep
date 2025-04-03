@@ -91,14 +91,6 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-        <div className="scroll-indicator">
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <div>
-            <span className="scroll-text">Scroll</span>
-          </div>
-        </div>
       </section>
 
       <section className="exam-levels" data-aos="fade-up">
