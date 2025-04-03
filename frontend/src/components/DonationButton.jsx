@@ -5,6 +5,8 @@ import './DonationButton.css';
 const DonationButton = ({ buttonText = 'Support Us' }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [amount, setAmount] = useState(100); // Default amount in rupees
+  const [showAmountInput, setShowAmountInput] = useState(false);
   
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -20,8 +22,27 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
     });
   };
   
+  const handleAmountChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (isNaN(value)) {
+      setAmount(20); // Set to minimum if not a valid number
+    } else {
+      setAmount(value);
+    }
+  };
+  
+  const toggleAmountInput = () => {
+    setShowAmountInput(!showAmountInput);
+  };
+  
   const handleDonation = async () => {
     try {
+      // Validate amount (minimum ₹20)
+      if (amount < 20) {
+        setError('Minimum donation amount is ₹20');
+        return;
+      }
+      
       setLoading(true);
       setError(null);
       
@@ -31,12 +52,12 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
         throw new Error('Razorpay SDK failed to load');
       }
       
-      // Default donation amount in paise (₹100)
-      const amount = 10000;
+      // Convert rupees to paise for Razorpay
+      const amountInPaise = amount * 100;
       
       // Create order via backend API
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, { 
-        amount 
+        amount: amountInPaise 
       });
       
       if (!response.data || !response.data.success) {
@@ -51,7 +72,7 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
         amount: order.amount,
         currency: order.currency,
         name: 'CA Exam Platform',
-        description: 'Donation to support CA Exam Platform',
+        description: `Donation of ₹${amount} to support CA Exam Platform`,
         order_id: order.id,
         handler: async function (response) {
           try {
@@ -67,6 +88,8 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
             
             if (verifyResponse.data && verifyResponse.data.success) {
               alert('Thank you for your donation! Your support helps us continue improving our platform.');
+              // Reset the UI
+              setShowAmountInput(false);
             } else {
               alert('Payment verification failed. Please contact support if the amount was deducted.');
             }
@@ -110,13 +133,44 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
   
   return (
     <div className="donation-button-container">
-      <button 
-        className="donation-button" 
-        onClick={handleDonation}
-        disabled={loading}
-      >
-        {loading ? 'Processing...' : buttonText}
-      </button>
+      {showAmountInput ? (
+        <div className="donation-amount-container">
+          <label className="donation-amount-label">
+            Enter amount (min ₹20):
+            <input 
+              type="number" 
+              min="20"
+              value={amount}
+              onChange={handleAmountChange}
+              className="donation-amount-input"
+            />
+          </label>
+          <div className="donation-actions">
+            <button 
+              className="donation-button proceed-button" 
+              onClick={handleDonation}
+              disabled={loading}
+            >
+              {loading ? 'Processing...' : 'Proceed'}
+            </button>
+            <button 
+              className="donation-button cancel-button" 
+              onClick={toggleAmountInput}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button 
+          className="donation-button" 
+          onClick={toggleAmountInput}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : buttonText}
+        </button>
+      )}
       {error && <div className="donation-error">{error}</div>}
     </div>
   );

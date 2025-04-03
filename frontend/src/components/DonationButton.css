@@ -46,10 +46,85 @@
   text-align: center;
 }
 
+/* Donation amount input styles */
+.donation-amount-container {
+  background-color: var(--secondary-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  border: 1px solid #2d2d2d;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.donation-amount-label {
+  display: block;
+  color: var(--light-color);
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.donation-amount-input {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  margin-top: 8px;
+  background-color: var(--dark-color);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: white;
+  font-size: 18px;
+  transition: var(--transition);
+}
+
+.donation-amount-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.2);
+}
+
+.donation-amount-input::-webkit-inner-spin-button,
+.donation-amount-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.donation-amount-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.donation-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.proceed-button {
+  background-color: var(--primary-color);
+  flex: 3;
+}
+
+.cancel-button {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: var(--light-color);
+  flex: 2;
+}
+
+.cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .donation-button {
     padding: 8px 15px;
     font-size: 14px;
+  }
+  
+  .donation-amount-container {
+    max-width: 100%;
   }
 } 

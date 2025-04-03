@@ -29,10 +29,11 @@ router.post('/create-order', async (req, res) => {
     console.log('Create order request received:', req.body);
     const { amount } = req.body;
     
-    if (!amount || amount < 100) {
+    // Minimum amount is now 2000 paise (₹20)
+    if (!amount || amount < 2000) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Please provide a valid amount (minimum 100 paise / ₹1)' 
+        message: 'Please provide a valid amount (minimum 2000 paise / ₹20)' 
       });
     }
     

@@ -30,8 +30,8 @@ const razorpay = new Razorpay({
  */
 const createOrder = async (amount, currency = 'INR', notes = {}) => {
   try {
-    if (!amount || amount < 100) {
-      throw new Error('Amount must be at least 100 paise (₹1)');
+    if (!amount || amount < 2000) {
+      throw new Error('Amount must be at least 2000 paise (₹20)');
     }
     
     console.log(`Creating Razorpay order for amount: ${amount} ${currency}`);
