@@ -69,7 +69,7 @@ const Contact = () => {
             <h3>Support Our Mission</h3>
             <p>
               If you find our platform helpful, consider supporting us with a small donation.
-              Your contribution helps us continue providing quality resources to CA students.
+              Your contribution helps us continue providing quality resources to CA Aspirants.
             </p>
             <DonationButton buttonText="Donate ❤️" />
           </div>

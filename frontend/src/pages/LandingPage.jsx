@@ -151,7 +151,7 @@ const LandingPage = () => {
       <section className="features" data-aos="fade-up">
         <div className="section-heading">
           <span className="section-subtitle">Our Platform Benefits</span>
-          <h2>Why Top CA Students Choose Us</h2>
+          <h2>Why Top CA Aspirants Choose Us</h2>
           <div className="heading-underline"></div>
         </div>
         
@@ -251,7 +251,7 @@ const LandingPage = () => {
       <section className="call-to-action" data-aos="fade-up">
         <div className="cta-content">
           <h2>Ready to Excel in Your CA Exams?</h2>
-          <p>Join thousands of successful CA students who have transformed their exam preparation.</p>
+          <p>Join thousands of successful CA Aspirants who have transformed their exam preparation.</p>
           {!isLoggedIn && (
             <Link to="/register" className="cta-btn primary-btn">Start Your Journey Today</Link>
           )}
