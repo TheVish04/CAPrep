@@ -325,31 +325,30 @@ textarea.form-input {
 .form-actions {
   display: flex;
   justify-content: center;
+  align-items: center;
+  margin-top: 30px;
   gap: 15px;
-  margin-top: 2rem;
-  padding: 1rem 0;
-  flex-wrap: wrap;
+}
+
+.preview-btn,
+.submit-btn,
+.cancel-btn {
+  padding: 14px 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
 }
 
 .preview-btn {
   background-color: #1e1e1e;
   color: #b0b0b0;
   border: 2px solid #03a9f4;
-  padding: 14px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 140px;
-  transition: all 0.3s ease;
-}
-
-.preview-btn::before {
-  content: '👁️';
-  margin-right: 8px;
 }
 
 .preview-btn:hover {
@@ -357,6 +356,11 @@ textarea.form-input {
   color: #121212;
   border-color: #239ecf;
   transform: translateY(-2px);
+}
+
+.preview-btn::before {
+  content: '👁️';
+  margin-right: 8px;
 }
 
 .preview-btn:disabled {
@@ -369,27 +373,17 @@ textarea.form-input {
   background-color: #03a9f4;
   color: #0B0C10;
   border: none;
-  padding: 14px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 140px;
-  transition: all 0.3s ease;
-}
-
-.submit-btn::before {
-  content: '✅';
-  margin-right: 8px;
 }
 
 .submit-btn:hover {
   background-color: #0288d1;
   transform: translateY(-2px);
   box-shadow: none;
+}
+
+.submit-btn::before {
+  content: '✅';
+  margin-right: 8px;
 }
 
 .submit-btn:disabled {
@@ -403,21 +397,6 @@ textarea.form-input {
   background-color: #1F2833;
   color: #9B9C9D;
   border: 2px solid #03a9f4;
-  padding: 14px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 140px;
-  transition: all 0.3s ease;
-}
-
-.cancel-btn::before {
-  content: '❌';
-  margin-right: 8px;
 }
 
 .cancel-btn:hover {
@@ -425,6 +404,11 @@ textarea.form-input {
   color: #0B0C10;
   border-color: #0288d1;
   transform: translateY(-2px);
+}
+
+.cancel-btn::before {
+  content: '❌';
+  margin-right: 8px;
 }
 
 .cancel-btn:disabled {
