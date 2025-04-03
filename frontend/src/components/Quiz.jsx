@@ -15,6 +15,7 @@ const Quiz = () => {
   const [timeLimit, setTimeLimit] = useState(30); // Default to 30 minutes
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [warning, setWarning] = useState(null); // New state for warnings
   
   // State for quiz questions and results
   const [questions, setQuestions] = useState([]);
@@ -75,6 +76,7 @@ const Quiz = () => {
     
     setLoading(true);
     setError(null);
+    setWarning(null);
     
     try {
       const token = localStorage.getItem('token');
@@ -96,6 +98,11 @@ const Quiz = () => {
       
       if (data.length === 0) {
         throw new Error('No MCQ questions available for the selected criteria');
+      }
+      
+      // Check if fewer questions were returned than requested
+      if (data.length < questionCount) {
+        setWarning(`Only ${data.length} questions are available for this subject. Quiz will proceed with the available questions.`);
       }
       
       setQuestions(data);
@@ -272,7 +279,27 @@ const Quiz = () => {
             min="1" 
             max="50" 
             value={questionCount} 
-            onChange={(e) => setQuestionCount(parseInt(e.target.value) || 1)} 
+            onChange={(e) => {
+              const val = e.target.value;
+              // Allow empty string during editing
+              if (val === '') {
+                setQuestionCount('');
+              } else {
+                const num = parseInt(val);
+                // Only apply constraints if it's a valid number
+                if (!isNaN(num)) {
+                  setQuestionCount(num);
+                }
+              }
+            }}
+            onBlur={() => {
+              // Apply min constraint when field loses focus
+              if (questionCount === '' || questionCount < 1) {
+                setQuestionCount(1);
+              } else if (questionCount > 50) {
+                setQuestionCount(50);
+              }
+            }}
           />
         </div>
         
@@ -284,7 +311,27 @@ const Quiz = () => {
             min="1" 
             max="180" 
             value={timeLimit} 
-            onChange={(e) => setTimeLimit(parseInt(e.target.value) || 1)} 
+            onChange={(e) => {
+              const val = e.target.value;
+              // Allow empty string during editing
+              if (val === '') {
+                setTimeLimit('');
+              } else {
+                const num = parseInt(val);
+                // Only apply constraints if it's a valid number
+                if (!isNaN(num)) {
+                  setTimeLimit(num);
+                }
+              }
+            }}
+            onBlur={() => {
+              // Apply min constraint when field loses focus
+              if (timeLimit === '' || timeLimit < 1) {
+                setTimeLimit(1);
+              } else if (timeLimit > 180) {
+                setTimeLimit(180);
+              }
+            }}
           />
         </div>
         
@@ -307,6 +354,7 @@ const Quiz = () => {
     
     return (
       <div className="quiz-container">
+        {warning && <div className="warning-message">{warning}</div>}
         <div className="quiz-header">
           <h2>Question {questionNumber} of {questions.length}</h2>
           <div className={getTimerClass()}>Time Remaining: {formatTime(timeRemaining)}</div>
