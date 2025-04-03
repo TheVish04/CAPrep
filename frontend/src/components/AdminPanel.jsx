@@ -155,6 +155,19 @@ const AdminPanel = () => {
       isCorrect: i === optionIndex,
     }));
     setFormData((prev) => ({ ...prev, subQuestions: updated }));
+    
+    // Add a delay to allow state update before updating the UI classes
+    setTimeout(() => {
+      // Remove correct-option class from all options in this sub-question
+      const subOptionsGroup = document.querySelectorAll(`.sub-question-${subIndex} .form-group`);
+      subOptionsGroup.forEach((el) => el.classList.remove('correct-option'));
+      
+      // Add correct-option class to the selected option
+      const selectedOption = document.querySelector(`.sub-question-${subIndex} .form-group:nth-child(${optionIndex + 1})`);
+      if (selectedOption) {
+        selectedOption.classList.add('correct-option');
+      }
+    }, 0);
   };
 
   const handlePreview = () => {
@@ -740,30 +753,20 @@ const AdminPanel = () => {
             <div className="form-section">
               <h2>Sub-Questions (Optional)</h2>
               {formData.subQuestions.map((subQ, subIndex) => (
-                <div key={subIndex} className="sub-question-section">
+                <div key={subIndex} className={`sub-question-section sub-question-${subIndex}`}>
                   <div className="form-group">
-                    <label>Sub Question Number:</label>
-                    <input
-                      type="text"
-                      name="subQuestionNumber"
-                      value={subQ.subQuestionNumber}
-                      onChange={(e) => handleSubQuestionChange(subIndex, 'subQuestionNumber', e.target.value)}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Sub Question Text:</label>
+                    <label>Sub Question {subIndex + 1}:</label>
                     <textarea
                       name="subQuestionText"
                       value={subQ.subQuestionText}
-                      onChange={(e) => handleSubQuestionChange(subIndex, 'subQuestionText', e.target.value)}
+                      onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
                       className="form-input"
                     />
                     {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
                   </div>
                   <div className="sub-options-section">
                     {subQ.subOptions.map((subOpt, optIndex) => (
-                      <div key={optIndex} className="form-group">
+                      <div key={optIndex} className={`form-group ${subOpt.isCorrect ? 'correct-option' : ''}`}>
                         <label>Option {optIndex + 1}:</label>
                         <input
                           type="text"
