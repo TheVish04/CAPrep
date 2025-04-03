@@ -44,7 +44,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // Enhanced CORS configuration with more permissive settings
 const corsOptions = {
-  origin: ['https://caprep.onrender.com', 'https://ca-prep.vercel.app', 'http://localhost:5173', 'https://ca-exam-platform.vercel.app'],
+  origin: ['https://caprep.onrender.com', 'https://caprep.vercel.app', 'http://localhost:5173', 'https://ca-exam-platform.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 'AccessToken', 'Origin', 'Accept', 'X-Requested-With'],
   credentials: true,
@@ -77,7 +77,7 @@ app.use((req, res, next) => {
   
   if (
     origin === 'https://caprep.onrender.com' || 
-    origin === 'https://ca-prep.vercel.app' || 
+    origin === 'https://caprep.vercel.app' || 
     origin === 'http://localhost:5173' ||
     origin === 'https://ca-exam-platform.vercel.app'
   ) {
