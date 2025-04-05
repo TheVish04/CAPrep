@@ -449,9 +449,20 @@ const Quiz = () => {
             max={getMaxQuestions()}
             value={questionCount}
             onChange={(e) => {
-              const newCount = parseInt(e.target.value) || 10;
-              // Enforce the mode-specific limit
-              setQuestionCount(Math.min(newCount, getMaxQuestions()));
+              const value = e.target.value;
+              if (value === '') {
+                setQuestionCount('');
+              } else {
+                const newCount = parseInt(value) || 1;
+                // Enforce the mode-specific limit
+                setQuestionCount(Math.min(newCount, getMaxQuestions()));
+              }
+            }}
+            onBlur={() => {
+              // When field loses focus, ensure we have a valid number
+              if (questionCount === '' || questionCount < 1) {
+                setQuestionCount(1);
+              }
             }}
             disabled={loading}
           />
@@ -465,7 +476,22 @@ const Quiz = () => {
             min="1"
             max="180"
             value={timeLimit}
-            onChange={(e) => setTimeLimit(parseInt(e.target.value) || 30)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '') {
+                setTimeLimit('');
+              } else {
+                const newTime = parseInt(value) || 1;
+                setTimeLimit(Math.min(Math.max(newTime, 1), 180));
+              }
+            }}
+            onBlur={() => {
+              if (timeLimit === '' || timeLimit < 1) {
+                setTimeLimit(1);
+              } else if (timeLimit > 180) {
+                setTimeLimit(180);
+              }
+            }}
             disabled={loading}
           />
         </div>
