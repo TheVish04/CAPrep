@@ -86,13 +86,11 @@ router.delete('/me/bookmarks/:questionId', authMiddleware, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { $pull: { bookmarkedQuestions: questionId } }, // Use $pull to remove the ID
-      { new: true } // Return the updated document
+      { $pull: { bookmarkedQuestions: questionId } },
+      { new: true }
     ).select('bookmarkedQuestions');
 
     if (!user) {
-      // Even if user not found, proceed as if removed for idempotency?
-      // Or return 404? Returning 404 for now.
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -100,6 +98,9 @@ router.delete('/me/bookmarks/:questionId', authMiddleware, async (req, res) => {
 
   } catch (error) {
     console.error('Error removing bookmark:', error);
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
     res.status(500).json({ error: 'Failed to remove bookmark' });
   }
 });

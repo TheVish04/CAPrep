@@ -162,26 +162,38 @@ const Questions = () => {
     if (!token) return navigate('/login');
 
     const isCurrentlyBookmarked = bookmarkedQuestionIds.has(questionId);
-    const method = isCurrentlyBookmarked ? 'delete' : 'post';
     const url = `${API_BASE_URL}/api/users/me/bookmarks/${questionId}`;
+    const config = {
+        headers: { 'Authorization': `Bearer ${token}` }
+    };
 
     try {
-      const response = await axios[method](url, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      let response;
+      if (isCurrentlyBookmarked) {
+        // Use axios.delete for clarity
+        response = await axios.delete(url, config);
+      } else {
+        // POST request might not need a body, send empty object
+        response = await axios.post(url, {}, config);
+      }
 
       if (response.data && response.data.bookmarkedQuestionIds) {
         setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
       }
       
+      // Refetch if viewing bookmarks and one was removed
       if (isCurrentlyBookmarked && filters.bookmarked) {
-          fetchQuestions(token, filters);
+          fetchQuestions(token, filters); // Make sure fetchQuestions is correctly defined and in scope
       }
 
     } catch (err) {
       console.error('Error updating bookmark:', err);
+      // Log the full error response for more details on 401
+      if (err.response) {
+          console.error('Error response data:', err.response.data);
+          console.error('Error response status:', err.response.status);
+          console.error('Error response headers:', err.response.headers);
+      }
       alert(err.response?.data?.error || 'Failed to update bookmark');
     }
   };
@@ -383,14 +395,14 @@ const Questions = () => {
           )}
           
           {!loading && questions.length > 0 && (
-            <div className="question-list">
+            <div className="questions-list">
               {currentQuestions.map((q) => (
                 <div key={q._id} className="question-card">
                   <div className="question-header">
-                    <span className="question-number">Q: {q.questionNumber}</span>
-                    <span className="question-meta">
-                      {q.subject} | {q.paperType} | {q.year} {q.month} {q.examStage} {q.paperNo ? `| ${q.paperNo}` : ''}
-                    </span>
+                    <h2>
+                      Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
+                      ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
+                    </h2>
                     <button 
                       onClick={() => handleBookmarkToggle(q._id)} 
                       className="bookmark-btn"
@@ -399,44 +411,63 @@ const Questions = () => {
                        <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
                     </button>
                   </div>
+                  
+                  <p><strong>Question:</strong></p>
                   <div 
-                    className="question-text"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText) }}
+                     className="question-text"
+                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
                   />
+
                   {q.subQuestions && q.subQuestions.length > 0 && (
-                    <div className="subquestions-container">
-                      {q.subQuestions.map((subQ, index) => (
-                        <div key={index} className="subquestion-item">
-                           {subQ.subQuestionText && <div className="subquestion-text" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }} />} 
-                           {subQ.subOptions && subQ.subOptions.length > 0 && (
-                             <ul className="subquestion-options">
-                               {subQ.subOptions.map((opt, optIndex) => (
-                                 <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
-                                   {opt.optionText}
-                                   {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
-                                 </li>
-                               ))}
-                             </ul>
-                           )}
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                  {(showAnswers || individualShowAnswers[q._id]) && q.answerText && (!q.subQuestions || q.subQuestions.length === 0) && (
-                    <div className="answer-section">
-                      <strong>Answer:</strong>
-                      <div 
-                        className="answer-text"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
-                      />
-                    </div>
+                     <div className="subquestions-container">
+                       <h3>Sub-Questions:</h3>
+                       {q.subQuestions.map((subQ, index) => (
+                         <div key={index} className="subquestion-item">
+                            {subQ.subQuestionText && (
+                               <p><strong>Sub-Question {subQ.subQuestionNumber || (index + 1)}:</strong></p>
+                            )}
+                            {subQ.subQuestionText && (
+                               <div 
+                                 className="subquestion-text"
+                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }}
+                               />
+                            )}
+                            
+                            {subQ.subOptions && subQ.subOptions.length > 0 && (
+                              <ul className="subquestion-options">
+                                {subQ.subOptions.map((opt, optIndex) => (
+                                  <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
+                                    {opt.optionText}
+                                    {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                   )}
-                  <button 
-                    className="toggle-answer-btn"
-                    onClick={() => toggleIndividualAnswer(q._id)} 
-                  >
-                    {individualShowAnswers[q._id] ? 'Hide Answer' : 'Show Answer'}
-                  </button>
+                  
+                 {(!q.subQuestions || q.subQuestions.length === 0) && q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                   <div className="answer-section main-answer">
+                     <h3>Answer:</h3>
+                     <div 
+                       className="answer-text"
+                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
+                     />
+                   </div>
+                 )}
+                 
+                 {q.pageNumber && (
+                     <p className="page-number-ref"><strong>Reference Page:</strong> {q.pageNumber}</p>
+                 )}
+
+                 <button 
+                   className="toggle-answer-btn"
+                   onClick={() => toggleIndividualAnswer(q._id)} 
+                 >
+                   {individualShowAnswers[q._id] ? 'Hide Answer/Details' : 'Show Answer/Details'}
+                 </button>
                 </div>
               ))}
             </div>
