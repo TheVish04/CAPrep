@@ -132,9 +132,18 @@ const Resources = () => {
     const url = `${API_BASE_URL}/api/users/me/bookmarks/resource/${resourceId}`;
 
     try {
-      const response = await axios[method](url, {}, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      let response;
+      if (method === 'delete') {
+        // For DELETE, headers are in the config object (second argument)
+        response = await axios.delete(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } else {
+        // For POST, data is the second argument, headers are in the config (third argument)
+        response = await axios.post(url, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      }
 
       if (response.data && response.data.bookmarkedResourceIds) {
         setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
