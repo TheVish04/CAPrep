@@ -378,4 +378,31 @@ router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async
   }
 });
 
+// Add new batch endpoint to fetch multiple questions by ID
+router.post('/batch', [authMiddleware], async (req, res) => {
+  try {
+    const { questionIds } = req.body;
+    
+    if (!questionIds || !Array.isArray(questionIds) || questionIds.length === 0) {
+      return res.status(400).json({ error: 'A valid array of question IDs is required' });
+    }
+    
+    // Limit the number of questions that can be requested at once
+    if (questionIds.length > 50) {
+      return res.status(400).json({ error: 'Maximum of 50 questions can be requested at once' });
+    }
+    
+    const questions = await Question.find({ _id: { $in: questionIds } });
+    
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ error: 'No questions found for the provided IDs' });
+    }
+    
+    res.json(questions);
+  } catch (error) {
+    console.error('Error fetching batch questions:', error);
+    res.status(500).json({ error: 'Failed to fetch batch questions' });
+  }
+});
+
 module.exports = router;

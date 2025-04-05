@@ -50,8 +50,43 @@ const QuizHistory = () => {
         }
     };
 
-    const navigateToReview = (quizAttempt) => {
-        navigate('/quiz-review', { state: { quizAttempt } });
+    const navigateToReview = async (quizAttempt) => {
+        try {
+            // Show loading state
+            setLoading(true);
+            
+            // Get token for authentication
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            
+            // Fetch complete questions data for the attempted questions
+            const questionIds = quizAttempt.questionsAttempted.map(q => q.questionId);
+            const response = await axios.post(`${API_BASE_URL}/api/questions/batch`, 
+                { questionIds },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+            
+            // Create a complete quiz attempt object with full question data
+            const completeQuizAttempt = {
+                ...quizAttempt,
+                questions: response.data
+            };
+            
+            // Navigate to the review page with complete data
+            navigate('/quiz-review', { state: { quizAttempt: completeQuizAttempt } });
+        } catch (err) {
+            console.error("Error fetching question details:", err);
+            alert("Couldn't load quiz review details. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -90,8 +125,9 @@ const QuizHistory = () => {
                                             <button 
                                                 className="review-btn"
                                                 onClick={() => navigateToReview(entry)}
+                                                disabled={loading}
                                             >
-                                                Review
+                                                {loading ? 'Loading...' : 'Review'}
                                             </button>
                                         ) : (
                                             <span className="no-review-available">No details available</span>
