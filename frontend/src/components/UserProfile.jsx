@@ -120,10 +120,12 @@ const UserProfile = () => {
                             Your support helps keep CAprep running and improving.
                         </p>
                     ) : (
-                        <p>
-                            Help support CAprep by making a donation. Every contribution makes a difference!
-                            <DonationButton buttonText="Donate Now" />
-                        </p>
+                        <div className="contribution-prompt">
+                            <p>
+                                Help support CAprep by making a donation. Every contribution makes a difference!
+                            </p>
+                            <DonationButton buttonText="Support CAprep" />
+                        </div>
                     )}
                 </div>
                 
