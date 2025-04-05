@@ -1,0 +1,167 @@
+.quiz-review-page .quiz-review-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--background-light, #2a2a2a);
+    border-radius: 8px;
+}
+
+.quiz-review-container h1 {
+    text-align: center;
+    color: var(--primary-color, #03a9f4);
+    margin-bottom: 1.5rem;
+}
+
+.quiz-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: var(--card-bg-color, #333);
+    border-radius: 6px;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.review-questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-question-card {
+    background-color: var(--card-bg-color, #333);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border-left: 5px solid var(--border-color, #444); /* Default border */
+}
+
+.review-question-card.correct {
+    border-left-color: #4caf50; /* Green border for correct */
+}
+
+.review-question-card.incorrect {
+    border-left-color: #f44336; /* Red border for incorrect */
+}
+
+.review-question-card h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--accent-color, #00bcd4);
+    font-size: 1.2rem;
+}
+
+.review-question-text {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.review-subquestion-text {
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.review-options {
+    margin-top: 1rem;
+}
+
+.review-options h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-color-secondary, #aaa);
+}
+
+.review-options ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.review-option {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color-light, #3a3a3a);
+    border-radius: 4px;
+    background-color: var(--background-light, #2a2a2a);
+    position: relative; /* For option marker */
+    padding-left: 2.5rem; /* Space for marker */
+}
+
+.review-option .option-marker {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: var(--primary-color, #03a9f4);
+}
+
+/* Highlighting selected/correct answers */
+.review-option.correct-answer {
+    border-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.review-option.selected-incorrect {
+    border-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Add specific styling for selected-correct if needed, maybe a thicker border or different bg */
+.review-option.selected-correct {
+     border-width: 2px; 
+}
+
+.review-feedback {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #444);
+}
+
+.review-feedback .status {
+    font-weight: bold;
+}
+
+.review-feedback .status.correct {
+    color: #4caf50;
+}
+
+.review-feedback .status.incorrect {
+    color: #f44336;
+}
+
+.review-feedback .status.unanswered {
+    color: #ff9800; /* Orange for unanswered */
+}
+
+.review-actions {
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Basic button styling (assuming a global .btn class exists or adapt) */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.quiz-review-container.error-message {
+    text-align: center;
+}
+
+.quiz-review-container.error-message h2 {
+    color: #f44336;
+} 

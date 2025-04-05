@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 // Statically import all components
 import LandingPage from './pages/LandingPage';
@@ -17,6 +18,7 @@ import Resources from './components/Resources';
 import ResourceUploader from './components/ResourceUploader';
 import QuizHistory from './components/QuizHistory';
 import UserProfile from './components/UserProfile';
+import QuizReview from './pages/QuizReview';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -76,54 +78,63 @@ const RedirectIfLoggedIn = ({ element }) => {
 const App = () => {
   return (
     <Router>
-      {/* Remove Suspense wrapper */}
-      {/* <Suspense fallback={<div>Loading...</div>}> */}
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
-          <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          
-          {/* Protected Routes */}
-          <Route
-            path="/questions"
-            element={<ProtectedRoute element={<Questions />} />}
-          />
-          <Route
-            path="/quiz"
-            element={<ProtectedRoute element={<Quiz />} />}
-          />
-          <Route
-            path="/quiz-history"
-            element={<ProtectedRoute element={<QuizHistory />} />}
-          />
-           <Route
-            path="/profile"
-            element={<ProtectedRoute element={<UserProfile />} />}
-          />
-          <Route
-            path="/resources"
-            element={<ProtectedRoute element={<Resources />} />}
-          />
-          
-          {/* Admin Routes */}
-          <Route
-            path="/admin"
-            element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
-          />
-          <Route
-            path="/admin/resources"
-            element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
-          />
-          
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      {/* </Suspense> */}
+      <ErrorBoundary>
+        <div className="App">
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
+            <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Protected Routes */}
+            <Route
+              path="/questions"
+              element={<ProtectedRoute element={<Questions />} />}
+            />
+            <Route
+              path="/quiz"
+              element={<ProtectedRoute element={<Quiz />} />}
+            />
+            <Route
+              path="/quiz-history"
+              element={<ProtectedRoute element={<QuizHistory />} />}
+            />
+            <Route
+              path="/quiz-review"
+              element={<ProtectedRoute element={<QuizReview />} />}
+            />
+            <Route
+              path="/profile"
+              element={<ProtectedRoute element={<UserProfile />} />}
+            />
+            <Route
+              path="/resources"
+              element={<ProtectedRoute element={<Resources />} />}
+            />
+            
+            {/* Admin Routes */}
+            <Route
+              path="/admin"
+              element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
+            />
+            <Route
+              path="/admin/resources"
+              element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
+            />
+            <Route
+              path="/admin/analytics"
+              element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
+            />
+            
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </div>
+      </ErrorBoundary>
       <Analytics />
     </Router>
   );

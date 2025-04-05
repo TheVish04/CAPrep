@@ -182,9 +182,10 @@ router.delete('/me/bookmarks/resource/:resourceId', authMiddleware, async (req, 
 
 // POST Add a quiz result to history
 router.post('/me/quiz-history', authMiddleware, async (req, res) => {
-    const { subject, score, totalQuestions } = req.body;
+    // Destructure expected fields, including the new questionsAttempted array
+    const { subject, score, totalQuestions, questionsAttempted } = req.body;
 
-    // Basic validation
+    // Basic validation for core fields
     if (typeof subject !== 'string' || subject.trim() === '') {
         return res.status(400).json({ error: 'Subject is required and must be a string.' });
     }
@@ -198,18 +199,27 @@ router.post('/me/quiz-history', authMiddleware, async (req, res) => {
         return res.status(400).json({ error: 'Score cannot be greater than total questions.' });
     }
 
+    // Validate questionsAttempted array
+    if (!Array.isArray(questionsAttempted)) {
+        return res.status(400).json({ error: 'questionsAttempted must be an array.' });
+    }
+    // Optional: Add more detailed validation for each item in questionsAttempted if needed
+    // e.g., check if IDs are valid ObjectIds, indices are numbers, etc.
+
     try {
-        const percentage = Math.round((score / totalQuestions) * 100);
+        // Calculate percentage server-side for consistency
+        const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
         
         const newHistoryEntry = {
             subject,
             score,
             totalQuestions,
             percentage,
-            date: new Date() // Ensure date is set on the server
+            questionsAttempted, // Include the detailed attempts
+            date: new Date()
         };
 
-        // Add the new entry to the beginning of the array (optional: use $slice to limit size)
+        // Add the new entry
         const user = await User.findByIdAndUpdate(
             req.user.id,
             {

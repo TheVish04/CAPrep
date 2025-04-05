@@ -54,7 +54,16 @@ const UserSchema = new Schema({
     score: { type: Number, required: true },
     totalQuestions: { type: Number, required: true },
     percentage: { type: Number, required: true }, // Store percentage for easier display
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+    questionsAttempted: [
+      {
+        questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
+        subQuestionIndex: { type: Number, required: true, default: 0 }, // Assuming one subquestion for now
+        selectedOptionIndex: { type: Number, required: false }, // User might not select an option
+        correctOptionIndex: { type: Number, required: true },
+        isCorrect: { type: Boolean, required: true }
+      }
+    ]
   }],
   bookmarkedResources: [{
     type: mongoose.Schema.Types.ObjectId,

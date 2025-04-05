@@ -30,6 +30,7 @@ const Quiz = () => {
   const [timeRemaining, setTimeRemaining] = useState(0); // Time remaining in seconds
   const [timerInterval, setTimerInterval] = useState(null);
   const [quizCompleted, setQuizCompleted] = useState(false); // Track if results have been calculated
+  const [lastQuizAttempt, setLastQuizAttempt] = useState(null); // Store the details of the last attempt for review
   
   useEffect(() => {
     // Check if user is logged in
@@ -99,37 +100,63 @@ const Quiz = () => {
     }
   }, [API_BASE_URL]);
   
-  // Calculate Score and Save History
-  const calculateAndSaveScore = useCallback(() => {
+  // Calculate Score and Prepare Review Data
+  const calculateAndFinalizeQuiz = useCallback(() => {
     if (quizCompleted) return;
 
     let correctAnswers = 0;
-    questions.forEach((question) => {
-      if (question.subQuestions && question.subQuestions.length > 0) {
-        const subQuestion = question.subQuestions[0];
-        const questionKey = `${question._id}_0`;
-        const selectedOptionIndex = selectedOptions[questionKey];
-        
-        if (selectedOptionIndex !== undefined && subQuestion.subOptions) {
+    const attemptedQuestionsData = questions.map((question) => {
+      // Assuming only one subQuestion for now based on current structure
+      const subQuestionIndex = 0;
+      const subQuestion = question.subQuestions[subQuestionIndex];
+      const questionKey = `${question._id}_${subQuestionIndex}`;
+      const selectedOptionIndex = selectedOptions[questionKey]; // Might be undefined
+      
+      const correctOptionIndex = subQuestion.subOptions.findIndex(opt => opt.isCorrect);
+      let isCorrect = false;
+      
+      if (selectedOptionIndex !== undefined) {
           const selectedOption = subQuestion.subOptions[selectedOptionIndex];
           if (selectedOption && selectedOption.isCorrect) {
-            correctAnswers++;
+              correctAnswers++;
+              isCorrect = true;
           }
-        }
       }
+      
+      return {
+          questionId: question._id,
+          subQuestionIndex,
+          selectedOptionIndex, // Can be undefined
+          correctOptionIndex,
+          isCorrect
+          // We can add questionText/options here if needed for immediate review display,
+          // but maybe better to fetch full details later from history
+      };
     });
     
-    setScore(correctAnswers);
+    const finalScore = correctAnswers;
+    setScore(finalScore);
     setQuizCompleted(true);
     setShowResults(true);
     
+    const quizResultPayload = {
+      subject: subject,
+      score: finalScore,
+      totalQuestions: questions.length,
+      questionsAttempted: attemptedQuestionsData
+    };
+    
+    // Save attempt locally for immediate review button
+    setLastQuizAttempt({ 
+      ...quizResultPayload, 
+      questions: questions // Include the full questions for review 
+    }); 
+    
+    // Save to backend
     if (questions.length > 0) {
-      saveQuizHistory({
-        subject: subject,
-        score: correctAnswers,
-        totalQuestions: questions.length
-      });
+      saveQuizHistory(quizResultPayload);
     }
+
   }, [questions, selectedOptions, quizCompleted, saveQuizHistory, subject]);
   
   // Timer effect
@@ -140,7 +167,7 @@ const Quiz = () => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
             clearInterval(intervalId);
-            calculateAndSaveScore();
+            calculateAndFinalizeQuiz(); // Use the new function
             setStep('result');
             return 0;
           }
@@ -155,7 +182,8 @@ const Quiz = () => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [step, timeRemaining, quizCompleted, calculateAndSaveScore]);
+    // Ensure subject is in dependency array if used inside calculateAndFinalizeQuiz indirectly
+  }, [step, timeRemaining, quizCompleted, calculateAndFinalizeQuiz]);
   
   const handleStartQuiz = async () => {
     // Validate selections
@@ -227,7 +255,7 @@ const Quiz = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      calculateAndSaveScore();
+      calculateAndFinalizeQuiz(); // Use the new function
       if (timerInterval) clearInterval(timerInterval);
       setStep('result');
     }
@@ -273,6 +301,15 @@ const Quiz = () => {
     if (percentage <= 10) return 'quiz-timer danger';
     if (percentage <= 25) return 'quiz-timer warning';
     return 'quiz-timer';
+  };
+  
+  // Function to navigate to Quiz Review page (we'll create this page later)
+  const handleViewReview = () => {
+    if (lastQuizAttempt) {
+      // Pass the quiz attempt details to the review page via state
+      // Or potentially save to local storage if state gets too large?
+      navigate('/quiz-review', { state: { quizAttempt: lastQuizAttempt } });
+    }
   };
   
   const renderQuizSetup = () => (
@@ -465,8 +502,9 @@ const Quiz = () => {
   };
   
   const renderResults = () => {
-    const totalQuestions = questions.reduce((count, question) => count + question.subQuestions.length, 0);
-    const percentage = Math.round((score / totalQuestions) * 100);
+    const totalQs = lastQuizAttempt?.totalQuestions || questions.length;
+    const finalScore = lastQuizAttempt?.score ?? score; // Use score from lastAttempt if available
+    const percentage = totalQs > 0 ? Math.round((finalScore / totalQs) * 100) : 0;
     
     return (
       <div className="quiz-results">
@@ -481,12 +519,18 @@ const Quiz = () => {
               <span className="score-percentage">{percentage}%</span>
             </div>
             <div className="score-details">
-              <p>You got {score} out of {totalQuestions} questions correct.</p>
+              <p>You got {finalScore} out of {totalQs} questions correct.</p>
             </div>
           </div>
         </div>
         
         <div className="result-actions">
+          {/* Add Review Button */} 
+          {lastQuizAttempt && (
+             <button className="review-btn" onClick={handleViewReview}>
+                Review Answers
+             </button>
+          )}
           <button className="retake-btn" onClick={handleRetakeQuiz}>
             Retake This Quiz
           </button>

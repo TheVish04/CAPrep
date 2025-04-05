@@ -116,7 +116,7 @@ const UserProfile = () => {
                     {userData.totalContribution > 0 ? (
                         <p>
                             Thank you for your generous contribution of 
-                            <strong>₹{userData.totalContribution.toFixed(2)}</strong>! 
+                            <strong> ₹{userData.totalContribution.toFixed(2)} </strong>! 
                             Your support helps keep CAprep running and improving.
                         </p>
                     ) : (

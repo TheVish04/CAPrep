@@ -1,12 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import PreviewPanel from './PreviewPanel';
 import Navbar from './Navbar';
 import DOMPurify from 'dompurify';
+import AdminAnalytics from './AdminAnalytics';
+import ResourceUploader from './ResourceUploader';
 import './AdminPanel.css';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    if (location.pathname.includes('/resources')) return 'resources';
+    if (location.pathname.includes('/analytics')) return 'analytics';
+    return 'questions';
+  };
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+  
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location.pathname]);
+
   const [formData, setFormData] = useState({
     subject: '',
     paperType: '',
@@ -25,7 +40,6 @@ const AdminPanel = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [storedQuestions, setStoredQuestions] = useState([]);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
-  // Updated filters state with new criteria for advanced filtering & search
   const [filters, setFilters] = useState({
     subject: '',
     year: '',
@@ -39,10 +53,9 @@ const AdminPanel = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSubmittedId, setLastSubmittedId] = useState(null);
 
-  // Pagination states (if needed later with infinite scroll)
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const LIMIT = 10; // For example, 10 per page
+  const LIMIT = 10;
 
   const fetchQuestions = useCallback(async (token, query = '') => {
     try {
@@ -152,15 +165,12 @@ const AdminPanel = () => {
     }));
     setFormData((prev) => ({ ...prev, subQuestions: updated }));
     
-    // Add a delay to allow state update before updating the UI classes
     setTimeout(() => {
-      // Remove correct-option class from all options in this sub-question
       const subOptionsElements = document.querySelectorAll(`.sub-question-${subIndex} .option-item`);
       subOptionsElements.forEach((el) => {
         el.classList.remove('correct-option');
       });
       
-      // Add correct-option class to the selected option
       const selectedOption = document.querySelector(`.option-item-${subIndex}-${optionIndex}`);
       if (selectedOption) {
         selectedOption.classList.add('correct-option');
@@ -174,7 +184,6 @@ const AdminPanel = () => {
       setErrors(validation);
       alert('Please fix the validation errors before previewing.');
     } else {
-      // Save the current scroll position before showing preview
       window.scrollPreviewPosition = window.scrollY;
       setPreviewVisible(true);
     }
@@ -182,7 +191,6 @@ const AdminPanel = () => {
 
   const closePreview = () => {
     setPreviewVisible(false);
-    // Restore scroll position after closing preview
     setTimeout(() => {
       if (window.scrollPreviewPosition !== undefined) {
         window.scrollTo(0, window.scrollPreviewPosition);
@@ -243,7 +251,6 @@ const AdminPanel = () => {
     const newErrors = {};
     const fieldsToValidate = ['subject', 'paperType', 'year', 'month', 'examStage', 'questionNumber', 'questionText', 'pageNumber'];
     
-    // Add paperNo to validation only if examStage is Foundation
     if (formData.examStage === 'Foundation') {
       fieldsToValidate.push('paperNo');
     }
@@ -265,7 +272,6 @@ const AdminPanel = () => {
 
   const cleanSubQuestions = (subQuestions) => {
     return subQuestions.map((subQ, index) => ({
-      // Don't send subQuestionNumber to the server, it's handled automatically now
       subQuestionText: subQ.subQuestionText || '',
       subOptions: subQ.subOptions.map((opt) => ({
         optionText: opt.optionText || '',
@@ -419,13 +425,11 @@ const AdminPanel = () => {
   const handleEdit = (question) => {
     console.log('Editing question:', question);
     
-    // Make sure we have a valid question object
     if (!question) {
       console.error('Cannot edit: Invalid question object');
       return;
     }
     
-    // Get the correct ID (MongoDB uses _id, but we might have normalized to id)
     const questionId = question._id || question.id;
     
     if (!questionId) {
@@ -447,10 +451,8 @@ const AdminPanel = () => {
       subQuestions: question.subQuestions ? [...question.subQuestions] : [],
     });
     
-    // Set the editing ID
     setEditingQuestionId(questionId);
     
-    // Scroll to the top of the form
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -469,8 +471,6 @@ const AdminPanel = () => {
 
     const token = localStorage.getItem('token');
     try {
-      // Display a loading indicator or disable the delete button here if needed
-      
       const response = await fetch(`https://caprep.onrender.com/api/questions/${id}`, {
         method: 'DELETE',
         headers: {
@@ -483,18 +483,15 @@ const AdminPanel = () => {
       console.log('Delete response:', response.status, result);
       
       if (response.ok) {
-        // Success - refresh the questions list
         alert('Question deleted successfully');
         const currentQuery = new URLSearchParams(filters).toString();
         fetchQuestions(token, currentQuery);
       } else {
-        // Error handling with more details
         const errorMessage = result.details || result.error || 'Unknown error';
         console.error('Failed to delete question:', errorMessage);
         alert(`Failed to delete question: ${errorMessage}`);
       }
     } catch (error) {
-      // Network or other errors
       console.error('Error deleting question:', error);
       alert(`Error deleting question: ${error.message || 'Unknown error'}`);
     }
@@ -502,165 +499,421 @@ const AdminPanel = () => {
 
   const visibleErrors = Object.values(errors).filter((error) => error);
 
-  return (
-    <div className="page-wrapper">
-      <Navbar />
-      <section className="admin-section">
-        <div className="admin-container">
-          <h1>Admin Panel</h1>
-          
-          <div className="admin-navigation">
-            <Link to="/admin" className="admin-nav-link active">Manage Questions</Link>
-            <Link to="/admin/resources" className="admin-nav-link">Manage PDF Resources</Link>
-          </div>
-          
-          {visibleErrors.length > 0 && (
-            <div className="error">
-              <h3 className="error-title">Validation Errors:</h3>
-              <ul className="error-list">
-                {visibleErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="form-mode-indicator">
-            <h2>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h2>
-            {editingQuestionId && (
-              <p className="edit-mode-note">You are currently editing question ID: {editingQuestionId}</p>
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'analytics':
+        return <AdminAnalytics />;
+      case 'resources':
+        return <ResourceUploader />;
+      case 'questions':
+      default:
+        return (
+          <>
+            {visibleErrors.length > 0 && (
+              <div className="error">
+                <h3 className="error-title">Validation Errors:</h3>
+                <ul className="error-list">
+                  {visibleErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
             )}
-          </div>
-          <form 
-            onSubmit={editingQuestionId ? handleUpdate : handleSubmit} 
-            className={`admin-form ${editingQuestionId ? 'edit-mode' : ''}`}
-          >
-            <div className="form-section">
-              <h2>General Details</h2>
-              <div className="form-grid">
+            <div className="form-mode-indicator">
+              <h2>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h2>
+              {editingQuestionId && (
+                <p className="edit-mode-note">You are currently editing question ID: {editingQuestionId}</p>
+              )}
+            </div>
+            <form 
+              onSubmit={editingQuestionId ? handleUpdate : handleSubmit} 
+              className={`admin-form ${editingQuestionId ? 'edit-mode' : ''}`}
+            >
+              <div className="form-section">
+                <h2>General Details</h2>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Exam Stage:</label>
+                    <select
+                      name="examStage"
+                      value={formData.examStage}
+                      onChange={(e) => {
+                        const newExamStage = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          examStage: newExamStage,
+                          subject: '',
+                          paperNo: ''
+                        }));
+                        validateField('examStage', newExamStage);
+                      }}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Select Exam Stage</option>
+                      <option value="Foundation">Foundation</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Final">Final</option>
+                    </select>
+                    {errors.examStage && <p className="error-message">{errors.examStage}</p>}
+                  </div>
+                  <div className="form-group">
+                    <label>Subject:</label>
+                    <select
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Select Subject</option>
+                      {formData.examStage === 'Foundation' ? (
+                        <>
+                          <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
+                          <option value="Business Law">Business Law</option>
+                          <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
+                          <option value="Business Mathematics">Business Mathematics</option>
+                          <option value="Logical Reasoning">Logical Reasoning</option>
+                          <option value="Statistics">Statistics</option>
+                          <option value="Business Economics">Business Economics</option>
+                          <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
+                        </>
+                      ) : formData.examStage === 'Intermediate' ? (
+                        <>
+                          <option value="Advanced Accounting">Advanced Accounting</option>
+                          <option value="Corporate Laws">Corporate Laws</option>
+                          <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                          <option value="Taxation">Taxation</option>
+                          <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                          <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                        </>
+                      ) : formData.examStage === 'Final' ? (
+                        <>
+                          <option value="Financial Reporting">Financial Reporting</option>
+                          <option value="Advanced Financial Management">Advanced Financial Management</option>
+                          <option value="Advanced Auditing">Advanced Auditing</option>
+                          <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                          <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                          <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Advanced Accounting">Advanced Accounting</option>
+                          <option value="Corporate Laws">Corporate Laws</option>
+                          <option value="Taxation">Taxation</option>
+                          <option value="Cost & Management">Cost & Management</option>
+                          <option value="Auditing">Auditing</option>
+                          <option value="Financial Management">Financial Management</option>
+                        </>
+                      )}
+                    </select>
+                    {errors.subject && <p className="error-message">{errors.subject}</p>}
+                  </div>
+                  <div className="form-group">
+                    <label>Paper Type:</label>
+                    <select
+                      name="paperType"
+                      value={formData.paperType}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Select Paper Type</option>
+                      <option value="MTP">MTP</option>
+                      <option value="RTP">RTP</option>
+                      <option value="PYQS">PYQS</option>
+                    </select>
+                    {errors.paperType && <p className="error-message">{errors.paperType}</p>}
+                  </div>
+                  <div className="form-group">
+                    <label>Year:</label>
+                    <select
+                      name="year"
+                      value={formData.year}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Select Year</option>
+                      <option value="2024">2024</option>
+                      <option value="2023">2023</option>
+                      <option value="2022">2022</option>
+                    </select>
+                    {errors.year && <p className="error-message">{errors.year}</p>}
+                  </div>
+                  <div className="form-group">
+                    <label>Month:</label>
+                    <select
+                      name="month"
+                      value={formData.month}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Select Month</option>
+                      <option value="January">January</option>
+                      <option value="February">February</option>
+                      <option value="March">March</option>
+                      <option value="April">April</option>
+                      <option value="May">May</option>
+                      <option value="June">June</option>
+                      <option value="July">July</option>
+                      <option value="August">August</option>
+                      <option value="September">September</option>
+                      <option value="October">October</option>
+                      <option value="November">November</option>
+                      <option value="December">December</option>
+                    </select>
+                    {errors.month && <p className="error-message">{errors.month}</p>}
+                  </div>
+                  {formData.examStage === 'Foundation' && (
+                    <div className="form-group">
+                      <label>Paper No.:</label>
+                      <select
+                        name="paperNo"
+                        value={formData.paperNo}
+                        onChange={handleChange}
+                        className="form-input"
+                        required
+                      >
+                        <option value="">Select Paper</option>
+                        <option value="Paper 1">Paper 1</option>
+                        <option value="Paper 2">Paper 2</option>
+                        <option value="Paper 3">Paper 3</option>
+                        <option value="Paper 4">Paper 4</option>
+                      </select>
+                      {errors.paperNo && <p className="error-message">{errors.paperNo}</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2>Question Details</h2>
+                <div className="form-group">
+                  <label>Question Number:</label>
+                  <input
+                    type="text"
+                    name="questionNumber"
+                    value={formData.questionNumber}
+                    onChange={handleChange}
+                    className="form-input"
+                    required
+                  />
+                  {errors.questionNumber && <p className="error-message">{errors.questionNumber}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Question Text:</label>
+                  <textarea
+                    name="questionText"
+                    value={formData.questionText}
+                    onChange={handleChange}
+                    rows={6}
+                    className="form-input"
+                    placeholder="Paste HTML code for tables, or just type your question..."
+                  />
+                  {errors.questionText && <p className="error-message">{errors.questionText}</p>}
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2>Answer (for Subjective Questions)</h2>
+                <div className="form-group">
+                  <label>Answer Text:</label>
+                  <textarea
+                    name="answerText"
+                    value={formData.answerText}
+                    onChange={handleChange}
+                    rows={6}
+                    className="form-input"
+                    placeholder="Paste HTML code for tables, or just type your answer..."
+                  />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2>Reference</h2>
+                <div className="form-group">
+                  <label>Page Number:</label>
+                  <input
+                    type="text"
+                    name="pageNumber"
+                    value={formData.pageNumber}
+                    onChange={handleChange}
+                    className="form-input"
+                    required
+                  />
+                  {errors.pageNumber && <p className="error-message">{errors.pageNumber}</p>}
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2>Sub-Questions (Optional)</h2>
+                {formData.subQuestions.map((subQ, subIndex) => (
+                  <div key={subIndex} className={`sub-question-section sub-question-${subIndex}`}>
+                    <div className="form-group">
+                      <label>Sub Question {subIndex + 1}:</label>
+                      <textarea
+                        name="subQuestionText"
+                        value={subQ.subQuestionText}
+                        onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
+                        className="form-input"
+                      />
+                      {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
+                    </div>
+                    <div className="sub-options-section">
+                      {subQ.subOptions.map((subOpt, optIndex) => (
+                        <div 
+                          key={optIndex} 
+                          className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
+                        >
+                          <label>Option {optIndex + 1}:</label>
+                          <input
+                            type="text"
+                            name="optionText"
+                            value={subOpt.optionText}
+                            onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
+                            className="form-input"
+                          />
+                          <div className="option-actions">
+                            <button
+                              type="button"
+                              onClick={() => markCorrectSubOption(subIndex, optIndex)}
+                              className="mark-correct-btn"
+                            >
+                              Mark as Correct
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeSubOption(subIndex, optIndex)}
+                              className="remove-btn"
+                            >
+                              Remove Option
+                            </button>
+                          </div>
+                          {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => addSubOption(subIndex)} className="add-btn">
+                        Add Sub Option
+                      </button>
+                    </div>
+                    <div className="sub-question-actions">
+                      <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
+                        Remove This Sub Question
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button type="button" onClick={addSubQuestion} className="add-btn">
+                  Add Sub Question
+                </button>
+              </div>
+
+              <div className="form-actions-container">
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    onClick={handlePreview}
+                    className="preview-btn"
+                    disabled={isSubmitting}
+                  >
+                    Preview
+                  </button>
+                  <button
+                    type="submit"
+                    className="submit-btn"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting...' : editingQuestionId ? 'Update' : 'Submit'}
+                  </button>
+                  {editingQuestionId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetForm();
+                        setEditingQuestionId(null);
+                      }}
+                      className="cancel-btn"
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+
+            <div className="filter-section">
+              <h2>Filter Questions</h2>
+              <div className="filter-grid">
                 <div className="form-group">
                   <label>Exam Stage:</label>
                   <select
                     name="examStage"
-                    value={formData.examStage}
-                    onChange={(e) => {
-                      // Reset subject and paperNo when exam stage changes
-                      const newExamStage = e.target.value;
-                      setFormData(prev => ({
-                        ...prev,
-                        examStage: newExamStage,
-                        subject: '',
-                        paperNo: ''
-                      }));
-                      validateField('examStage', newExamStage);
-                    }}
+                    value={filters.examStage}
+                    onChange={handleFilterChange}
                     className="form-input"
-                    required
                   >
-                    <option value="">Select Exam Stage</option>
+                    <option value="">All</option>
                     <option value="Foundation">Foundation</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Final">Final</option>
                   </select>
-                  {errors.examStage && <p className="error-message">{errors.examStage}</p>}
                 </div>
                 <div className="form-group">
                   <label>Subject:</label>
-                  <select
+                  <input
+                    type="text"
                     name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
+                    value={filters.subject}
+                    onChange={handleFilterChange}
                     className="form-input"
-                    required
-                  >
-                    <option value="">Select Subject</option>
-                    {formData.examStage === 'Foundation' ? (
-                      // Foundation subjects
-                      <>
-                        <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                        <option value="Business Law">Business Law</option>
-                        <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                        <option value="Business Mathematics">Business Mathematics</option>
-                        <option value="Logical Reasoning">Logical Reasoning</option>
-                        <option value="Statistics">Statistics</option>
-                        <option value="Business Economics">Business Economics</option>
-                        <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
-                      </>
-                    ) : formData.examStage === 'Intermediate' ? (
-                      // Intermediate subjects
-                      <>
-                        <option value="Advanced Accounting">Advanced Accounting</option>
-                        <option value="Corporate Laws">Corporate Laws</option>
-                        <option value="Cost and Management Accounting">Cost and Management Accounting</option>
-                        <option value="Taxation">Taxation</option>
-                        <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
-                        <option value="Financial and Strategic Management">Financial and Strategic Management</option>
-                      </>
-                    ) : formData.examStage === 'Final' ? (
-                      // Final subjects
-                      <>
-                        <option value="Financial Reporting">Financial Reporting</option>
-                        <option value="Advanced Financial Management">Advanced Financial Management</option>
-                        <option value="Advanced Auditing">Advanced Auditing</option>
-                        <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
-                        <option value="Indirect Tax Laws">Indirect Tax Laws</option>
-                        <option value="Integrated Business Solutions">Integrated Business Solutions</option>
-                      </>
-                    ) : (
-                      // Default subjects when no exam stage is selected
-                      <>
-                        <option value="Advanced Accounting">Advanced Accounting</option>
-                        <option value="Corporate Laws">Corporate Laws</option>
-                        <option value="Taxation">Taxation</option>
-                        <option value="Cost & Management">Cost & Management</option>
-                        <option value="Auditing">Auditing</option>
-                        <option value="Financial Management">Financial Management</option>
-                      </>
-                    )}
-                  </select>
-                  {errors.subject && <p className="error-message">{errors.subject}</p>}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Year:</label>
+                  <input
+                    type="text"
+                    name="year"
+                    value={filters.year}
+                    onChange={handleFilterChange}
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Question Number:</label>
+                  <input
+                    type="text"
+                    name="questionNumber"
+                    value={filters.questionNumber}
+                    onChange={handleFilterChange}
+                    className="form-input"
+                  />
                 </div>
                 <div className="form-group">
                   <label>Paper Type:</label>
                   <select
                     name="paperType"
-                    value={formData.paperType}
-                    onChange={handleChange}
+                    value={filters.paperType}
+                    onChange={handleFilterChange}
                     className="form-input"
-                    required
                   >
-                    <option value="">Select Paper Type</option>
+                    <option value="">All</option>
                     <option value="MTP">MTP</option>
                     <option value="RTP">RTP</option>
                     <option value="PYQS">PYQS</option>
                   </select>
-                  {errors.paperType && <p className="error-message">{errors.paperType}</p>}
-                </div>
-                <div className="form-group">
-                  <label>Year:</label>
-                  <select
-                    name="year"
-                    value={formData.year}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                  >
-                    <option value="">Select Year</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                  </select>
-                  {errors.year && <p className="error-message">{errors.year}</p>}
                 </div>
                 <div className="form-group">
                   <label>Month:</label>
                   <select
                     name="month"
-                    value={formData.month}
-                    onChange={handleChange}
+                    value={filters.month}
+                    onChange={handleFilterChange}
                     className="form-input"
-                    required
                   >
-                    <option value="">Select Month</option>
+                    <option value="">All</option>
                     <option value="January">January</option>
                     <option value="February">February</option>
                     <option value="March">March</option>
@@ -674,377 +927,151 @@ const AdminPanel = () => {
                     <option value="November">November</option>
                     <option value="December">December</option>
                   </select>
-                  {errors.month && <p className="error-message">{errors.month}</p>}
                 </div>
-                {formData.examStage === 'Foundation' && (
+                {filters.examStage === 'Foundation' && (
                   <div className="form-group">
                     <label>Paper No.:</label>
                     <select
                       name="paperNo"
-                      value={formData.paperNo}
-                      onChange={handleChange}
+                      value={filters.paperNo}
+                      onChange={handleFilterChange}
                       className="form-input"
-                      required
                     >
-                      <option value="">Select Paper</option>
+                      <option value="">All</option>
                       <option value="Paper 1">Paper 1</option>
                       <option value="Paper 2">Paper 2</option>
                       <option value="Paper 3">Paper 3</option>
                       <option value="Paper 4">Paper 4</option>
                     </select>
-                    {errors.paperNo && <p className="error-message">{errors.paperNo}</p>}
                   </div>
                 )}
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2>Question Details</h2>
-              <div className="form-group">
-                <label>Question Number:</label>
-                <input
-                  type="text"
-                  name="questionNumber"
-                  value={formData.questionNumber}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                />
-                {errors.questionNumber && <p className="error-message">{errors.questionNumber}</p>}
-              </div>
-              <div className="form-group">
-                <label>Question Text:</label>
-                <textarea
-                  name="questionText"
-                  value={formData.questionText}
-                  onChange={handleChange}
-                  rows={6}
-                  className="form-input"
-                  placeholder="Paste HTML code for tables, or just type your question..."
-                />
-                {errors.questionText && <p className="error-message">{errors.questionText}</p>}
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2>Answer (for Subjective Questions)</h2>
-              <div className="form-group">
-                <label>Answer Text:</label>
-                <textarea
-                  name="answerText"
-                  value={formData.answerText}
-                  onChange={handleChange}
-                  rows={6}
-                  className="form-input"
-                  placeholder="Paste HTML code for tables, or just type your answer..."
-                />
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2>Reference</h2>
-              <div className="form-group">
-                <label>Page Number:</label>
-                <input
-                  type="text"
-                  name="pageNumber"
-                  value={formData.pageNumber}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                />
-                {errors.pageNumber && <p className="error-message">{errors.pageNumber}</p>}
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2>Sub-Questions (Optional)</h2>
-              {formData.subQuestions.map((subQ, subIndex) => (
-                <div key={subIndex} className={`sub-question-section sub-question-${subIndex}`}>
-                  <div className="form-group">
-                    <label>Sub Question {subIndex + 1}:</label>
-                    <textarea
-                      name="subQuestionText"
-                      value={subQ.subQuestionText}
-                      onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
-                      className="form-input"
-                    />
-                    {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
-                  </div>
-                  <div className="sub-options-section">
-                    {subQ.subOptions.map((subOpt, optIndex) => (
-                      <div 
-                        key={optIndex} 
-                        className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
-                      >
-                        <label>Option {optIndex + 1}:</label>
-                        <input
-                          type="text"
-                          name="optionText"
-                          value={subOpt.optionText}
-                          onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
-                          className="form-input"
-                        />
-                        <div className="option-actions">
-                          <button
-                            type="button"
-                            onClick={() => markCorrectSubOption(subIndex, optIndex)}
-                            className="mark-correct-btn"
-                          >
-                            Mark as Correct
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeSubOption(subIndex, optIndex)}
-                            className="remove-btn"
-                          >
-                            Remove Option
-                          </button>
-                        </div>
-                        {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => addSubOption(subIndex)} className="add-btn">
-                      Add Sub Option
-                    </button>
-                  </div>
-                  <div className="sub-question-actions">
-                    <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
-                      Remove This Sub Question
-                    </button>
-                  </div>
+                <div className="form-group">
+                  <label>Search Keyword:</label>
+                  <input
+                    type="text"
+                    name="search"
+                    value={filters.search}
+                    onChange={handleFilterChange}
+                    className="form-input"
+                    placeholder="Enter keywords"
+                  />
                 </div>
-              ))}
-              <button type="button" onClick={addSubQuestion} className="add-btn">
-                Add Sub Question
+              </div>
+              <button onClick={() => applyFilters(localStorage.getItem('token'))} className="apply-filter-btn">
+                Apply Filters
               </button>
             </div>
 
-            <div className="form-actions-container">
-              <div className="form-actions">
-                <button
-                  type="button"
-                  onClick={handlePreview}
-                  className="preview-btn"
-                  disabled={isSubmitting}
-                >
-                  Preview
-                </button>
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : editingQuestionId ? 'Update' : 'Submit'}
-                </button>
-                {editingQuestionId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetForm();
-                      setEditingQuestionId(null);
-                    }}
-                    className="cancel-btn"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
-          </form>
-
-          {/* Advanced Filtering Section */}
-          <div className="filter-section">
-            <h2>Filter Questions</h2>
-            <div className="filter-grid">
-              <div className="form-group">
-                <label>Exam Stage:</label>
-                <select
-                  name="examStage"
-                  value={filters.examStage}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                >
-                  <option value="">All</option>
-                  <option value="Foundation">Foundation</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Final">Final</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Subject:</label>
-                <input
-                  type="text"
-                  name="subject"
-                  value={filters.subject}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label>Year:</label>
-                <input
-                  type="text"
-                  name="year"
-                  value={filters.year}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label>Question Number:</label>
-                <input
-                  type="text"
-                  name="questionNumber"
-                  value={filters.questionNumber}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label>Paper Type:</label>
-                <select
-                  name="paperType"
-                  value={filters.paperType}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                >
-                  <option value="">All</option>
-                  <option value="MTP">MTP</option>
-                  <option value="RTP">RTP</option>
-                  <option value="PYQS">PYQS</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Month:</label>
-                <select
-                  name="month"
-                  value={filters.month}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                >
-                  <option value="">All</option>
-                  <option value="January">January</option>
-                  <option value="February">February</option>
-                  <option value="March">March</option>
-                  <option value="April">April</option>
-                  <option value="May">May</option>
-                  <option value="June">June</option>
-                  <option value="July">July</option>
-                  <option value="August">August</option>
-                  <option value="September">September</option>
-                  <option value="October">October</option>
-                  <option value="November">November</option>
-                  <option value="December">December</option>
-                </select>
-              </div>
-              {filters.examStage === 'Foundation' && (
-                <div className="form-group">
-                  <label>Paper No.:</label>
-                  <select
-                    name="paperNo"
-                    value={filters.paperNo}
-                    onChange={handleFilterChange}
-                    className="form-input"
-                  >
-                    <option value="">All</option>
-                    <option value="Paper 1">Paper 1</option>
-                    <option value="Paper 2">Paper 2</option>
-                    <option value="Paper 3">Paper 3</option>
-                    <option value="Paper 4">Paper 4</option>
-                  </select>
+            <div className="stored-questions-section">
+              <h2>Stored Questions</h2>
+              {storedQuestions.length === 0 ? (
+                <p className="no-questions">No questions stored yet.</p>
+              ) : (
+                <div className="questions-list">
+                  {storedQuestions.map((question) => (
+                    <div key={question._id} className="question-card">
+                      <p><strong>Subject:</strong> {question.subject || 'N/A'}</p>
+                      <p><strong>Paper Type:</strong> {question.paperType || 'N/A'}</p>
+                      <p><strong>Year:</strong> {question.year || 'N/A'}</p>
+                      <p><strong>Month:</strong> {question.month || 'N/A'}</p>
+                      <p><strong>Exam Stage:</strong> {question.examStage || 'N/A'}</p>
+                      {question.paperNo && <p><strong>Paper No.:</strong> {question.paperNo || 'N/A'}</p>}
+                      <p><strong>Question Number:</strong> {question.questionNumber || 'N/A'}</p>
+                      <h3>Question Text:</h3>
+                      <div
+                        className="question-text"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText || 'N/A') }}
+                      />
+                      {question.answerText && (
+                        <>
+                          <h3>Answer Text:</h3>
+                          <div
+                            className="question-text"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.answerText || 'N/A') }}
+                          />
+                        </>
+                      )}
+                      {question.subQuestions && question.subQuestions.length > 0 && (
+                        <div>
+                          <h3>Sub-Questions:</h3>
+                          {question.subQuestions.map((subQ, subIdx) => (
+                            <div key={subIdx} className="sub-question">
+                              <p><strong>Sub Question Number:</strong> {subQ.subQuestionNumber || 'N/A'}</p>
+                              <p><strong>Sub Question Text:</strong> {subQ.subQuestionText || 'N/A'}</p>
+                              {subQ.subOptions && subQ.subOptions.length > 0 && (
+                                <ul className="sub-options">
+                                  {subQ.subOptions.map((subOpt, optIdx) => (
+                                    <li key={optIdx}>
+                                      {subOpt.optionText || 'N/A'}{' '}
+                                      {subOpt.isCorrect && <span className="correct-answer">(Correct)</span>}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <p><strong>Page Number:</strong> {question.pageNumber || 'N/A'}</p>
+                      <div className="question-actions">
+                        <button
+                          onClick={() => handleEdit(question)}
+                          className="edit-btn"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(question._id)}
+                          className="delete-btn"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-              <div className="form-group">
-                <label>Search Keyword:</label>
-                <input
-                  type="text"
-                  name="search"
-                  value={filters.search}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                  placeholder="Enter keywords"
-                />
-              </div>
             </div>
-            <button onClick={() => applyFilters(localStorage.getItem('token'))} className="apply-filter-btn">
-              Apply Filters
-            </button>
-          </div>
 
-          <div className="stored-questions-section">
-            <h2>Stored Questions</h2>
-            {storedQuestions.length === 0 ? (
-              <p className="no-questions">No questions stored yet.</p>
-            ) : (
-              <div className="questions-list">
-                {storedQuestions.map((question) => (
-                  <div key={question._id} className="question-card">
-                    <p><strong>Subject:</strong> {question.subject || 'N/A'}</p>
-                    <p><strong>Paper Type:</strong> {question.paperType || 'N/A'}</p>
-                    <p><strong>Year:</strong> {question.year || 'N/A'}</p>
-                    <p><strong>Month:</strong> {question.month || 'N/A'}</p>
-                    <p><strong>Exam Stage:</strong> {question.examStage || 'N/A'}</p>
-                    {question.paperNo && <p><strong>Paper No.:</strong> {question.paperNo || 'N/A'}</p>}
-                    <p><strong>Question Number:</strong> {question.questionNumber || 'N/A'}</p>
-                    <h3>Question Text:</h3>
-                    <div
-                      className="question-text"
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText || 'N/A') }}
-                    />
-                    {question.answerText && (
-                      <>
-                        <h3>Answer Text:</h3>
-                        <div
-                          className="question-text"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.answerText || 'N/A') }}
-                        />
-                      </>
-                    )}
-                    {question.subQuestions && question.subQuestions.length > 0 && (
-                      <div>
-                        <h3>Sub-Questions:</h3>
-                        {question.subQuestions.map((subQ, subIdx) => (
-                          <div key={subIdx} className="sub-question">
-                            <p><strong>Sub Question Number:</strong> {subQ.subQuestionNumber || 'N/A'}</p>
-                            <p><strong>Sub Question Text:</strong> {subQ.subQuestionText || 'N/A'}</p>
-                            {subQ.subOptions && subQ.subOptions.length > 0 && (
-                              <ul className="sub-options">
-                                {subQ.subOptions.map((subOpt, optIdx) => (
-                                  <li key={optIdx}>
-                                    {subOpt.optionText || 'N/A'}{' '}
-                                    {subOpt.isCorrect && <span className="correct-answer">(Correct)</span>}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <p><strong>Page Number:</strong> {question.pageNumber || 'N/A'}</p>
-                    <div className="question-actions">
-                      <button
-                        onClick={() => handleEdit(question)}
-                        className="edit-btn"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(question._id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            {previewVisible && <PreviewPanel data={formData} onClose={closePreview} />}
+          </>
+        );
+    }
+  };
 
-          {previewVisible && <PreviewPanel data={formData} onClose={closePreview} />}
+  return (
+    <div className="page-wrapper">
+      <Navbar />
+      <section className="admin-section">
+        <div className="admin-container">
+          <h1>Admin Panel</h1>
+          
+          <div className="admin-navigation">
+            <Link 
+              to="/admin" 
+              className={`admin-nav-link ${activeTab === 'questions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('questions')} 
+            >
+              Manage Questions
+            </Link>
+            <Link 
+              to="/admin/resources" 
+              className={`admin-nav-link ${activeTab === 'resources' ? 'active' : ''}`}
+              onClick={() => setActiveTab('resources')} 
+            >
+              Manage PDF Resources
+            </Link>
+            <Link 
+              to="/admin/analytics" 
+              className={`admin-nav-link ${activeTab === 'analytics' ? 'active' : ''}`}
+              onClick={() => setActiveTab('analytics')} 
+            >
+              View Analytics
+            </Link>
+          </div>
+          
+          {renderActiveTab()}
+          
         </div>
       </section>
     </div>

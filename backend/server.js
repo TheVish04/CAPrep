@@ -8,6 +8,7 @@ const questionRoutes = require('./routes/questions');
 const paymentRoutes = require('./routes/payment');
 const resourceRoutes = require('./routes/resources');
 const userRoutes = require('./routes/users');
+const adminRoutes = require('./routes/admin');
 const { authMiddleware, adminMiddleware } = require('./middleware/authMiddleware');
 const cors = require('cors');
 const path = require('path');
@@ -213,6 +214,7 @@ const initializeDatabase = async () => {
     app.use('/api/payment', paymentRoutes);
     app.use('/api/resources', resourceRoutes);
     app.use('/api/users', userRoutes);
+    app.use('/api/admin', adminRoutes);
     
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(__dirname, 'uploads');
@@ -241,6 +243,7 @@ const initializeDatabase = async () => {
       app.use('/api/payment', paymentRoutes);
       app.use('/api/resources', resourceRoutes);
       app.use('/api/users', userRoutes);
+      app.use('/api/admin', adminRoutes);
       return true;
     }
     
