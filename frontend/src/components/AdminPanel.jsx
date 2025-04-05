@@ -44,17 +44,7 @@ const AdminPanel = () => {
   const [hasMore, setHasMore] = useState(true);
   const LIMIT = 10; // For example, 10 per page
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
-    } else {
-      applyFilters(token);
-    }
-  }, [navigate]);
-
-  // Modified fetchQuestions with pagination (if needed) and applying all filters
-  const fetchQuestions = async (token, query = '') => {
+  const fetchQuestions = useCallback(async (token, query = '') => {
     try {
       const response = await fetch(`https://caprep.onrender.com/api/questions${query ? `?${query}` : ''}`, {
         headers: {
@@ -62,20 +52,12 @@ const AdminPanel = () => {
         },
       });
       const data = await response.json();
-      console.log('Fetch response status:', response.status);
-      console.log('Fetch response data:', data);
       if (response.ok) {
         const questions = Array.isArray(data) ? data : [data];
-        console.log('Fetched questions with all fields:', questions);
-        // Sort questions by createdAt date in descending order (newest first)
         const sortedQuestions = questions.sort((a, b) => 
           new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
         );
         setStoredQuestions(sortedQuestions);
-        if (lastSubmittedId && sortedQuestions.some(q => q.id === lastSubmittedId)) {
-          resetForm();
-          setLastSubmittedId(null);
-        }
       } else {
         console.error('Failed to fetch questions:', response.statusText, data);
         alert(`Failed to fetch questions: ${response.statusText} - ${data.error || 'Unknown error'}`);
@@ -84,13 +66,21 @@ const AdminPanel = () => {
       console.error('Error fetching questions:', error);
       alert(`Error fetching questions: ${error.message}`);
     }
-  };
+  }, []);
 
-  // Build query string from filters (including new advanced ones)
-  const applyFilters = (token) => {
+  const applyFilters = useCallback((token) => {
     const query = new URLSearchParams(filters).toString();
     fetchQuestions(token, query);
-  };
+  }, [filters, fetchQuestions]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/');
+    } else {
+      applyFilters(token);
+    }
+  }, [navigate, applyFilters]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -281,7 +271,6 @@ const AdminPanel = () => {
     }));
   };
 
-  // Reset the form and exit edit mode
   const resetForm = () => {
     setFormData({
       subject: '',
@@ -344,7 +333,6 @@ const AdminPanel = () => {
         setLastSubmittedId(result.id);
         applyFilters(token);
         alert('Question added successfully');
-        // Reset the form after successful submission
         resetForm();
       } else {
         alert(`Failed to add question: ${result.error || 'Unknown error'}`);
@@ -406,7 +394,6 @@ const AdminPanel = () => {
         setLastSubmittedId(editingQuestionId);
         applyFilters(token);
         alert('Question updated successfully');
-        // Reset the form after successful update to exit edit mode
         resetForm();
       } else {
         const errorMessage = result.details || result.error || 'Unknown error';
