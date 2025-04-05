@@ -26,6 +26,30 @@ const QuizReview = () => {
 
     const { subject, score, totalQuestions, percentage, date, questionsAttempted, questions } = quizAttempt;
 
+    // Format date with fallback
+    const formatDate = (dateString) => {
+        if (!dateString) return "Not available";
+        
+        // Try to create a date object
+        const dateObj = new Date(dateString);
+        
+        // Check if the date is valid
+        if (isNaN(dateObj.getTime())) {
+            // If the date is stored as a timestamp string, try parsing it
+            if (typeof dateString === 'string' && !isNaN(parseInt(dateString))) {
+                const timestamp = parseInt(dateString);
+                const timestampDate = new Date(timestamp);
+                
+                if (!isNaN(timestampDate.getTime())) {
+                    return timestampDate.toLocaleString();
+                }
+            }
+            return "Not available"; // Fallback if all parsing attempts fail
+        }
+        
+        return dateObj.toLocaleString();
+    };
+
     // Helper to find the full question details using questionId from the attempt
     const getFullQuestion = (questionId) => {
         return questions.find(q => q._id === questionId);
@@ -38,7 +62,7 @@ const QuizReview = () => {
                 <h1>Quiz Review: {subject}</h1>
                 <div className="quiz-summary-bar">
                     <span>Score: {score}/{totalQuestions} ({percentage}%)</span>
-                    <span>Date: {new Date(date).toLocaleString()}</span>
+                    <span>Date: {formatDate(date)}</span>
                 </div>
 
                 <div className="review-questions-list">

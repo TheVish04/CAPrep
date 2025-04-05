@@ -50,6 +50,10 @@ const QuizHistory = () => {
         }
     };
 
+    const navigateToReview = (quizAttempt) => {
+        navigate('/quiz-review', { state: { quizAttempt } });
+    };
+
     return (
         <div className="page-wrapper quiz-history-page">
             <Navbar />
@@ -71,6 +75,7 @@ const QuizHistory = () => {
                                 <th>Subject</th>
                                 <th>Score</th>
                                 <th>Percentage</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,6 +85,18 @@ const QuizHistory = () => {
                                     <td data-label="Subject">{entry.subject}</td>
                                     <td data-label="Score">{entry.score} / {entry.totalQuestions}</td>
                                     <td data-label="Percentage">{entry.percentage}%</td>
+                                    <td data-label="Actions">
+                                        {entry.questionsAttempted && entry.questionsAttempted.length > 0 ? (
+                                            <button 
+                                                className="review-btn"
+                                                onClick={() => navigateToReview(entry)}
+                                            >
+                                                Review
+                                            </button>
+                                        ) : (
+                                            <span className="no-review-available">No details available</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
