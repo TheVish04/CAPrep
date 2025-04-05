@@ -448,7 +448,7 @@ const Questions = () => {
                       </div>
                   )}
                   
-                 {(!q.subQuestions || q.subQuestions.length === 0) && q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                 {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
                    <div className="answer-section main-answer">
                      <h3>Answer:</h3>
                      <div 
