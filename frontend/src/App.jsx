@@ -1,22 +1,22 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 
-// Dynamically import page components
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const About = lazy(() => import('./pages/About'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Login = lazy(() => import('./components/Login'));
-const Register = lazy(() => import('./components/Register'));
-const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
-const ResetPassword = lazy(() => import('./components/ResetPassword'));
-const Questions = lazy(() => import('./components/Questions'));
-const AdminPanel = lazy(() => import('./components/AdminPanel'));
-const Quiz = lazy(() => import('./components/Quiz'));
-const Resources = lazy(() => import('./components/Resources'));
-const ResourceUploader = lazy(() => import('./components/ResourceUploader'));
-const QuizHistory = lazy(() => import('./components/QuizHistory'));
-const UserProfile = lazy(() => import('./components/UserProfile'));
+// Statically import all components
+import LandingPage from './pages/LandingPage';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Login from './components/Login';
+import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import Questions from './components/Questions';
+import AdminPanel from './components/AdminPanel';
+import Quiz from './components/Quiz';
+import Resources from './components/Resources';
+import ResourceUploader from './components/ResourceUploader';
+import QuizHistory from './components/QuizHistory';
+import UserProfile from './components/UserProfile';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -76,9 +76,10 @@ const RedirectIfLoggedIn = ({ element }) => {
 const App = () => {
   return (
     <Router>
-      {/* Add Suspense with a fallback UI */}
-      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
+      {/* Remove Suspense wrapper */}
+      {/* <Suspense fallback={<div>Loading...</div>}> */}
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
           <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
@@ -86,6 +87,8 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          
+          {/* Protected Routes */}
           <Route
             path="/questions"
             element={<ProtectedRoute element={<Questions />} />}
@@ -98,7 +101,7 @@ const App = () => {
             path="/quiz-history"
             element={<ProtectedRoute element={<QuizHistory />} />}
           />
-          <Route
+           <Route
             path="/profile"
             element={<ProtectedRoute element={<UserProfile />} />}
           />
@@ -106,6 +109,8 @@ const App = () => {
             path="/resources"
             element={<ProtectedRoute element={<Resources />} />}
           />
+          
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
@@ -114,9 +119,11 @@ const App = () => {
             path="/admin/resources"
             element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
           />
+          
+          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </Suspense>
+      {/* </Suspense> */}
       <Analytics />
     </Router>
   );
