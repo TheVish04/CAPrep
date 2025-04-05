@@ -66,6 +66,34 @@ const QuizHistory = () => {
             if (quizAttempt.isAiQuiz) {
                 // Create questions from the stored attempt data
                 const aiQuestions = quizAttempt.questionsAttempted.map((attempt, index) => {
+                    // Get option text if available, or generate placeholders
+                    let options = [];
+                    
+                    // If we have the question text stored, create more detailed options
+                    if (attempt.questionText) {
+                        // If we have option texts stored, use those
+                        if (attempt.optionTexts && attempt.optionTexts.length > 0) {
+                            options = attempt.optionTexts.map((optText, optIdx) => ({
+                                optionText: optText || `Option ${String.fromCharCode(65 + optIdx)}`,
+                                isCorrect: optIdx === attempt.correctOptionIndex
+                            }));
+                        } else {
+                            // Create a more complete set of options with the correct one highlighted
+                            options = Array(4).fill(null).map((_, optIdx) => ({
+                                optionText: optIdx === attempt.correctOptionIndex 
+                                    ? `[Correct Option]` 
+                                    : `Option ${String.fromCharCode(65 + optIdx)}`,
+                                isCorrect: optIdx === attempt.correctOptionIndex
+                            }));
+                        }
+                    } else {
+                        // Basic options when we don't have details
+                        options = Array(4).fill(null).map((_, optIdx) => ({
+                            optionText: `Option ${String.fromCharCode(65 + optIdx)}`,
+                            isCorrect: optIdx === attempt.correctOptionIndex
+                        }));
+                    }
+                    
                     // Create a synthetic question object with the necessary structure
                     return {
                         _id: attempt.isAiGenerated ? `ai-question-${index}` : attempt.questionId,
@@ -73,10 +101,7 @@ const QuizHistory = () => {
                         subQuestions: [{
                             subQuestionNumber: '1',
                             subQuestionText: '',
-                            subOptions: Array(4).fill(null).map((_, optIdx) => ({
-                                optionText: `Option ${String.fromCharCode(65 + optIdx)}`,
-                                isCorrect: optIdx === attempt.correctOptionIndex
-                            }))
+                            subOptions: options
                         }]
                     };
                 });

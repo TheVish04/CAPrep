@@ -86,8 +86,17 @@ const QuizReview = () => {
     };
 
     // Helper to find the full question details using questionId from the attempt
-    const getFullQuestion = (questionId) => {
-        return questions.find(q => q._id === questionId);
+    const getFullQuestion = (questionId, index) => {
+        // First try direct ID matching (standard approach)
+        const question = questions.find(q => String(q._id) === String(questionId));
+        if (question) return question;
+        
+        // If not found, try to find by index for AI questions
+        // This happens when question IDs don't match exactly (like with AI generated questions)
+        if (questions[index]) return questions[index];
+        
+        // If still not found, return null and we'll handle the missing question case
+        return null;
     };
 
     return (
@@ -102,9 +111,42 @@ const QuizReview = () => {
 
                 <div className="review-questions-list">
                     {questionsAttempted.map((attempt, index) => {
-                        const fullQuestion = getFullQuestion(attempt.questionId);
+                        const fullQuestion = getFullQuestion(attempt.questionId, index);
                         if (!fullQuestion || !fullQuestion.subQuestions || fullQuestion.subQuestions.length === 0) {
-                            return <div key={index} className="review-question-card error">Question data missing for attempt {index + 1}</div>;
+                            return (
+                                <div key={index} className="review-question-card error">
+                                    <h2>Question {index + 1}</h2>
+                                    <div className="review-question-text">Question data missing for attempt {index + 1}</div>
+                                    {attempt.questionText && (
+                                        <div className="review-question-text">
+                                            <strong>Original Question:</strong> {attempt.questionText}
+                                        </div>
+                                    )}
+                                    {attempt.optionTexts && attempt.optionTexts.length > 0 && (
+                                        <div className="review-options">
+                                            <h4>Options:</h4>
+                                            <ul>
+                                                {attempt.optionTexts.map((optText, optIdx) => (
+                                                    <li key={optIdx} className={
+                                                        `review-option 
+                                                        ${optIdx === attempt.correctOptionIndex ? 'correct-answer' : ''} 
+                                                        ${optIdx === attempt.selectedOptionIndex ? (attempt.isCorrect ? 'selected-correct' : 'selected-incorrect') : ''}`
+                                                    }>
+                                                        <span className="option-marker">{String.fromCharCode(65 + optIdx)}</span>
+                                                        {optText}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    <div className="review-feedback">
+                                        <p className={`status ${attempt.isCorrect ? 'correct' : 'incorrect'}`}>
+                                            <strong>Status: </strong> 
+                                            {attempt.isCorrect ? 'Correct' : 'Incorrect'}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
                         }
                         
                         // Assuming one sub-question per question structure

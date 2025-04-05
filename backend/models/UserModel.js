@@ -69,7 +69,8 @@ const UserSchema = new Schema({
         correctOptionIndex: { type: Number, required: true },
         isCorrect: { type: Boolean, required: true },
         isAiGenerated: { type: Boolean, default: false }, // Flag for AI-generated questions
-        questionText: { type: String, required: false } // Store question text for AI questions
+        questionText: { type: String, required: false }, // Store question text for AI questions
+        optionTexts: { type: [String], required: false } // Store option texts for AI questions
       }
     ]
   }],

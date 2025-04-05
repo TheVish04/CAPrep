@@ -143,6 +143,9 @@ const Quiz = () => {
       // Check if this is an AI-generated question (ID starts with 'ai-question-')
       const isAiQuestion = question._id.toString().startsWith('ai-question-');
       
+      // Store option texts for better review displays
+      const optionTexts = subQuestion.subOptions.map(opt => opt.optionText);
+      
       return {
           // For AI questions, use a placeholder ObjectId compatible with MongoDB
           questionId: isAiQuestion ? "000000000000000000000000" : question._id,
@@ -152,6 +155,7 @@ const Quiz = () => {
           isCorrect,
           // For AI questions, store the full question text since we can't look it up later
           questionText: isAiQuestion ? question.questionText : undefined,
+          optionTexts: isAiQuestion ? optionTexts : undefined,
           isAiGenerated: isAiQuestion
       };
     });
