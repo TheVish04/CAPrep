@@ -418,6 +418,16 @@ const Questions = () => {
                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
                   />
 
+                  {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                    <div className="answer-section main-answer">
+                      <h3>Answer:</h3>
+                      <div 
+                        className="answer-text"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
+                      />
+                    </div>
+                  )}
+                  
                   {q.subQuestions && q.subQuestions.length > 0 && (
                      <div className="subquestions-container">
                        <h3>Sub-Questions:</h3>
@@ -448,16 +458,6 @@ const Questions = () => {
                       </div>
                   )}
                   
-                 {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
-                   <div className="answer-section main-answer">
-                     <h3>Answer:</h3>
-                     <div 
-                       className="answer-text"
-                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
-                     />
-                   </div>
-                 )}
-                 
                  {q.pageNumber && (
                      <p className="page-number-ref"><strong>Reference Page:</strong> {q.pageNumber}</p>
                  )}
