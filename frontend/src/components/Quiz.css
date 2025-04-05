@@ -305,36 +305,50 @@
 .result-actions {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
-.retake-btn, .new-quiz-btn {
-  padding: 12px 25px;
+.result-actions button {
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 1em;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.retake-btn {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--light-color);
+.result-actions button:hover {
+  transform: translateY(-2px);
 }
 
-.retake-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.new-quiz-btn {
-  background-color: var(--primary-color);
+.result-actions .retake-btn {
+  background-color: #ff9800;
   color: white;
 }
 
-.new-quiz-btn:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
+.result-actions .retake-btn:hover {
+  background-color: #f57c00;
+}
+
+.result-actions .new-quiz-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.result-actions .new-quiz-btn:hover {
+  background-color: #388e3c;
+}
+
+.result-actions .history-btn {
+  background-color: var(--accent-color, #03a9f4);
+  color: white;
+}
+
+.result-actions .history-btn:hover {
+  background-color: var(--accent-color-dark, #0288d1);
 }
 
 /* Responsive Styles */
