@@ -44,7 +44,22 @@ const UserSchema = new Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  bookmarkedQuestions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Question'
+  }],
+  quizHistory: [{
+    subject: { type: String, required: true },
+    score: { type: Number, required: true },
+    totalQuestions: { type: Number, required: true },
+    percentage: { type: Number, required: true }, // Store percentage for easier display
+    date: { type: Date, default: Date.now }
+  }],
+  bookmarkedResources: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Resource'
+  }]
 }, {
   timestamps: true
 });

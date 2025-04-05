@@ -65,4 +65,20 @@ const ResourceSchema = new Schema({
   timestamps: true
 });
 
+// Add compound index for common filter fields
+ResourceSchema.index({ 
+  examStage: 1, 
+  subject: 1, 
+  paperType: 1, 
+  year: 1, 
+  month: 1, 
+  paperNo: 1 
+});
+
+// Add text index for searching title and description
+ResourceSchema.index({ title: 'text', description: 'text' });
+
+// Add index for sorting by creation date
+ResourceSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Resource', ResourceSchema); 

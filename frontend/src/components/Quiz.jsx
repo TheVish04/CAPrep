@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import Navbar from './Navbar';
 import './Quiz.css';
+import axios from 'axios';
 
 const Quiz = () => {
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
   
   // State for quiz setup
   const [step, setStep] = useState('setup'); // setup, quiz, result
@@ -27,6 +29,7 @@ const Quiz = () => {
   const [showResults, setShowResults] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0); // Time remaining in seconds
   const [timerInterval, setTimerInterval] = useState(null);
+  const [quizCompleted, setQuizCompleted] = useState(false); // Track if results have been calculated
   
   useEffect(() => {
     // Check if user is logged in
@@ -45,10 +48,12 @@ const Quiz = () => {
     
     const fetchAvailableSubjects = async () => {
       setLoadingSubjects(true);
+      setError(null);
+      setWarning(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(
-          `https://caprep.onrender.com/api/questions/available-subjects?examStage=${encodeURIComponent(examStage)}`,
+        const response = await axios.get(
+          `${API_BASE_URL}/api/questions/available-subjects?examStage=${encodeURIComponent(examStage)}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -56,12 +61,7 @@ const Quiz = () => {
           }
         );
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch available subjects');
-        }
-        
-        const data = await response.json();
+        const data = response.data;
         setAvailableSubjects(data);
         
         if (data.length === 0) {
@@ -71,37 +71,91 @@ const Quiz = () => {
         }
       } catch (error) {
         console.error('Error fetching available subjects:', error);
-        setError(`Failed to load subjects: ${error.message}`);
+        setError(`Failed to load subjects: ${error.response?.data?.error || error.message}`);
+        setAvailableSubjects([]);
       } finally {
         setLoadingSubjects(false);
       }
     };
     
     fetchAvailableSubjects();
-  }, [examStage]);
+  }, [examStage, API_BASE_URL]);
   
-  // Timer effect to count down when quiz is active
+  // Save Quiz History
+  const saveQuizHistory = useCallback(async (quizResult) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      await axios.post(`${API_BASE_URL}/api/users/me/quiz-history`, quizResult, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Quiz history saved successfully');
+    } catch (error) {
+      console.error('Error saving quiz history:', error);
+    }
+  }, [API_BASE_URL]);
+  
+  // Calculate Score and Save History
+  const calculateAndSaveScore = useCallback(() => {
+    if (quizCompleted) return;
+
+    let correctAnswers = 0;
+    questions.forEach((question) => {
+      if (question.subQuestions && question.subQuestions.length > 0) {
+        const subQuestion = question.subQuestions[0];
+        const questionKey = `${question._id}_0`;
+        const selectedOptionIndex = selectedOptions[questionKey];
+        
+        if (selectedOptionIndex !== undefined && subQuestion.subOptions) {
+          const selectedOption = subQuestion.subOptions[selectedOptionIndex];
+          if (selectedOption && selectedOption.isCorrect) {
+            correctAnswers++;
+          }
+        }
+      }
+    });
+    
+    setScore(correctAnswers);
+    setQuizCompleted(true);
+    setShowResults(true);
+    
+    if (questions.length > 0) {
+      saveQuizHistory({
+        subject: subject,
+        score: correctAnswers,
+        totalQuestions: questions.length
+      });
+    }
+  }, [questions, selectedOptions, quizCompleted, saveQuizHistory, subject]);
+  
+  // Timer effect
   useEffect(() => {
-    if (step === 'quiz' && timeRemaining > 0) {
-      const interval = setInterval(() => {
+    let intervalId = null;
+    if (step === 'quiz' && timeRemaining > 0 && !quizCompleted) {
+      intervalId = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
-            clearInterval(interval);
-            // Time's up, calculate score and show results
-            calculateScore();
+            clearInterval(intervalId);
+            calculateAndSaveScore();
             setStep('result');
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      
-      setTimerInterval(interval);
-      
-      // Cleanup timer when component unmounts or quiz ends
-      return () => clearInterval(interval);
+      setTimerInterval(intervalId);
+    } else if (step !== 'quiz' || quizCompleted) {
+      if (timerInterval) clearInterval(timerInterval);
     }
-  }, [step, timeRemaining]);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [step, timeRemaining, quizCompleted, calculateAndSaveScore]);
   
   const handleStartQuiz = async () => {
     // Validate selections
@@ -123,11 +177,12 @@ const Quiz = () => {
     setLoading(true);
     setError(null);
     setWarning(null);
+    setQuizCompleted(false);
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `https://caprep.onrender.com/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}&limit=${questionCount}`,
+      const response = await axios.get(
+        `${API_BASE_URL}/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}&limit=${questionCount}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -135,20 +190,14 @@ const Quiz = () => {
         }
       );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch quiz questions');
-      }
+      const data = response.data;
       
-      const data = await response.json();
-      
-      if (data.length === 0) {
+      if (!Array.isArray(data) || data.length === 0) {
         throw new Error('No MCQ questions available for the selected criteria');
       }
       
-      // Check if fewer questions were returned than requested
       if (data.length < questionCount) {
-        setWarning(`Only ${data.length} questions are available for this subject. Quiz will proceed with the available questions.`);
+        setWarning(`Only ${data.length} questions are available for this subject. Quiz will proceed with these.`);
       }
       
       setQuestions(data);
@@ -156,18 +205,18 @@ const Quiz = () => {
       setSelectedOptions({});
       setScore(0);
       setShowResults(false);
-      // Set time limit in seconds
       setTimeRemaining(timeLimit * 60);
       setStep('quiz');
     } catch (error) {
       console.error('Error starting quiz:', error);
-      setError(error.message);
+      setError(error.response?.data?.error || error.message || 'Failed to start quiz');
     } finally {
       setLoading(false);
     }
   };
   
   const handleOptionSelect = (questionId, subQuestionIndex, optionIndex) => {
+    if (quizCompleted) return;
     setSelectedOptions(prev => ({
       ...prev,
       [`${questionId}_${subQuestionIndex}`]: optionIndex
@@ -178,8 +227,7 @@ const Quiz = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      calculateScore();
-      // Clear the timer when quiz ends
+      calculateAndSaveScore();
       if (timerInterval) clearInterval(timerInterval);
       setStep('result');
     }
@@ -191,33 +239,12 @@ const Quiz = () => {
     }
   };
   
-  const calculateScore = () => {
-    let correctAnswers = 0;
-    
-    // Loop through each question and compare selected options with correct answers
-    questions.forEach((question) => {
-      question.subQuestions.forEach((subQuestion, subIndex) => {
-        const questionKey = `${question._id}_${subIndex}`;
-        const selectedOptionIndex = selectedOptions[questionKey];
-        
-        // If an option was selected for this question
-        if (selectedOptionIndex !== undefined) {
-          const selectedOption = subQuestion.subOptions[selectedOptionIndex];
-          if (selectedOption && selectedOption.isCorrect) {
-            correctAnswers++;
-          }
-        }
-      });
-    });
-    
-    setScore(correctAnswers);
-  };
-  
   const handleRetakeQuiz = () => {
     setCurrentQuestionIndex(0);
     setSelectedOptions({});
     setScore(0);
-    // Reset the timer
+    setShowResults(false);
+    setQuizCompleted(false);
     setTimeRemaining(timeLimit * 60);
     setStep('quiz');
   };
@@ -227,7 +254,7 @@ const Quiz = () => {
     setExamStage('');
     setSubject('');
     setQuestions([]);
-    // Keep the last used values for questionCount and timeLimit
+    setQuizCompleted(false);
   };
   
   // Format time from seconds to MM:SS and determine timer class
@@ -239,6 +266,7 @@ const Quiz = () => {
 
   // Get timer class based on remaining time
   const getTimerClass = () => {
+    if (timeLimit <= 0) return 'quiz-timer';
     const totalSeconds = timeLimit * 60;
     const percentage = (timeRemaining / totalSeconds) * 100;
     
@@ -265,6 +293,7 @@ const Quiz = () => {
               setExamStage(e.target.value);
               setSubject(''); // Reset subject when exam stage changes
             }}
+            disabled={loading}
           >
             <option value="">Select Exam Stage</option>
             <option value="Foundation">Foundation</option>
@@ -324,6 +353,7 @@ const Quiz = () => {
                 setQuestionCount(50);
               }
             }}
+            disabled={loading}
           />
         </div>
         
@@ -356,6 +386,7 @@ const Quiz = () => {
                 setTimeLimit(180);
               }
             }}
+            disabled={loading}
           />
         </div>
         
@@ -461,6 +492,9 @@ const Quiz = () => {
           </button>
           <button className="new-quiz-btn" onClick={handleSetupNewQuiz}>
             Start New Quiz
+          </button>
+          <button className="history-btn" onClick={() => navigate('/quiz-history')}>
+            View Quiz History
           </button>
         </div>
       </div>

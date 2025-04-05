@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import './Resources.css';
 import DonationButton from './DonationButton';
+import axios from 'axios';
+
+// Re-use Bookmark icon from Questions component (or define it here if preferred)
+const BookmarkIcon = ({ filled }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? '#03a9f4' : 'none'} stroke={filled ? 'none' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
 
 const Resources = () => {
   const navigate = useNavigate();
@@ -10,7 +18,6 @@ const Resources = () => {
   const [resources, setResources] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Filters state with the same criteria as questions
   const [filters, setFilters] = useState({
     subject: '',
     paperType: '',
@@ -19,89 +26,136 @@ const Resources = () => {
     examStage: '',
     paperNo: '',
     search: '',
+    bookmarked: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [bookmarkedResourceIds, setBookmarkedResourceIds] = useState(new Set());
   const resourcesPerPage = 10;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
 
-  // Apply query parameters to filters
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const examStageParam = params.get('examStage');
-    const subjectParam = params.get('subject');
-    
-    const newFilters = { ...filters };
-    
-    if (examStageParam) {
-      newFilters.examStage = examStageParam;
+  // --- Fetch Bookmarked Resource IDs --- 
+  const fetchBookmarkIds = useCallback(async (token) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/users/me/bookmarks/resources/ids`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (response.data && response.data.bookmarkedResourceIds) {
+        setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
+      }
+    } catch (err) {
+      console.error('Error fetching resource bookmark IDs:', err);
     }
-    
-    if (subjectParam) {
-      newFilters.subject = subjectParam;
-    }
-    
-    if (examStageParam || subjectParam) {
-      setFilters(newFilters);
-    }
-  }, [location.search]);
+  }, [API_BASE_URL]);
 
-  // Fetch resources
+  // --- Fetch Resources based on filters --- 
+  const fetchResources = useCallback(async (token, currentFilters) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      const response = await axios.get(`${API_BASE_URL}/api/resources`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        params: params
+      });
+      setResources(response.data || []);
+    } catch (err) {
+      console.error('Error fetching resources:', err);
+      setError(err.response?.data?.error || err.message || 'Failed to fetch resources');
+      setResources([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE_URL]);
+
+  // --- Initial Load --- 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/');
+      navigate('/login'); // Redirect to login if no token
     } else {
-      const fetchResources = async () => {
-        try {
-          setLoading(true);
-          const response = await fetch('https://caprep.onrender.com/api/resources', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          if (!response.ok) {
-            throw new Error(`Failed to fetch resources: Status ${response.status} - ${response.statusText}`);
-          }
-          const data = await response.json();
-          console.log('Fetched resources:', data);
-          setResources(data);
-          setLoading(false);
-        } catch (error) {
-          console.error('Error fetching resources:', error);
-          setError(error.message);
-          setLoading(false);
-        }
-      };
-      fetchResources();
+      fetchBookmarkIds(token);
+      // Apply URL params to initial filters before fetching
+      const params = new URLSearchParams(location.search);
+      const initialFilters = { ...filters }; // Start with default filters
+      if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
+      if (params.get('subject')) initialFilters.subject = params.get('subject');
+      if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
+      // Update state once, triggering the fetch effect
+      setFilters(initialFilters);
     }
-  }, [navigate]);
+  }, [navigate, location.search, fetchBookmarkIds]); // Rerun if location search changes
+
+  // --- Fetch on Filter Change --- 
+   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        // Fetch whenever filters state changes
+        fetchResources(token, filters);
+    }
+    // Exclude fetchResources if wrapped in useCallback and API_BASE_URL is stable
+  }, [filters]); // Dependency on filters object
+
 
   // Get unique years for filtering
   const getUniqueYears = () => {
     const uniqueYears = [...new Set(resources.map((r) => r.year))];
-    return uniqueYears.sort((a, b) => b - a); // Sort in descending order
+    return uniqueYears.sort((a, b) => b - a); // Sort descending
   };
 
-  // Filter resources based on selected criteria
-  const filteredResources = resources.filter((r) => {
-    return (
-      (!filters.subject || r.subject === filters.subject) &&
-      (!filters.paperType || r.paperType === filters.paperType) &&
-      (!filters.year || r.year === filters.year) &&
-      (!filters.month || r.month === filters.month) &&
-      (!filters.examStage || r.examStage === filters.examStage) &&
-      (!filters.paperNo || r.paperNo === filters.paperNo) &&
-      (!filters.search || 
-        (r.title && r.title.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (r.description && r.description.toLowerCase().includes(filters.search.toLowerCase()))
-      )
-    );
-  });
+  // --- Handle Filter Input Change --- 
+  const handleFilterChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    setFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters, [name]: newValue };
+      if (name === 'examStage') {
+          updatedFilters.subject = '';
+          updatedFilters.paperNo = '';
+      }
+      setCurrentPage(1); // Reset page on filter change
+      return updatedFilters;
+    });
+  };
+
+  // --- Handle Bookmark Toggle --- 
+  const handleBookmarkToggle = async (resourceId) => {
+    const token = localStorage.getItem('token');
+    if (!token) return navigate('/login');
+
+    const isCurrentlyBookmarked = bookmarkedResourceIds.has(resourceId);
+    const method = isCurrentlyBookmarked ? 'delete' : 'post';
+    const url = `${API_BASE_URL}/api/users/me/bookmarks/resource/${resourceId}`;
+
+    try {
+      const response = await axios[method](url, {}, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.data && response.data.bookmarkedResourceIds) {
+        setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
+      }
+      
+      // Refetch if viewing bookmarks and one was removed
+      if (isCurrentlyBookmarked && filters.bookmarked) {
+          fetchResources(token, filters);
+      }
+
+    } catch (err) {
+      console.error('Error updating resource bookmark:', err);
+      alert(err.response?.data?.error || 'Failed to update bookmark');
+    }
+  };
 
   // Pagination logic
   const indexOfLastResource = currentPage * resourcesPerPage;
   const indexOfFirstResource = indexOfLastResource - resourcesPerPage;
-  const currentResources = filteredResources.slice(indexOfFirstResource, indexOfLastResource);
-  const totalPages = Math.ceil(filteredResources.length / resourcesPerPage);
+  const currentResources = resources.slice(indexOfFirstResource, indexOfLastResource);
+  const totalPages = Math.ceil(resources.length / resourcesPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -109,25 +163,31 @@ const Resources = () => {
   const handleDownload = async (resource) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) return navigate('/login'); // Redirect if not logged in
       
-      // Increment download count
-      await fetch(`https://caprep.onrender.com/api/resources/${resource._id}/download`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Increment download count (fire and forget, or handle response if needed)
+      axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(err => console.error('Failed to increment download count:', err)); // Log error if count fails
       
-      // Create a full URL for the resource
-      const resourceUrl = `https://caprep.onrender.com${resource.fileUrl}`;
+      // Construct the full URL correctly for opening
+      // Assuming fileUrl is like "/uploads/resources/filename.pdf"
+      const resourceUrl = `${API_BASE_URL}${resource.fileUrl}`;
       
-      // Open the PDF file in a new tab
       window.open(resourceUrl, '_blank');
-    } catch (error) {
-      console.error('Error downloading resource:', error);
-      alert('Failed to download the resource. Please try again.');
+    } catch (error) { // Catch errors related to window.open or URL construction
+      console.error('Error preparing resource download:', error);
+      alert('Failed to open the resource. Please check pop-up blockers or try again.');
     }
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+      if (bytes === 0 || !bytes) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
@@ -137,39 +197,28 @@ const Resources = () => {
         <div className="resources-container">
           <h1>Study Resources</h1>
           
-          {error && (
-            <div className="error">
-              <p>Error: {error}</p>
-            </div>
-          )}
+          {loading && <div className="loading-indicator">Loading resources...</div>}
+          {error && <div className="error"><p>Error: {error}</p></div>}
 
           <div className="resources-actions">
             <div className="search-bar">
               <input
                 type="text"
-                placeholder="Search resources..."
+                name="search"
+                placeholder="Search resources by title/description..."
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={handleFilterChange}
+                disabled={loading}
               />
             </div>
             <DonationButton buttonText="Support Us 📚" />
           </div>
 
-          {/* Filters Section */}
+          {/* --- Filters Section --- */}
           <div className="filters">
             <div className="filter-group">
-              <label>Filter by Exam Stage:</label>
-              <select
-                value={filters.examStage}
-                onChange={(e) => {
-                  setFilters({ 
-                    ...filters, 
-                    examStage: e.target.value, 
-                    subject: '',
-                    paperNo: '',
-                  });
-                }}
-              >
+              <label>Exam Stage:</label>
+              <select name="examStage" value={filters.examStage} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="Foundation">Foundation</option>
                 <option value="Intermediate">Intermediate</option>
@@ -177,14 +226,10 @@ const Resources = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Subject:</label>
-              <select
-                value={filters.subject}
-                onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-              >
+              <label>Subject:</label>
+              <select name="subject" value={filters.subject} onChange={handleFilterChange} disabled={loading || !filters.examStage}>
                 <option value="">All</option>
                 {filters.examStage === 'Foundation' ? (
-                  // Foundation subjects
                   <>
                     <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
                     <option value="Business Law">Business Law</option>
@@ -196,7 +241,6 @@ const Resources = () => {
                     <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                   </>
                 ) : filters.examStage === 'Intermediate' ? (
-                  // Intermediate subjects
                   <>
                     <option value="Advanced Accounting">Advanced Accounting</option>
                     <option value="Corporate Laws">Corporate Laws</option>
@@ -206,7 +250,6 @@ const Resources = () => {
                     <option value="Financial and Strategic Management">Financial and Strategic Management</option>
                   </>
                 ) : filters.examStage === 'Final' ? (
-                  // Final subjects
                   <>
                     <option value="Financial Reporting">Financial Reporting</option>
                     <option value="Advanced Financial Management">Advanced Financial Management</option>
@@ -216,7 +259,6 @@ const Resources = () => {
                     <option value="Integrated Business Solutions">Integrated Business Solutions</option>
                   </>
                 ) : (
-                  // Default subjects when no exam stage is selected
                   <>
                     <option value="Advanced Accounting">Advanced Accounting</option>
                     <option value="Corporate Laws">Corporate Laws</option>
@@ -229,11 +271,8 @@ const Resources = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Paper Type:</label>
-              <select
-                value={filters.paperType}
-                onChange={(e) => setFilters({ ...filters, paperType: e.target.value })}
-              >
+              <label>Paper Type:</label>
+              <select name="paperType" value={filters.paperType} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="MTP">MTP</option>
                 <option value="RTP">RTP</option>
@@ -242,25 +281,15 @@ const Resources = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Year:</label>
-              <select
-                value={filters.year}
-                onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-              >
+              <label>Year:</label>
+              <select name="year" value={filters.year} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
-                {getUniqueYears().map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
+                {getUniqueYears().map(year => <option key={year} value={year}>{year}</option>)}
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Month:</label>
-              <select
-                value={filters.month}
-                onChange={(e) => setFilters({ ...filters, month: e.target.value })}
-              >
+              <label>Month:</label>
+              <select name="month" value={filters.month} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="January">January</option>
                 <option value="February">February</option>
@@ -278,11 +307,8 @@ const Resources = () => {
             </div>
             {filters.examStage === 'Foundation' && (
               <div className="filter-group">
-                <label>Filter by Paper Number:</label>
-                <select
-                  value={filters.paperNo}
-                  onChange={(e) => setFilters({ ...filters, paperNo: e.target.value })}
-                >
+                <label>Paper Number:</label>
+                <select name="paperNo" value={filters.paperNo} onChange={handleFilterChange} disabled={loading}>
                   <option value="">All</option>
                   <option value="1">Paper 1</option>
                   <option value="2">Paper 2</option>
@@ -291,64 +317,76 @@ const Resources = () => {
                 </select>
               </div>
             )}
+            <div className="filter-group filter-group-bookmark">
+              <label htmlFor="resourceBookmarkFilter" className="bookmark-filter-label">
+                <input
+                  type="checkbox"
+                  id="resourceBookmarkFilter"
+                  name="bookmarked"
+                  checked={filters.bookmarked}
+                  onChange={handleFilterChange}
+                  disabled={loading}
+                  className="bookmark-checkbox"
+                />
+                Show Bookmarked Only
+              </label>
+            </div>
           </div>
 
-          {/* Display loading state */}
-          {loading ? (
-            <div className="loading">
-              <p>Loading resources...</p>
-            </div>
-          ) : currentResources.length === 0 ? (
+          {/* --- Resource List --- */}
+          {!loading && resources.length === 0 && !error && (
             <div className="no-resources">
               <p>No resources found matching the selected filters.</p>
             </div>
-          ) : (
-            <>
-              {/* Resources Display */}
-              <div className="resources-list">
-                {currentResources.map((resource) => (
-                  <div key={resource._id} className="resource-card">
-                    <div className="resource-info">
-                      <h3>{resource.title}</h3>
-                      <p className="resource-description">{resource.description}</p>
-                      <div className="resource-meta">
-                        <span><strong>Subject:</strong> {resource.subject}</span>
-                        <span><strong>Paper Type:</strong> {resource.paperType}</span>
-                        <span><strong>Exam Stage:</strong> {resource.examStage}</span>
-                        <span><strong>Year:</strong> {resource.year}</span>
-                        <span><strong>Month:</strong> {resource.month}</span>
-                        {resource.paperNo && <span><strong>Paper Number:</strong> {resource.paperNo}</span>}
-                        <span><strong>Downloads:</strong> {resource.downloadCount}</span>
-                      </div>
-                    </div>
-                    <div className="resource-actions">
-                      <button 
-                        className="download-btn"
-                        onClick={() => handleDownload(resource)}
-                      >
-                        Download PDF
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="pagination">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      onClick={() => paginate(pageNumber)}
-                      className={currentPage === pageNumber ? 'active' : ''}
-                    >
-                      {pageNumber}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
           )}
+
+          {!loading && resources.length > 0 && (
+            <div className="resources-list">
+              {currentResources.map((r) => (
+                <div key={r._id} className="resource-card">
+                  <div className="resource-header">
+                    <h3 className="resource-title">{r.title}</h3>
+                    <button 
+                      onClick={() => handleBookmarkToggle(r._id)} 
+                      className="bookmark-btn resource-bookmark-btn"
+                      title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                     >
+                       <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
+                    </button>
+                  </div>
+                  <p className="resource-description">{r.description || 'No description available.'}</p>
+                  <div className="resource-meta">
+                    <span>{r.subject}</span> | 
+                    <span>{r.paperType}</span> | 
+                    <span>{r.year} {r.month}</span> | 
+                    <span>{r.examStage}</span> 
+                    {r.paperNo && <span> | Paper {r.paperNo}</span>}
+                  </div>
+                   <div className="resource-footer">
+                      <span className="file-size">Size: {formatFileSize(r.fileSize)}</span>
+                      <button onClick={() => handleDownload(r)} className="download-btn">
+                        Download / View PDF
+                      </button>
+                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* --- Pagination --- */}
+          {!loading && totalPages > 1 && (
+             <div className="pagination">
+               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                 <button
+                   key={page}
+                   onClick={() => paginate(page)}
+                   className={currentPage === page ? 'active' : ''}
+                 >
+                   {page}
+                 </button>
+               ))}
+             </div>
+           )}
         </div>
       </div>
     </div>

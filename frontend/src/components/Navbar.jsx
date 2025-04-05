@@ -38,7 +38,8 @@ const Navbar = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     setIsAdmin(false);
-    navigate('/');
+    navigate('/login'); // Navigate to login after logout
+    setIsMenuOpen(false); // Close menu on logout
   };
 
   const toggleMenu = () => {
@@ -129,6 +130,15 @@ const Navbar = () => {
               >
                 <Link to="/resources" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                   Resources
+                </Link>
+              </motion.li>
+              
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/profile" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Profile
                 </Link>
               </motion.li>
               

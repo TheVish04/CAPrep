@@ -1,119 +1,195 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import Navbar from './Navbar';
-import PreviewPanel from './PreviewPanel'; // We'll keep this import for now
 import { generateQuestionsPDF, savePDF } from '../utils/pdfGenerator';
 import './Questions.css';
 import DonationButton from './DonationButton';
+import axios from 'axios';
+
+// Add a Bookmark icon component (simple example)
+const BookmarkIcon = ({ filled }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? '#03a9f4' : 'none'} stroke={filled ? 'none' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
 
 const Questions = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState(null);
-  // Updated filters state with new criteria
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     subject: '',
     paperType: '',
+    year: '',
     questionNumber: '',
     month: '',
     examStage: '',
     paperNo: '',
     search: '',
+    bookmarked: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showAnswers, setShowAnswers] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false); // State for modal visibility
-  const [selectedQuestion, setSelectedQuestion] = useState(null); // State for selected question
-  const [individualShowAnswers, setIndividualShowAnswers] = useState({}); // Track individual question answer visibility
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [individualShowAnswers, setIndividualShowAnswers] = useState({});
+  const [bookmarkedQuestionIds, setBookmarkedQuestionIds] = useState(new Set());
   const questionsPerPage = 5;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
 
-  // Apply query parameters to filters
+  // --- Fetch Bookmarked Question IDs --- 
+  const fetchBookmarkIds = useCallback(async (token) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/users/me/bookmarks/ids`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.data && response.data.bookmarkedQuestionIds) {
+        setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
+      }
+    } catch (err) {
+      console.error('Error fetching bookmark IDs:', err);
+    }
+  }, [API_BASE_URL]);
+
+  // --- Fetch Questions based on filters --- 
+  const fetchQuestions = useCallback(async (token, currentFilters) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value) {
+            params.append(key, value);
+        }
+      });
+
+      const response = await axios.get(`${API_BASE_URL}/api/questions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        params: params
+      });
+
+      setQuestions(response.data || []);
+    } catch (err) {
+      console.error('Error fetching questions:', err);
+      setError(err.response?.data?.error || err.message || 'Failed to fetch questions');
+      setQuestions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE_URL]);
+
+  // --- Initial Load: Check Token, Fetch Bookmarks & Initial Questions --- 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      fetchBookmarkIds(token);
+      fetchQuestions(token, filters);
+    }
+  }, [navigate]);
+
+  // --- Handle Filter Changes --- 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        fetchQuestions(token, filters);
+    }
+  }, [filters, fetchQuestions]);
+
+  // --- Apply query parameters from URL to filters on initial load --- 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const examStageParam = params.get('examStage');
     const subjectParam = params.get('subject');
+    const bookmarkedParam = params.get('bookmarked') === 'true';
     
-    const newFilters = { ...filters };
+    setFilters(prevFilters => {
+        const newFilters = { ...prevFilters };
+        if (examStageParam) newFilters.examStage = examStageParam;
+        if (subjectParam) newFilters.subject = subjectParam;
+        if (bookmarkedParam) newFilters.bookmarked = bookmarkedParam;
+        return newFilters;
+    });
     
-    if (examStageParam) {
-      newFilters.examStage = examStageParam;
-    }
-    
-    if (subjectParam) {
-      newFilters.subject = subjectParam;
-    }
-    
-    if (examStageParam || subjectParam) {
-      setFilters(newFilters);
-    }
   }, [location.search]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
-    } else {
-      const fetchQuestions = async () => {
-        try {
-          const response = await fetch('https://caprep.onrender.com/api/questions', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          if (!response.ok) {
-            throw new Error(`Failed to fetch questions: Status ${response.status} - ${response.statusText}`);
-          }
-          const data = await response.json();
-          console.log('Fetched questions:', data);
-          setQuestions(data);
-        } catch (error) {
-          console.error('Error fetching questions:', error);
-          setError(error.message);
-        }
-      };
-      fetchQuestions();
-    }
-  }, [navigate]);
-
-  const handlePreview = (questionId) => {
-    const question = questions.find((q) => q.id === questionId);
-    if (question) {
-      setSelectedQuestion(question);
-      setPreviewOpen(true);
-    }
+  // --- Get unique years for filtering --- 
+  const getUniqueYears = () => {
+    const uniqueYears = [...new Set(questions.map((q) => q.year))];
+    return uniqueYears.sort((a, b) => b - a);
   };
 
-  const handleClosePreview = () => {
-    setPreviewOpen(false);
-    setSelectedQuestion(null);
-  };
-
-  // Generate unique question numbers for the current subject
+  // --- Get unique question numbers for filtering --- 
   const getUniqueQuestionNumbers = () => {
     const subjectFiltered = questions.filter((q) => !filters.subject || q.subject === filters.subject);
     const uniqueQuestionNumbers = [...new Set(subjectFiltered.map((q) => q.questionNumber))];
-    return uniqueQuestionNumbers.sort(); // Sort for better UX
+    return uniqueQuestionNumbers.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
   };
 
-  // Updated filtering logic to include new criteria and search keyword (case-insensitive)
-  const filteredQuestions = questions.filter((q) => {
-    return (
-      (!filters.subject || q.subject === filters.subject) &&
-      (!filters.paperType || q.paperType === filters.paperType) &&
-      (!filters.questionNumber || q.questionNumber === filters.questionNumber) &&
-      (!filters.month || q.month === filters.month) &&
-      (!filters.examStage || q.examStage === filters.examStage) &&
-      (!filters.paperNo || q.paperNo === filters.paperNo) &&
-      (!filters.search || (q.questionText && q.questionText.toLowerCase().includes(filters.search.toLowerCase())))
-    );
-  });
+  // --- Handle Filter Input Change --- 
+  const handleFilterChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    setFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters, [name]: newValue };
+      
+      if (name === 'examStage') {
+          updatedFilters.subject = '';
+          updatedFilters.paperNo = '';
+          updatedFilters.questionNumber = ''; 
+      } else if (name === 'subject') {
+          updatedFilters.questionNumber = '';
+      }
+      
+      setCurrentPage(1);
+      
+      return updatedFilters;
+    });
+  };
+
+  // --- Handle Bookmark Toggle --- 
+  const handleBookmarkToggle = async (questionId) => {
+    const token = localStorage.getItem('token');
+    if (!token) return navigate('/login');
+
+    const isCurrentlyBookmarked = bookmarkedQuestionIds.has(questionId);
+    const method = isCurrentlyBookmarked ? 'delete' : 'post';
+    const url = `${API_BASE_URL}/api/users/me/bookmarks/${questionId}`;
+
+    try {
+      const response = await axios[method](url, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data && response.data.bookmarkedQuestionIds) {
+        setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
+      }
+      
+      if (isCurrentlyBookmarked && filters.bookmarked) {
+          fetchQuestions(token, filters);
+      }
+
+    } catch (err) {
+      console.error('Error updating bookmark:', err);
+      alert(err.response?.data?.error || 'Failed to update bookmark');
+    }
+  };
 
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-  const currentQuestions = filteredQuestions.slice(indexOfFirstQuestion, indexOfLastQuestion);
-  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+  const currentQuestions = questions.slice(indexOfFirstQuestion, indexOfLastQuestion);
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -127,25 +203,22 @@ const Questions = () => {
   
   // Handle PDF export
   const handleExportPDF = () => {
-    if (filteredQuestions.length === 0) {
-      alert('No questions to export. Please adjust your filters.');
+    if (questions.length === 0) {
+      alert('No questions to export based on current filters.');
       return;
     }
-    
-    // Generate the PDF document
-    const doc = generateQuestionsPDF(filteredQuestions, filters, showAnswers, individualShowAnswers);
-    
-    // Save the PDF
+    const doc = generateQuestionsPDF(questions, filters, showAnswers, individualShowAnswers);
     savePDF(doc);
   };
 
-  // We'll modify the rendering of question cards to remove the preview button
   return (
     <div className="page-wrapper">
       <Navbar />
       <div className="questions-section">
         <div className="questions-container">
           <h1>Question Papers</h1>
+          
+          {loading && <div className="loading-indicator">Loading questions...</div>}
           
           {error && (
             <div className="error">
@@ -154,35 +227,23 @@ const Questions = () => {
           )}
 
           <div className="questions-actions">
-            <button className="export-btn" onClick={handleExportPDF}>
+            <button className="export-btn" onClick={handleExportPDF} disabled={loading || questions.length === 0}>
               Export to PDF
             </button>
             <button 
               className={`toggle-answers-btn ${showAnswers ? 'active' : ''}`}
               onClick={() => setShowAnswers(!showAnswers)}
+              disabled={loading}
             >
               {showAnswers ? 'Hide All Answers' : 'Show All Answers'}
             </button>
             <DonationButton buttonText="Support Us 📚" />
           </div>
 
-          {/* Filters Section */}
           <div className="filters">
             <div className="filter-group">
-              <label>Filter by Exam Stage:</label>
-              <select
-                value={filters.examStage}
-                onChange={(e) => {
-                  // Reset subject and paperNo when exam stage changes
-                  setFilters({ 
-                    ...filters, 
-                    examStage: e.target.value, 
-                    subject: '',
-                    paperNo: '',
-                    questionNumber: '' 
-                  });
-                }}
-              >
+              <label>Exam Stage:</label>
+              <select name="examStage" value={filters.examStage} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="Foundation">Foundation</option>
                 <option value="Intermediate">Intermediate</option>
@@ -190,14 +251,10 @@ const Questions = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Subject:</label>
-              <select
-                value={filters.subject}
-                onChange={(e) => setFilters({ ...filters, subject: e.target.value, questionNumber: '' })}
-              >
+              <label>Subject:</label>
+              <select name="subject" value={filters.subject} onChange={handleFilterChange} disabled={loading || !filters.examStage}>
                 <option value="">All</option>
                 {filters.examStage === 'Foundation' ? (
-                  // Foundation subjects
                   <>
                     <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
                     <option value="Business Law">Business Law</option>
@@ -209,7 +266,6 @@ const Questions = () => {
                     <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                   </>
                 ) : filters.examStage === 'Intermediate' ? (
-                  // Intermediate subjects
                   <>
                     <option value="Advanced Accounting">Advanced Accounting</option>
                     <option value="Corporate Laws">Corporate Laws</option>
@@ -219,7 +275,6 @@ const Questions = () => {
                     <option value="Financial and Strategic Management">Financial and Strategic Management</option>
                   </>
                 ) : filters.examStage === 'Final' ? (
-                  // Final subjects
                   <>
                     <option value="Financial Reporting">Financial Reporting</option>
                     <option value="Advanced Financial Management">Advanced Financial Management</option>
@@ -229,24 +284,14 @@ const Questions = () => {
                     <option value="Integrated Business Solutions">Integrated Business Solutions</option>
                   </>
                 ) : (
-                  // Default subjects when no exam stage is selected
                   <>
-                    <option value="Advanced Accounting">Advanced Accounting</option>
-                    <option value="Corporate Laws">Corporate Laws</option>
-                    <option value="Taxation">Taxation</option>
-                    <option value="Cost & Management">Cost & Management</option>
-                    <option value="Auditing">Auditing</option>
-                    <option value="Financial Management">Financial Management</option>
                   </>
                 )}
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Paper Type:</label>
-              <select
-                value={filters.paperType}
-                onChange={(e) => setFilters({ ...filters, paperType: e.target.value })}
-              >
+              <label>Paper Type:</label>
+              <select name="paperType" value={filters.paperType} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="MTP">MTP</option>
                 <option value="RTP">RTP</option>
@@ -254,11 +299,19 @@ const Questions = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Filter by Month:</label>
-              <select
-                value={filters.month}
-                onChange={(e) => setFilters({ ...filters, month: e.target.value })}
-              >
+              <label>Year:</label>
+              <select name="year" value={filters.year} onChange={handleFilterChange} disabled={loading}>
+                <option value="">All</option>
+                {getUniqueYears().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>Month:</label>
+              <select name="month" value={filters.month} onChange={handleFilterChange} disabled={loading}>
                 <option value="">All</option>
                 <option value="January">January</option>
                 <option value="February">February</option>
@@ -276,11 +329,8 @@ const Questions = () => {
             </div>
             {filters.examStage === 'Foundation' && (
               <div className="filter-group">
-                <label>Filter by Paper No.:</label>
-                <select
-                  value={filters.paperNo}
-                  onChange={(e) => setFilters({ ...filters, paperNo: e.target.value })}
-                >
+                <label>Paper No.:</label>
+                <select name="paperNo" value={filters.paperNo} onChange={handleFilterChange} disabled={loading}>
                   <option value="">All</option>
                   <option value="Paper 1">Paper 1</option>
                   <option value="Paper 2">Paper 2</option>
@@ -290,11 +340,8 @@ const Questions = () => {
               </div>
             )}
             <div className="filter-group">
-              <label>Filter by Question No.:</label>
-              <select
-                value={filters.questionNumber}
-                onChange={(e) => setFilters({ ...filters, questionNumber: e.target.value })}
-              >
+              <label>Question No.:</label>
+              <select name="questionNumber" value={filters.questionNumber} onChange={handleFilterChange} disabled={loading || !filters.subject}>
                 <option value="">All</option>
                 {getUniqueQuestionNumbers().map((qn) => (
                   <option key={qn} value={qn}>
@@ -303,100 +350,113 @@ const Questions = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="filter-group filter-group-search">
               <label>Search Keyword:</label>
               <input
                 type="text"
                 name="search"
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={handleFilterChange}
                 placeholder="Enter keywords"
+                className="search-input"
+                disabled={loading}
               />
             </div>
+            <div className="filter-group filter-group-bookmark">
+               <label htmlFor="bookmarkedFilter" className="bookmark-filter-label">
+                 <input
+                   type="checkbox"
+                   id="bookmarkedFilter"
+                   name="bookmarked"
+                   checked={filters.bookmarked}
+                   onChange={handleFilterChange}
+                   disabled={loading}
+                   className="bookmark-checkbox"
+                 />
+                 Show Bookmarked Only
+               </label>
+             </div>
           </div>
 
-          {filteredQuestions.length === 0 && !error && <p className="no-questions">No questions available.</p>}
-          {currentQuestions.length > 0 && (
-            <>
-              <div className="questions-list">
-                {currentQuestions.map((question) => (
-                  <div key={question.id} className="question-card">
-                    <h2>
-                      {question.subject} - {question.month}, {question.year}
-                    </h2>
-                    {question.questionNumber && (
-                      <p><strong>Question Number:</strong> {question.questionNumber}</p>
-                    )}
-                    <p><strong>Question:</strong></p>
-                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.questionText) }} />
-                    {(showAnswers || individualShowAnswers[question.id]) && question.answerText && (
-                      <>
-                        <p><strong>Answer:</strong></p>
-                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.answerText) }} />
-                      </>
-                    )}
-                    {question.pdfFile && (
-                      <p>
-                        <strong>PDF:</strong>{' '}
-                        <a href={question.pdfFile} target="_blank" rel="noopener noreferrer">
-                          {question.pdfFile}
-                        </a>
-                      </p>
-                    )}
-                    {question.pageNumber && (
-                      <p><strong>Page:</strong> {question.pageNumber}</p>
-                    )}
-                    <div className="filter-group individual-answer-toggle">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={individualShowAnswers[question.id] || false}
-                          onChange={() => toggleIndividualAnswer(question.id)}
-                        />
-                        Show Answer for this Question
-                      </label>
-                    </div>
-                    {question.subQuestions && question.subQuestions.length > 0 && (
-                      <>
-                        <h3>Sub-Questions</h3>
-                        {question.subQuestions.map((subQ, index) => (
-                          <div key={index} className="sub-question">
-                            <p><strong>Sub-Question {subQ.subQuestionNumber}:</strong> {subQ.subQuestionText}</p>
-                            <ul>
-                              {subQ.subOptions.map((opt, optIndex) => (
-                                <li key={optIndex}>
-                                  {opt.optionText}{' '}
-                                  {opt.isCorrect && <span className="correct-answer">(Correct)</span>}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </>
-                    )}
+          {!loading && questions.length === 0 && !error && (
+            <p className="no-questions">No questions found matching your criteria.</p>
+          )}
+          
+          {!loading && questions.length > 0 && (
+            <div className="question-list">
+              {currentQuestions.map((q) => (
+                <div key={q._id} className="question-card">
+                  <div className="question-header">
+                    <span className="question-number">Q: {q.questionNumber}</span>
+                    <span className="question-meta">
+                      {q.subject} | {q.paperType} | {q.year} {q.month} {q.examStage} {q.paperNo ? `| ${q.paperNo}` : ''}
+                    </span>
+                    <button 
+                      onClick={() => handleBookmarkToggle(q._id)} 
+                      className="bookmark-btn"
+                      title={bookmarkedQuestionIds.has(q._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                     >
+                       <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
+                    </button>
                   </div>
-                ))}
-              </div>
-              <div className="pagination">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                  <button
-                    key={number}
-                    onClick={() => paginate(number)}
-                    className={currentPage === number ? 'active' : ''}
+                  <div 
+                    className="question-text"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText) }}
+                  />
+                  {q.subQuestions && q.subQuestions.length > 0 && (
+                    <div className="subquestions-container">
+                      {q.subQuestions.map((subQ, index) => (
+                        <div key={index} className="subquestion-item">
+                           {subQ.subQuestionText && <div className="subquestion-text" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }} />} 
+                           {subQ.subOptions && subQ.subOptions.length > 0 && (
+                             <ul className="subquestion-options">
+                               {subQ.subOptions.map((opt, optIndex) => (
+                                 <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
+                                   {opt.optionText}
+                                   {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
+                                 </li>
+                               ))}
+                             </ul>
+                           )}
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                  {(showAnswers || individualShowAnswers[q._id]) && q.answerText && (!q.subQuestions || q.subQuestions.length === 0) && (
+                    <div className="answer-section">
+                      <strong>Answer:</strong>
+                      <div 
+                        className="answer-text"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
+                      />
+                    </div>
+                  )}
+                  <button 
+                    className="toggle-answer-btn"
+                    onClick={() => toggleIndividualAnswer(q._id)} 
                   >
-                    {number}
+                    {individualShowAnswers[q._id] ? 'Hide Answer' : 'Show Answer'}
                   </button>
-                ))}
-              </div>
-            </>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && totalPages > 1 && (
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => paginate(page)}
+                  className={currentPage === page ? 'active' : ''}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>
-      
-      {/* PreviewPanel component is still available if needed in the future */}
-      {previewOpen && selectedQuestion && (
-        <PreviewPanel data={selectedQuestion} onClose={handleClosePreview} />
-      )}
     </div>
   );
 };

@@ -198,30 +198,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #03a9f4;
+    margin-bottom: 10px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
   }
   
   .question-number {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #239ecf;
-    display: flex;
-    align-items: center;
+    font-weight: bold;
+    color: #03a9f4;
+    margin-right: 15px;
   }
   
-  .question-number span {
-    background: #1e1e1e;
-    color: #239ecf;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    border: 2px solid #239ecf;
+  .question-meta {
+    font-size: 0.9em;
+    color: #888;
+    flex-grow: 1; /* Allow meta to take up space */
+    text-align: left;
   }
   
   .question-points {
@@ -744,6 +735,7 @@
     display: block;
     box-sizing: border-box;
     overflow: hidden; /* Prevent content overflow */
+    position: relative; /* Needed for absolute positioning of bookmark button */
   }
 
   /* Ensure question-card takes full width and prevents any grid layout */
@@ -793,6 +785,7 @@
     border-radius: 12px;
     border: 1px solid #03a9f4;
     box-sizing: border-box;
+    align-items: center; /* Align items vertically */
   }
 
   .filter-group {
@@ -800,6 +793,7 @@
     flex-direction: column;
     gap: 0.5rem;
     width: 100%;
+    margin-bottom: 10px; /* Add some bottom margin */
   }
 
   .filter-group label {
@@ -1129,4 +1123,88 @@
     .questions-actions .donation-button-container {
       width: 100%;
     }
+  }
+
+  .bookmark-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: #aaa; /* Default color */
+    margin-left: 10px; /* Space from meta */
+  }
+
+  .bookmark-btn:hover {
+    color: #03a9f4; /* Highlight on hover */
+  }
+
+  .bookmark-btn svg {
+    vertical-align: middle; /* Align icon nicely */
+  }
+
+  /* Style for the bookmark filter */
+  .filter-group-bookmark {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    margin-left: auto; /* Push to the right */
+    min-width: auto; /* Override flex item min-width */
+    padding-left: 20px;
+  }
+
+  .bookmark-filter-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #b0b0b0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .bookmark-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+    /* Optional: style the checkbox */
+    appearance: none;
+    background-color: #333;
+    border: 1px solid #555;
+    padding: 8px;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .bookmark-checkbox:checked {
+    background-color: #03a9f4;
+    border-color: #03a9f4;
+  }
+
+  .bookmark-checkbox:checked::after {
+    content: '\2714'; /* Checkmark */
+    font-size: 12px;
+    color: white;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #aaa;
+    font-style: italic;
+  }
+
+  .search-input {
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #121212;
+    color: #b0b0b0;
+    flex-grow: 1; /* Allow search input to grow */
+  }
+
+  .filter-group-search {
+    flex-basis: 250px; /* Give search some base width */
+    min-width: 200px;
   }

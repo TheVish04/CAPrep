@@ -149,6 +149,7 @@
   padding: 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
 }
 
 .resource-card:hover {
@@ -294,4 +295,127 @@
   width: 100%;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.resource-title {
+  margin: 0;
+  color: #eee;
+  flex-grow: 1;
+  padding-right: 10px;
+}
+
+.resource-bookmark-btn {
+  flex-shrink: 0;
+  margin-top: -2px;
+}
+
+.resource-description {
+  color: #ccc;
+  margin-bottom: 15px;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.resource-meta {
+  font-size: 0.85em;
+  color: #888;
+  margin-bottom: 15px;
+}
+
+.resource-meta span {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.resource-meta span:first-child {
+  margin-left: 0;
+}
+
+.resource-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #333;
+  padding-top: 10px;
+  margin-top: 15px;
+}
+
+.file-size {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+.download-btn {
+  background-color: #03a9f4;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+  background-color: #0288d1;
+}
+
+/* Re-use bookmark filter styles from Questions.css if needed */
+/* Or copy relevant styles here */
+.filter-group-bookmark {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  min-width: auto;
+  padding-left: 20px;
+}
+
+.bookmark-filter-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #b0b0b0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bookmark-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+  appearance: none;
+  background-color: #333;
+  border: 1px solid #555;
+  padding: 8px;
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+}
+
+.bookmark-checkbox:checked {
+  background-color: #03a9f4;
+  border-color: #03a9f4;
+}
+
+.bookmark-checkbox:checked::after {
+  content: '\2714';
+  font-size: 12px;
+  color: white;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: #aaa;
+  font-style: italic;
 } 

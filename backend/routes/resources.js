@@ -7,6 +7,8 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 const Resource = require('../models/ResourceModel');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
+const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware');
+const User = require('../models/UserModel');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -41,37 +43,54 @@ const upload = multer({
 });
 
 // GET all resources with optional filtering
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
   try {
+    const { subject, paperType, examStage, year, month, paperNo, search, bookmarked } = req.query;
     const filters = {};
     
-    // Apply filters if provided in query params
-    if (req.query.subject) filters.subject = req.query.subject;
-    if (req.query.paperType) filters.paperType = req.query.paperType;
-    if (req.query.examStage) filters.examStage = req.query.examStage;
-    if (req.query.year) filters.year = req.query.year;
-    if (req.query.month) filters.month = req.query.month;
-    if (req.query.paperNo) filters.paperNo = req.query.paperNo;
+    // Apply standard filters
+    if (subject) filters.subject = subject;
+    if (paperType) filters.paperType = paperType;
+    if (examStage) filters.examStage = examStage;
+    if (year) filters.year = year;
+    if (month) filters.month = month;
+    if (paperNo) filters.paperNo = paperNo;
     
-    // Text search across multiple fields if search term provided
-    if (req.query.search) {
+    // Text search
+    if (search) {
       filters.$or = [
-        { title: { $regex: req.query.search, $options: 'i' } },
-        { description: { $regex: req.query.search, $options: 'i' } }
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
       ];
+    }
+    
+    // Bookmark filter
+    if (bookmarked === 'true') {
+        const user = await User.findById(req.user.id).select('bookmarkedResources');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found for bookmark filtering' });
+        }
+        // Ensure user.bookmarkedResources is an array, even if empty
+        const bookmarkedIds = user.bookmarkedResources || []; 
+        // If filtering by bookmarks, the resource _id must be in the user's list
+        filters._id = { $in: bookmarkedIds }; 
     }
     
     const resources = await Resource.find(filters).sort({ createdAt: -1 });
     
     res.status(200).json(resources);
   } catch (error) {
-    logger.error(`Error retrieving resources: ${error.message}`);
+    if (typeof logger !== 'undefined' && logger.error) {
+         logger.error(`Error retrieving resources: ${error.message}`);
+    } else {
+        console.error(`Error retrieving resources: ${error.message}`);
+    }
     res.status(500).json({ error: 'Failed to retrieve resources' });
   }
 });
 
 // GET a single resource by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', [authMiddleware, cacheMiddleware(3600)], async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
     
@@ -112,7 +131,7 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     });
     
     await resource.save();
-    
+    clearCache('/api/resources');
     res.status(201).json(resource);
   } catch (error) {
     // Delete uploaded file if there was an error
@@ -150,6 +169,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Resource not found' });
     }
     
+    clearCache([`/api/resources/${req.params.id}`, '/api/resources']);
     res.status(200).json(resource);
   } catch (error) {
     logger.error(`Error updating resource: ${error.message}`);
@@ -174,7 +194,7 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
     
     // Delete the resource from database
     await Resource.findByIdAndDelete(req.params.id);
-    
+    clearCache([`/api/resources/${req.params.id}`, '/api/resources']);
     res.status(200).json({ message: 'Resource deleted successfully' });
   } catch (error) {
     logger.error(`Error deleting resource: ${error.message}`);
@@ -197,9 +217,14 @@ router.post('/:id/download', authMiddleware, async (req, res) => {
     
     res.status(200).json({ downloadCount: resource.downloadCount });
   } catch (error) {
-    logger.error(`Error incrementing download count: ${error.message}`);
+    // Use logger if available
+    if (typeof logger !== 'undefined' && logger.error) {
+      logger.error(`Error incrementing download count: ${error.message}`);
+    } else {
+      console.error(`Error incrementing download count: ${error.message}`);
+    }
     res.status(500).json({ error: 'Failed to increment download count' });
   }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
+const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware');
 const Question = require('../models/QuestionModel');
+const User = require('../models/UserModel');
 const Joi = require('joi');
 
 const questionSchema = Joi.object({
@@ -132,6 +134,7 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
     };
 
     const question = await Question.create(questionData);
+    clearCache('/api/questions');
     console.log('Question created with ID:', question.id);
     res.status(201).json({ id: question.id, ...questionData });
   } catch (error) {
@@ -197,6 +200,7 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
     };
 
     await Question.findByIdAndUpdate(id, updatedData, { new: true });
+    clearCache([`/api/questions?id=${id}`, '/api/questions']);
     console.log('Question updated successfully for ID:', id);
     res.json({ message: 'Question updated successfully', id, ...updatedData });
   } catch (error) {
@@ -205,9 +209,9 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
   }
 });
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
   try {
-    const { subject, year, questionNumber, paperType, month, examStage, paperNo, search } = req.query;
+    const { subject, year, questionNumber, paperType, month, examStage, paperNo, search, bookmarked } = req.query;
     const filter = {};
     if (subject) filter.subject = subject;
     if (year) filter.year = year;
@@ -225,11 +229,19 @@ router.get('/', authMiddleware, async (req, res) => {
       };
     }
 
+    if (bookmarked === 'true') {
+      const user = await User.findById(req.user.id).select('bookmarkedQuestions');
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      filter._id = { $in: user.bookmarkedQuestions };
+    }
+
     const questions = await Question.find(filter);
     res.json(questions);
   } catch (error) {
     console.error('Error fetching questions:', error);
-    res.status(500).json({ error: `Failed to fetch questions: ${error.message}` });
+    res.status(500).json({ error: 'Failed to fetch questions' });
   }
 });
 
@@ -253,6 +265,7 @@ router.delete('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       return res.status(500).json({ error: 'Failed to delete question - database operation returned null' });
     }
     
+    clearCache([`/api/questions?id=${id}`, '/api/questions']);
     console.log(`Successfully deleted question with ID: ${id}`);
     res.json({ message: 'Question deleted successfully', id });
   } catch (error) {
@@ -269,7 +282,7 @@ router.delete('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
 });
 
 // Route to get the total count of questions
-router.get('/count', async (req, res) => {
+router.get('/count', [cacheMiddleware(3600)], async (req, res) => {
   try {
     const count = await Question.countDocuments();
     res.json({ count });
@@ -280,7 +293,7 @@ router.get('/count', async (req, res) => {
 });
 
 // Route to fetch MCQ questions for quiz
-router.get('/quiz', authMiddleware, async (req, res) => {
+router.get('/quiz', [authMiddleware, cacheMiddleware(900)], async (req, res) => {
   try {
     const { examStage, subject, limit = 10 } = req.query;
     
@@ -323,7 +336,7 @@ router.get('/quiz', authMiddleware, async (req, res) => {
 });
 
 // Route to get available subjects with MCQ questions for an exam stage
-router.get('/available-subjects', authMiddleware, async (req, res) => {
+router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async (req, res) => {
   try {
     const { examStage } = req.query;
     

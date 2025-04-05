@@ -84,4 +84,18 @@ const QuestionSchema = new Schema({
   timestamps: true
 });
 
+// Add compound index for common filter fields
+QuestionSchema.index({ 
+  examStage: 1, 
+  subject: 1, 
+  paperType: 1, 
+  year: 1, 
+  month: 1, 
+  paperNo: 1, 
+  questionNumber: 1 
+});
+
+// Add text index for searching question text
+QuestionSchema.index({ questionText: 'text' });
+
 module.exports = mongoose.model('Question', QuestionSchema);

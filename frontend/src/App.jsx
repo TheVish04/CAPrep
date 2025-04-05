@@ -1,18 +1,22 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
-import LandingPage from './pages/LandingPage';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Login from './components/Login';
-import Register from './components/Register';
-import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
-import Questions from './components/Questions';
-import AdminPanel from './components/AdminPanel';
-import Quiz from './components/Quiz';
-import Resources from './components/Resources';
-import ResourceUploader from './components/ResourceUploader';
+
+// Dynamically import page components
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Login = lazy(() => import('./components/Login'));
+const Register = lazy(() => import('./components/Register'));
+const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/ResetPassword'));
+const Questions = lazy(() => import('./components/Questions'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const Quiz = lazy(() => import('./components/Quiz'));
+const Resources = lazy(() => import('./components/Resources'));
+const ResourceUploader = lazy(() => import('./components/ResourceUploader'));
+const QuizHistory = lazy(() => import('./components/QuizHistory'));
+const UserProfile = lazy(() => import('./components/UserProfile'));
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -72,36 +76,47 @@ const RedirectIfLoggedIn = ({ element }) => {
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
-        <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route
-          path="/questions"
-          element={<ProtectedRoute element={<Questions />} />}
-        />
-        <Route
-          path="/quiz"
-          element={<ProtectedRoute element={<Quiz />} />}
-        />
-        <Route
-          path="/resources"
-          element={<ProtectedRoute element={<Resources />} />}
-        />
-        <Route
-          path="/admin"
-          element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
-        />
-        <Route
-          path="/admin/resources"
-          element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
-        />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+      {/* Add Suspense with a fallback UI */}
+      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<RedirectIfLoggedIn element={<Login />} />} />
+          <Route path="/register" element={<RedirectIfLoggedIn element={<Register />} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/questions"
+            element={<ProtectedRoute element={<Questions />} />}
+          />
+          <Route
+            path="/quiz"
+            element={<ProtectedRoute element={<Quiz />} />}
+          />
+          <Route
+            path="/quiz-history"
+            element={<ProtectedRoute element={<QuizHistory />} />}
+          />
+          <Route
+            path="/profile"
+            element={<ProtectedRoute element={<UserProfile />} />}
+          />
+          <Route
+            path="/resources"
+            element={<ProtectedRoute element={<Resources />} />}
+          />
+          <Route
+            path="/admin"
+            element={<ProtectedRoute element={<AdminPanel />} requireAdmin={true} />}
+          />
+          <Route
+            path="/admin/resources"
+            element={<ProtectedRoute element={<ResourceUploader />} requireAdmin={true} />}
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Suspense>
       <Analytics />
     </Router>
   );
