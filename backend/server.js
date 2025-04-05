@@ -49,7 +49,11 @@ app.use(express.json({ limit: '10mb' }));
 const corsOptions = {
   origin: ['https://caprep.onrender.com', 'https://caprep.vercel.app', 'http://localhost:5173', 'https://ca-exam-platform.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 'AccessToken', 'Origin', 'Accept', 'X-Requested-With'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 
+    'AccessToken', 'Origin', 'Accept', 'X-Requested-With',
+    'Cache-Control', 'Pragma', 'Expires'
+  ],
   credentials: true,
   optionsSuccessStatus: 204,
   preflightContinue: false,
@@ -64,7 +68,7 @@ app.options('/api/auth/verify-otp', (req, res) => {
   console.log('Handling OPTIONS preflight for verify-otp specifically');
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With, Cache-Control, Pragma, Expires');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400');
   res.status(204).end();
@@ -86,7 +90,7 @@ app.use((req, res, next) => {
   ) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With, Cache-Control, Pragma, Expires');
     res.header('Access-Control-Allow-Credentials', 'true');
     
     // Preflight request handling
