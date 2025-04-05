@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DOMPurify from 'dompurify';
@@ -8,6 +8,41 @@ const QuizReview = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const quizAttempt = location.state?.quizAttempt;
+    const [source, setSource] = useState('');
+    
+    // Determine where the user came from (quiz results or history)
+    useEffect(() => {
+        // Check if we have a source in the state
+        if (location.state?.from) {
+            setSource(location.state.from);
+        } else {
+            // Try to infer based on whether this is a recently completed quiz
+            // Recent quizzes will have the full questions array
+            if (quizAttempt && quizAttempt.questions && !quizAttempt._id) {
+                // Came directly from quiz results (no _id means it's not from history)
+                setSource('quiz-results');
+            } else {
+                // Otherwise assume it's from quiz history
+                setSource('quiz-history');
+            }
+        }
+    }, [location, quizAttempt]);
+    
+    const handleBackClick = () => {
+        if (source === 'quiz-results') {
+            // Go back to quiz results and preserve the quiz attempt data
+            navigate('/quiz', { 
+                state: { 
+                    showResults: true,
+                    lastQuizAttempt: quizAttempt
+                },
+                replace: true 
+            });
+        } else {
+            // Go back to quiz history or navigate(-1)
+            navigate(-1);
+        }
+    };
 
     if (!quizAttempt) {
         // If no state is passed, redirect or show an error
@@ -115,7 +150,7 @@ const QuizReview = () => {
                 </div>
                 
                 <div className="review-actions">
-                     <button onClick={() => navigate(-1)} className="btn btn-secondary">Back</button>
+                     <button onClick={handleBackClick} className="btn btn-secondary">Back</button>
                      <Link to="/quiz" className="btn">Take New Quiz</Link>
                 </div>
             </div>

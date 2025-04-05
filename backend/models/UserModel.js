@@ -55,13 +55,21 @@ const UserSchema = new Schema({
     totalQuestions: { type: Number, required: true },
     percentage: { type: Number, required: true }, // Store percentage for easier display
     date: { type: Date, default: Date.now },
+    isAiQuiz: { type: Boolean, default: false }, // Flag to indicate if this was an AI quiz
     questionsAttempted: [
       {
-        questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
+        questionId: { 
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: 'Question', 
+          required: true,
+          get: v => String(v) // Always return as string to avoid ObjectId issues
+        },
         subQuestionIndex: { type: Number, required: true, default: 0 }, // Assuming one subquestion for now
         selectedOptionIndex: { type: Number, required: false }, // User might not select an option
         correctOptionIndex: { type: Number, required: true },
-        isCorrect: { type: Boolean, required: true }
+        isCorrect: { type: Boolean, required: true },
+        isAiGenerated: { type: Boolean, default: false }, // Flag for AI-generated questions
+        questionText: { type: String, required: false } // Store question text for AI questions
       }
     ]
   }],

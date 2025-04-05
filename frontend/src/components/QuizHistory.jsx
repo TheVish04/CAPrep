@@ -62,7 +62,42 @@ const QuizHistory = () => {
                 return;
             }
             
-            // Fetch complete questions data for the attempted questions
+            // For AI quizzes, we construct the questions from the saved data
+            if (quizAttempt.isAiQuiz) {
+                // Create questions from the stored attempt data
+                const aiQuestions = quizAttempt.questionsAttempted.map((attempt, index) => {
+                    // Create a synthetic question object with the necessary structure
+                    return {
+                        _id: attempt.isAiGenerated ? `ai-question-${index}` : attempt.questionId,
+                        questionText: attempt.questionText || `AI Generated Question ${index + 1}`,
+                        subQuestions: [{
+                            subQuestionNumber: '1',
+                            subQuestionText: '',
+                            subOptions: Array(4).fill(null).map((_, optIdx) => ({
+                                optionText: `Option ${String.fromCharCode(65 + optIdx)}`,
+                                isCorrect: optIdx === attempt.correctOptionIndex
+                            }))
+                        }]
+                    };
+                });
+                
+                // Navigate to review with reconstructed data
+                const completeQuizAttempt = {
+                    ...quizAttempt,
+                    questions: aiQuestions
+                };
+                
+                navigate('/quiz-review', { 
+                    state: { 
+                        quizAttempt: completeQuizAttempt,
+                        from: 'quiz-history'
+                    } 
+                });
+                setLoading(false);
+                return;
+            }
+            
+            // For standard quizzes, fetch complete questions data for the attempted questions
             const questionIds = quizAttempt.questionsAttempted.map(q => q.questionId);
             const response = await axios.post(`${API_BASE_URL}/api/questions/batch`, 
                 { questionIds },
@@ -80,7 +115,12 @@ const QuizHistory = () => {
             };
             
             // Navigate to the review page with complete data
-            navigate('/quiz-review', { state: { quizAttempt: completeQuizAttempt } });
+            navigate('/quiz-review', { 
+                state: { 
+                    quizAttempt: completeQuizAttempt,
+                    from: 'quiz-history'
+                } 
+            });
         } catch (err) {
             console.error("Error fetching question details:", err);
             alert("Couldn't load quiz review details. Please try again.");

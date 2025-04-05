@@ -183,7 +183,7 @@ router.delete('/me/bookmarks/resource/:resourceId', authMiddleware, async (req, 
 // POST Add a quiz result to history
 router.post('/me/quiz-history', authMiddleware, async (req, res) => {
     // Destructure expected fields, including the new questionsAttempted array
-    const { subject, score, totalQuestions, questionsAttempted } = req.body;
+    const { subject, score, totalQuestions, questionsAttempted, isAiQuiz } = req.body;
 
     // Basic validation for core fields
     if (typeof subject !== 'string' || subject.trim() === '') {
@@ -203,9 +203,7 @@ router.post('/me/quiz-history', authMiddleware, async (req, res) => {
     if (!Array.isArray(questionsAttempted)) {
         return res.status(400).json({ error: 'questionsAttempted must be an array.' });
     }
-    // Optional: Add more detailed validation for each item in questionsAttempted if needed
-    // e.g., check if IDs are valid ObjectIds, indices are numbers, etc.
-
+    
     try {
         // Calculate percentage server-side for consistency
         const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
@@ -216,7 +214,8 @@ router.post('/me/quiz-history', authMiddleware, async (req, res) => {
             totalQuestions,
             percentage,
             questionsAttempted, // Include the detailed attempts
-            date: new Date()
+            date: new Date(),
+            isAiQuiz: isAiQuiz || false // Track if this was an AI-generated quiz
         };
 
         // Add the new entry
@@ -243,7 +242,11 @@ router.post('/me/quiz-history', authMiddleware, async (req, res) => {
 
     } catch (error) {
         console.error('Error saving quiz history:', error);
-        res.status(500).json({ error: 'Failed to save quiz history' });
+        console.error('Error details:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to save quiz history',
+            details: error.message 
+        });
     }
 });
 

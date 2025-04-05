@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import Navbar from './Navbar';
 import './Quiz.css';
@@ -7,6 +7,7 @@ import axios from 'axios';
 
 const Quiz = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // Add useLocation hook
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
   
   // State for quiz setup
@@ -139,14 +140,19 @@ const Quiz = () => {
           }
       }
       
+      // Check if this is an AI-generated question (ID starts with 'ai-question-')
+      const isAiQuestion = question._id.toString().startsWith('ai-question-');
+      
       return {
-          questionId: question._id,
+          // For AI questions, use a placeholder ObjectId compatible with MongoDB
+          questionId: isAiQuestion ? "000000000000000000000000" : question._id,
           subQuestionIndex,
           selectedOptionIndex, // Can be undefined
           correctOptionIndex,
-          isCorrect
-          // We can add questionText/options here if needed for immediate review display,
-          // but maybe better to fetch full details later from history
+          isCorrect,
+          // For AI questions, store the full question text since we can't look it up later
+          questionText: isAiQuestion ? question.questionText : undefined,
+          isAiGenerated: isAiQuestion
       };
     });
     
@@ -159,7 +165,8 @@ const Quiz = () => {
       subject: subject,
       score: finalScore,
       totalQuestions: questions.length,
-      questionsAttempted: attemptedQuestionsData
+      questionsAttempted: attemptedQuestionsData,
+      isAiQuiz: quizMode === 'ai'
     };
     
     // Save attempt locally for immediate review button
@@ -173,7 +180,7 @@ const Quiz = () => {
       saveQuizHistory(quizResultPayload);
     }
 
-  }, [questions, selectedOptions, quizCompleted, saveQuizHistory, subject]);
+  }, [questions, selectedOptions, quizCompleted, saveQuizHistory, subject, quizMode]);
   
   // Timer effect
   useEffect(() => {
@@ -363,10 +370,26 @@ const Quiz = () => {
   const handleViewReview = () => {
     if (lastQuizAttempt) {
       // Pass the quiz attempt details to the review page via state
-      // Or potentially save to local storage if state gets too large?
-      navigate('/quiz-review', { state: { quizAttempt: lastQuizAttempt } });
+      // Include 'from' information to help navigate back correctly
+      navigate('/quiz-review', { 
+        state: { 
+          quizAttempt: lastQuizAttempt,
+          from: 'quiz-results'
+        } 
+      });
     }
   };
+  
+  // Check for returned state from QuizReview when coming back
+  useEffect(() => {
+    // If we have state from navigation and showResults is true, we came back from Review
+    if (location.state?.showResults && location.state?.lastQuizAttempt) {
+      setShowResults(true);
+      setQuizCompleted(true);
+      setLastQuizAttempt(location.state.lastQuizAttempt);
+      setStep('result'); // Show results
+    }
+  }, [location]);
   
   // Modified quiz setup rendering to include the quiz mode toggle
   const renderQuizSetup = () => (
