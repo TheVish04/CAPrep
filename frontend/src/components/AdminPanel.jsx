@@ -49,7 +49,6 @@ const AdminPanel = () => {
       const response = await fetch(`https://caprep.onrender.com/api/questions${query ? `?${query}` : ''}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Add cache-control headers to prevent browser caching for this fetch
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
           'Expires': '0',
@@ -58,7 +57,7 @@ const AdminPanel = () => {
       const data = await response.json();
       if (response.ok) {
         const questions = Array.isArray(data) ? data : [data];
-        const sortedQuestions = questions.sort((a, b) => 
+        const sortedQuestions = [...questions].sort((a, b) => 
           new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
         );
         setStoredQuestions(sortedQuestions);
