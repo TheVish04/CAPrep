@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import './UserProfile.css'; // Create this CSS file
+import DonationButton from './DonationButton';
 
 const UserProfile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -108,6 +109,22 @@ const UserProfile = () => {
                          {/* Link directly to Quiz History page */}
                          <Link to="/quiz-history" className="profile-link full-width-link">View My Quiz History</Link>
                     </div>
+                </div>
+
+                <div className="profile-contribution card">
+                    <h2>My Contribution</h2>
+                    {userData.totalContribution > 0 ? (
+                        <p>
+                            Thank you for your generous contribution of 
+                            <strong>₹{userData.totalContribution.toFixed(2)}</strong>! 
+                            Your support helps keep CAprep running and improving.
+                        </p>
+                    ) : (
+                        <p>
+                            Help support CAprep by making a donation. Every contribution makes a difference!
+                            <DonationButton buttonText="Donate Now" />
+                        </p>
+                    )}
                 </div>
                 
                 <div className="profile-actions">

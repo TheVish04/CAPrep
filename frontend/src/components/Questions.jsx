@@ -228,7 +228,7 @@ const Questions = () => {
       <Navbar />
       <div className="questions-section">
         <div className="questions-container">
-          <h1>Question Papers</h1>
+          <h1>Questions</h1>
           
           {loading && <div className="loading-indicator">Loading questions...</div>}
           

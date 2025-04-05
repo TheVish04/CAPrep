@@ -52,6 +52,24 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       setLoading(true);
       setError(null);
       
+      const token = localStorage.getItem('token'); // Get token
+      if (!token) {
+          throw new Error('User not logged in');
+      }
+      
+      // Decode token to get user ID (simple client-side decode, ensure it matches backend logic)
+      let userId = null;
+      try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id;
+      } catch (e) {
+          console.error('Failed to decode token for user ID');
+          throw new Error('Invalid user session');
+      }
+      if (!userId) {
+          throw new Error('Could not extract user ID from token');
+      }
+      
       // Load Razorpay script
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
@@ -61,10 +79,16 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       // Convert rupees to paise for Razorpay
       const amountInPaise = amount * 100;
       
-      // Create order via backend API
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, { 
-        amount: amountInPaise 
-      });
+      // Create order via backend API, including userId in notes
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, 
+        { 
+          amount: amountInPaise,
+          notes: { userId: userId } // Pass userId here
+        },
+        {
+          headers: { 'Authorization': `Bearer ${token}` } // Pass token for backend auth if needed
+        }
+      );
       
       if (!response.data || !response.data.success) {
         throw new Error(response.data?.message || 'Failed to create payment order');
@@ -82,13 +106,17 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
         order_id: order.id,
         handler: async function (response) {
           try {
-            // Verify payment
+            // Verify payment (backend already has order details)
             const verifyResponse = await axios.post(
               `${import.meta.env.VITE_API_URL}/api/payment/verify-payment`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
+                razorpay_signature: response.razorpay_signature,
+                // No need to send amount/userId again, backend uses order_id
+              },
+              {
+                 headers: { 'Authorization': `Bearer ${token}` } // Include token if verify endpoint is protected
               }
             );
             
@@ -132,7 +160,7 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       
     } catch (error) {
       console.error('Donation error:', error);
-      setError(error.message || 'An error occurred while processing your donation');
+      setError(error.message || 'Donation failed');
       setLoading(false);
     }
   };

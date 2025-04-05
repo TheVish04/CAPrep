@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createOrder, verifyPaymentSignature, getPaymentDetails, razorpay } = require('../services/razorpayService');
+const User = require('../models/UserModel'); // Import User model
+const { authMiddleware } = require('../middleware/authMiddleware'); // Import auth middleware if needed
 
 // GET /api/payment/health - Check Razorpay connection
 router.get('/health', async (req, res) => {
@@ -24,10 +26,11 @@ router.get('/health', async (req, res) => {
 });
 
 // POST /api/payment/create-order - Create a new donation order
-router.post('/create-order', async (req, res) => {
+// Add authMiddleware here if not already public
+router.post('/create-order', authMiddleware, async (req, res) => {
   try {
     console.log('Create order request received:', req.body);
-    const { amount } = req.body;
+    const { amount, notes } = req.body; // Expect notes from request
     
     // Minimum amount is now 2000 paise (₹20)
     if (!amount || amount < 2000) {
@@ -37,7 +40,15 @@ router.post('/create-order', async (req, res) => {
       });
     }
     
-    const order = await createOrder(amount);
+    // Ensure notes contain userId if required
+    if (!notes || !notes.userId) {
+        console.warn('Missing userId in order notes from request');
+        // Potentially reject if userId is mandatory for tracking
+        // return res.status(400).json({ success: false, message: 'User information missing.' });
+    }
+    
+    // Pass notes when creating order in the service
+    const order = await createOrder(amount, 'INR', notes); 
     
     res.status(200).json({
       success: true,
@@ -55,7 +66,8 @@ router.post('/create-order', async (req, res) => {
 });
 
 // POST /api/payment/verify-payment - Verify payment after successful payment
-router.post('/verify-payment', async (req, res) => {
+// Add authMiddleware if verification requires logged-in user context (recommended)
+router.post('/verify-payment', authMiddleware, async (req, res) => {
   try {
     console.log('Verify payment request received:', req.body);
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -67,6 +79,7 @@ router.post('/verify-payment', async (req, res) => {
       });
     }
     
+    // 1. Verify Signature
     const isValid = verifyPaymentSignature(
       razorpay_order_id,
       razorpay_payment_id,
@@ -75,16 +88,45 @@ router.post('/verify-payment', async (req, res) => {
     
     if (isValid) {
       try {
-        // Get payment details for additional verification and logging
+        // 2. Fetch Payment Details for amount
         const paymentDetails = await getPaymentDetails(razorpay_payment_id);
-        console.log('Payment successful:', {
+        
+        // 3. Fetch Order Details to get notes (containing userId)
+        const orderDetails = await razorpay.orders.fetch(razorpay_order_id);
+        
+        console.log('Payment verified. Details:', {
           order_id: razorpay_order_id,
           payment_id: razorpay_payment_id,
-          amount: paymentDetails.amount,
-          status: paymentDetails.status
+          amount: paymentDetails.amount, // Amount in paise
+          status: paymentDetails.status,
+          userId: orderDetails.notes?.userId
         });
+
+        // 4. Check payment status and update user contribution
+        if (paymentDetails.status === 'captured' && orderDetails.notes?.userId) {
+            const userId = orderDetails.notes.userId;
+            const amountInPaise = paymentDetails.amount;
+            const amountInRupees = amountInPaise / 100;
+
+            // Update user's totalContribution
+            const updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { $inc: { totalContribution: amountInRupees } }, // Increment by amount in Rupees
+                { new: true } // Optional: return updated user doc
+            );
+
+            if (updatedUser) {
+                console.log(`Updated total contribution for user ${userId} by ${amountInRupees}. New total: ${updatedUser.totalContribution}`);
+            } else {
+                 console.warn(`Could not find user ${userId} to update contribution for order ${razorpay_order_id}`);
+            }
+        } else {
+             console.log(`Payment status is not 'captured' or userId missing in notes for order ${razorpay_order_id}. Status: ${paymentDetails.status}`);
+        }
+
       } catch (detailsError) {
-        console.error('Error fetching payment details, but payment was verified:', detailsError);
+        // Log error but still return success as signature was valid
+        console.error('Error fetching details or updating contribution, but payment signature was verified:', detailsError);
       }
       
       return res.status(200).json({

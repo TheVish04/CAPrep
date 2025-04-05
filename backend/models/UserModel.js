@@ -59,7 +59,12 @@ const UserSchema = new Schema({
   bookmarkedResources: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Resource'
-  }]
+  }],
+  totalContribution: {
+    type: Number,
+    default: 0,
+    min: 0
+  }
 }, {
   timestamps: true
 });
