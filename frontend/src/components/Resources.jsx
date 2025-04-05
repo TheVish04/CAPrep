@@ -353,15 +353,15 @@ const Resources = () => {
             <div className="resources-list">
               {currentResources.map((r) => (
                 <div key={r._id} className="resource-card">
+                  <button 
+                    onClick={() => handleBookmarkToggle(r._id)} 
+                    className="bookmark-btn resource-top-right-bookmark"
+                    title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                  >
+                    <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
+                  </button>
                   <div className="resource-header">
                     <h3 className="resource-title">{r.title}</h3>
-                    <button 
-                      onClick={() => handleBookmarkToggle(r._id)} 
-                      className="bookmark-btn resource-bookmark-btn"
-                      title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                     >
-                       <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
-                    </button>
                   </div>
                   <p className="resource-description">{r.description || 'No description available.'}</p>
                   <div className="resource-meta">
