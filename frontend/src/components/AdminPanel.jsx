@@ -758,6 +758,8 @@ const AdminPanel = () => {
                         value={subQ.subQuestionText}
                         onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
                         className="form-input"
+                        rows={6}
+                        placeholder="Paste HTML code for tables, or just type your sub-question..."
                       />
                       {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
                     </div>
