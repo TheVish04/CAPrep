@@ -101,11 +101,11 @@ const QuizReview = () => {
 
                                 <div className="review-feedback">
                                     {attempt.selectedOptionIndex === undefined ? (
-                                        <p className="status unanswered"><strong>Status:</strong> Not Answered</p>
+                                        <p className="status unanswered"><strong>Status: </strong> Not Answered</p>
                                     ) : attempt.isCorrect ? (
-                                        <p className="status correct"><strong>Status:</strong> Correct!</p>
+                                        <p className="status correct"><strong>Status: </strong> Correct!</p>
                                     ) : (
-                                        <p className="status incorrect"><strong>Status:</strong> Incorrect</p>
+                                        <p className="status incorrect"><strong>Status: </strong> Incorrect</p>
                                     )}
                                     {/* Explanation would go here if we add it later */} 
                                 </div>
