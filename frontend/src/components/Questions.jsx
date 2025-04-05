@@ -387,7 +387,7 @@ const Questions = () => {
                  />
                  Show Bookmarked Only
                </label>
-             </div>
+            </div>
           </div>
 
           {!loading && questions.length === 0 && !error && (
@@ -395,7 +395,7 @@ const Questions = () => {
           )}
           
           {!loading && questions.length > 0 && (
-            <div className="questions-list">
+              <div className="questions-list">
               {currentQuestions.map((q) => (
                 <div key={q._id} className="question-card">
                     <button 
@@ -410,14 +410,16 @@ const Questions = () => {
                         <h2>
                           Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
                           ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
-                        </h2>
+                    </h2>
                     </div>
                     
-                    <p><strong>Question:</strong></p>
-                    <div 
-                       className="question-text"
-                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
-                    />
+                    <div className="question-content-container">
+                      <p className="question-label"><strong>Question:</strong></p>
+                      <div 
+                         className="question-text"
+                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
+                      />
+                    </div>
 
                     {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
                       <div className="answer-section main-answer">
@@ -446,16 +448,16 @@ const Questions = () => {
                               
                               {subQ.subOptions && subQ.subOptions.length > 0 && (
                                 <ul className="subquestion-options">
-                                  {subQ.subOptions.map((opt, optIndex) => (
+                              {subQ.subOptions.map((opt, optIndex) => (
                                     <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
                                       {opt.optionText}
                                       {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
-                                    </li>
-                                  ))}
-                                </ul>
+                                </li>
+                              ))}
+                            </ul>
                               )}
-                            </div>
-                          ))}
+                          </div>
+                        ))}
                         </div>
                     )}
                     
@@ -469,23 +471,23 @@ const Questions = () => {
                    >
                      {individualShowAnswers[q._id] ? 'Hide Answer/Details' : 'Show Answer/Details'}
                    </button>
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
           )}
 
           {!loading && totalPages > 1 && (
-            <div className="pagination">
+              <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
+                  <button
                   key={page}
                   onClick={() => paginate(page)}
                   className={currentPage === page ? 'active' : ''}
                 >
                   {page}
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
           )}
         </div>
       </div>

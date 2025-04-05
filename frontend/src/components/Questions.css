@@ -245,6 +245,59 @@
     font-weight: 500;
   }
   
+  /* Styles for aligning Question label and text */
+  .question-content-container {
+    display: flex;
+    align-items: flex-start; /* Align items to the top */
+    margin-bottom: 10px; /* Space below question block */
+    gap: 10px; /* Space between label and text */
+  }
+  
+  .question-label {
+    flex-shrink: 0; /* Prevent label from shrinking */
+    margin: 0; /* Remove default paragraph margin */
+    color: #03a9f4; /* Match other labels/headings */
+    font-weight: bold;
+    line-height: 1.6; /* Match text line-height */
+    /* Add width if needed for alignment */
+    /* width: 80px; */ 
+  }
+  
+  .question-text {
+    margin: 0; /* Remove default div margin if any */
+    line-height: 1.6;
+    flex-grow: 1; /* Allow text to take remaining space */
+    /* Ensure nested elements inherit color if needed */
+    color: #ffffff;
+  }
+  
+  /* Adjust answer section label if needed for consistency */
+  .answer-section h3 {
+    flex-shrink: 0;
+    margin: 0;
+    color: #03a9f4;
+    font-weight: bold;
+    line-height: 1.6;
+    /* width: 80px; */ /* Match question label width if set */
+    padding-right: 10px; /* Space between label and answer text */
+  }
+  
+  .answer-section {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #444;
+    display: flex; /* Use flex for answer label alignment too */
+    align-items: flex-start; 
+    gap: 10px;
+  }
+  
+  .answer-text {
+     margin: 0;
+     line-height: 1.6;
+     flex-grow: 1;
+     color: #ffffff;
+  }
+  
   /* Sub Questions Styling */
   .sub-questions {
     width: 100% !important;
