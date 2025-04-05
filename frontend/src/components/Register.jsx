@@ -491,6 +491,11 @@ const Register = () => {
               onChange={handleChange}
               placeholder="Confirm your password"
               required
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
             />
             <span 
               className="toggle-password" 

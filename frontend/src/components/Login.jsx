@@ -71,6 +71,11 @@ const Login = () => {
                   value={credentials.password}
                   onChange={handleChange}
                   required
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSubmit(e);
+                    }
+                  }}
                 />
                 <span 
                   className="toggle-password" 
