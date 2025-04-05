@@ -55,7 +55,7 @@ const questionSchema = Joi.object({
       otherwise: Joi.string().optional().allow('')
     }),
   questionNumber: Joi.string().required(),
-  questionText: Joi.string().required(),
+  questionText: Joi.string().allow('').optional(),
   answerText: Joi.string().allow('').optional(),
   pageNumber: Joi.string()
     .required()

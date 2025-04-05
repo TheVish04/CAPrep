@@ -229,7 +229,7 @@ const AdminPanel = () => {
         if (!value) error = 'Page Number is required';
         break;
       case 'questionText':
-        if (!value) error = 'Question text is required';
+        // Question text is now optional
         break;
       default:
         break;
@@ -249,7 +249,7 @@ const AdminPanel = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    const fieldsToValidate = ['subject', 'paperType', 'year', 'month', 'examStage', 'questionNumber', 'questionText', 'pageNumber'];
+    const fieldsToValidate = ['subject', 'paperType', 'year', 'month', 'examStage', 'questionNumber', 'pageNumber'];
     
     if (formData.examStage === 'Foundation') {
       fieldsToValidate.push('paperNo');
