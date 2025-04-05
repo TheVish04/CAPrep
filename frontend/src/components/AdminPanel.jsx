@@ -280,7 +280,72 @@ const AdminPanel = () => {
     }));
   };
 
+  // Add useEffect to load cached form selections on component mount
+  useEffect(() => {
+    const cachedSelections = localStorage.getItem('adminFormSelections');
+    if (cachedSelections) {
+      try {
+        const parsedSelections = JSON.parse(cachedSelections);
+        setFormData(prevData => ({
+          ...prevData,
+          subject: parsedSelections.subject || '',
+          paperType: parsedSelections.paperType || '',
+          year: parsedSelections.year || '',
+          month: parsedSelections.month || '',
+          examStage: parsedSelections.examStage || '',
+          paperNo: parsedSelections.paperNo || '',
+        }));
+      } catch (e) {
+        console.error('Error parsing cached form selections:', e);
+      }
+    }
+  }, []);
+
+  // Add function to cache current selections
+  const cacheFormSelections = () => {
+    const selectionsToCache = {
+      subject: formData.subject,
+      paperType: formData.paperType,
+      year: formData.year,
+      month: formData.month,
+      examStage: formData.examStage,
+      paperNo: formData.paperNo,
+    };
+    localStorage.setItem('adminFormSelections', JSON.stringify(selectionsToCache));
+  };
+
+  // Modify resetForm to preserve cached selections
   const resetForm = () => {
+    // Cache current dropdown selections before reset
+    cacheFormSelections();
+    
+    // Get cached selections
+    const cachedSelections = JSON.parse(localStorage.getItem('adminFormSelections') || '{}');
+    
+    setFormData({
+      // Preserve dropdown selections from cache
+      subject: cachedSelections.subject || '',
+      paperType: cachedSelections.paperType || '',
+      year: cachedSelections.year || '',
+      month: cachedSelections.month || '',
+      examStage: cachedSelections.examStage || '',
+      paperNo: cachedSelections.paperNo || '',
+      
+      // Reset input fields
+      questionNumber: '',
+      questionText: '',
+      answerText: '',
+      pageNumber: '',
+      subQuestions: [],
+    });
+    
+    setErrors({});
+    setEditingQuestionId(null);
+  };
+
+  // Add function to clear cached selections
+  const clearCachedSelections = () => {
+    localStorage.removeItem('adminFormSelections');
     setFormData({
       subject: '',
       paperType: '',
@@ -295,7 +360,7 @@ const AdminPanel = () => {
       subQuestions: [],
     });
     setErrors({});
-    setEditingQuestionId(null);
+    alert('Form cache cleared');
   };
 
   const handleSubmit = async (e) => {
@@ -341,6 +406,10 @@ const AdminPanel = () => {
       if (response.ok) {
         setLastSubmittedId(result.id);
         alert('Question added successfully');
+        
+        // Cache the selections before resetting the form
+        cacheFormSelections();
+        
         resetForm();
         const currentQuery = new URLSearchParams(filters).toString();
         fetchQuestions(token, currentQuery);
@@ -524,6 +593,14 @@ const AdminPanel = () => {
               {editingQuestionId && (
                 <p className="edit-mode-note">You are currently editing question ID: {editingQuestionId}</p>
               )}
+              <button 
+                type="button" 
+                onClick={clearCachedSelections} 
+                className="clear-cache-btn"
+                title="Clear cached form selections and start fresh"
+              >
+                Clear Form Cache
+              </button>
             </div>
             <form 
               onSubmit={editingQuestionId ? handleUpdate : handleSubmit} 

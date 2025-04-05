@@ -890,3 +890,28 @@ form.edit-mode .submit-btn:hover {
   width: 100%;
   margin: 0 auto;
 }
+
+/* Clear cache button */
+.clear-cache-btn {
+  background-color: #444;
+  color: #ccc;
+  border: 1px solid #666;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 15px;
+}
+
+.clear-cache-btn:hover {
+  background-color: #555;
+  color: #fff;
+  border-color: #777;
+}
+
+.form-mode-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
