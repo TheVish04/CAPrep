@@ -20,6 +20,7 @@ const helmet = require('helmet');
 const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+const aiQuizRoutes = require('./routes/aiQuiz');
 
 const app = express();
 
@@ -215,6 +216,7 @@ const initializeDatabase = async () => {
     app.use('/api/resources', resourceRoutes);
     app.use('/api/users', userRoutes);
     app.use('/api/admin', adminRoutes);
+    app.use('/api/ai-quiz', aiQuizRoutes);
     
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(__dirname, 'uploads');
@@ -244,6 +246,7 @@ const initializeDatabase = async () => {
       app.use('/api/resources', resourceRoutes);
       app.use('/api/users', userRoutes);
       app.use('/api/admin', adminRoutes);
+      app.use('/api/ai-quiz', aiQuizRoutes);
       return true;
     }
     

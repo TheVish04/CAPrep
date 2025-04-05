@@ -20,6 +20,7 @@ const Quiz = () => {
   const [warning, setWarning] = useState(null); // New state for warnings
   const [availableSubjects, setAvailableSubjects] = useState([]); // State for available subjects
   const [loadingSubjects, setLoadingSubjects] = useState(false); // Loading state for subjects
+  const [quizMode, setQuizMode] = useState('standard'); // New state for quiz mode: 'standard' or 'ai'
   
   // State for quiz questions and results
   const [questions, setQuestions] = useState([]);
@@ -185,6 +186,7 @@ const Quiz = () => {
     // Ensure subject is in dependency array if used inside calculateAndFinalizeQuiz indirectly
   }, [step, timeRemaining, quizCompleted, calculateAndFinalizeQuiz]);
   
+  // Start quiz - modified to handle both standard and AI quiz modes
   const handleStartQuiz = async () => {
     // Validate selections
     if (!examStage || !subject) {
@@ -209,22 +211,61 @@ const Quiz = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${API_BASE_URL}/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}&limit=${questionCount}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+      
+      let data;
+      
+      if (quizMode === 'standard') {
+        // Standard quiz - fetch questions from database
+        const response = await axios.get(
+          `${API_BASE_URL}/api/questions/quiz?examStage=${encodeURIComponent(examStage)}&subject=${encodeURIComponent(subject)}&limit=${questionCount}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+        data = response.data;
+      } else {
+        // AI-generated quiz
+        const response = await axios.post(
+          `${API_BASE_URL}/api/ai-quiz/generate`,
+          {
+            examStage,
+            subject,
+            count: questionCount
           },
-        }
-      );
-      
-      const data = response.data;
-      
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('No MCQ questions available for the selected criteria');
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        );
+        
+        // Transform AI response to match the format expected by the quiz component
+        data = response.data.map((aiQuestion, index) => {
+          return {
+            _id: `ai-question-${index}`,
+            questionText: aiQuestion.questionText,
+            subQuestions: [
+              {
+                subQuestionNumber: '1',
+                subQuestionText: '',
+                subOptions: aiQuestion.options.map((optionText, optIdx) => ({
+                  optionText,
+                  isCorrect: optIdx === aiQuestion.correctAnswerIndex
+                }))
+              }
+            ]
+          };
+        });
       }
       
-      if (data.length < questionCount) {
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error(`No ${quizMode === 'ai' ? 'AI-generated' : 'MCQ'} questions available for the selected criteria`);
+      }
+      
+      if (quizMode === 'standard' && data.length < questionCount) {
         setWarning(`Only ${data.length} questions are available for this subject. Quiz will proceed with these.`);
       }
       
@@ -312,27 +353,54 @@ const Quiz = () => {
     }
   };
   
+  // Modified quiz setup rendering to include the quiz mode toggle
   const renderQuizSetup = () => (
     <div className="quiz-setup">
-      <h1>Quiz Setup</h1>
-      <p>Select the exam stage and subject to start a quiz with multiple-choice questions.</p>
-      
-      {error && <div className="error-message">{error}</div>}
-      {warning && <div className="warning-message">{warning}</div>}
+      <h1>Start a New Quiz</h1>
+      <p>Select your preferences and start testing your knowledge.</p>
       
       <div className="setup-form">
+        {error && <div className="error-message">{error}</div>}
+        {warning && <div className="warning-message">{warning}</div>}
+        
+        {/* Quiz Mode Selection */}
+        <div className="form-group quiz-mode-selector">
+          <label>Quiz Mode</label>
+          <div className="mode-toggle-container">
+            <button 
+              className={`mode-toggle-btn ${quizMode === 'standard' ? 'active' : ''}`}
+              onClick={() => setQuizMode('standard')}
+            >
+              Standard Quiz
+            </button>
+            <button 
+              className={`mode-toggle-btn ${quizMode === 'ai' ? 'active' : ''}`}
+              onClick={() => setQuizMode('ai')}
+            >
+              AI-Generated Quiz
+            </button>
+          </div>
+          <div className="mode-description">
+            {quizMode === 'standard' ? (
+              <p>Standard Quiz uses curated questions from our database of past papers and practice materials.</p>
+            ) : (
+              <>
+                <p>AI-Generated Quiz creates unique questions based on your selected subject using artificial intelligence.</p>
+                <p className="ai-disclaimer">Warning: AI-generated questions may not always be accurate or aligned with the latest curriculum. Use for practice purposes only and don't rely solely on these for exam preparation.</p>
+              </>
+            )}
+          </div>
+        </div>
+        
         <div className="form-group">
-          <label htmlFor="examStage">Exam Stage:</label>
-          <select 
-            id="examStage" 
-            value={examStage} 
-            onChange={(e) => {
-              setExamStage(e.target.value);
-              setSubject(''); // Reset subject when exam stage changes
-            }}
+          <label htmlFor="examStage">Exam Stage</label>
+          <select
+            id="examStage"
+            value={examStage}
+            onChange={(e) => setExamStage(e.target.value)}
             disabled={loading}
           >
-            <option value="">Select Exam Stage</option>
+            <option value="">-- Select Exam Stage --</option>
             <option value="Foundation">Foundation</option>
             <option value="Intermediate">Intermediate</option>
             <option value="Final">Final</option>
@@ -340,99 +408,55 @@ const Quiz = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="subject">Subject:</label>
-          <select 
-            id="subject" 
-            value={subject} 
+          <label htmlFor="subject">Subject</label>
+          <select
+            id="subject"
+            value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            disabled={!examStage || loadingSubjects || availableSubjects.length === 0}
+            disabled={loading || loadingSubjects || !examStage}
           >
-            <option value="">
-              {loadingSubjects ? 'Loading subjects...' : 
-               availableSubjects.length === 0 && examStage ? 'No subjects with MCQs available' : 
-               'Select Subject'}
-            </option>
-            
-            {availableSubjects.map(subj => (
-              <option key={subj.subject} value={subj.subject}>
-                {subj.subject} ({subj.count} MCQs)
+            <option value="">-- Select Subject --</option>
+            {availableSubjects.map((subj) => (
+              <option key={subj} value={subj}>
+                {subj}
               </option>
             ))}
           </select>
+          {loadingSubjects && <div className="loading-message">Loading subjects...</div>}
         </div>
-
+        
         <div className="form-group">
-          <label htmlFor="questionCount">Number of Questions:</label>
-          <input 
-            type="number" 
-            id="questionCount" 
-            min="1" 
-            max="50" 
-            value={questionCount} 
-            onChange={(e) => {
-              const val = e.target.value;
-              // Allow empty string during editing
-              if (val === '') {
-                setQuestionCount('');
-              } else {
-                const num = parseInt(val);
-                // Only apply constraints if it's a valid number
-                if (!isNaN(num)) {
-                  setQuestionCount(num);
-                }
-              }
-            }}
-            onBlur={() => {
-              // Apply min constraint when field loses focus
-              if (questionCount === '' || questionCount < 1) {
-                setQuestionCount(1);
-              } else if (questionCount > 50) {
-                setQuestionCount(50);
-              }
-            }}
+          <label htmlFor="questionCount">Number of Questions (1-50)</label>
+          <input
+            type="number"
+            id="questionCount"
+            min="1"
+            max="50"
+            value={questionCount}
+            onChange={(e) => setQuestionCount(parseInt(e.target.value) || 10)}
             disabled={loading}
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="timeLimit">Time Limit (minutes):</label>
-          <input 
-            type="number" 
-            id="timeLimit" 
-            min="1" 
-            max="180" 
-            value={timeLimit} 
-            onChange={(e) => {
-              const val = e.target.value;
-              // Allow empty string during editing
-              if (val === '') {
-                setTimeLimit('');
-              } else {
-                const num = parseInt(val);
-                // Only apply constraints if it's a valid number
-                if (!isNaN(num)) {
-                  setTimeLimit(num);
-                }
-              }
-            }}
-            onBlur={() => {
-              // Apply min constraint when field loses focus
-              if (timeLimit === '' || timeLimit < 1) {
-                setTimeLimit(1);
-              } else if (timeLimit > 180) {
-                setTimeLimit(180);
-              }
-            }}
+          <label htmlFor="timeLimit">Time Limit (minutes)</label>
+          <input
+            type="number"
+            id="timeLimit"
+            min="1"
+            max="180"
+            value={timeLimit}
+            onChange={(e) => setTimeLimit(parseInt(e.target.value) || 30)}
             disabled={loading}
           />
         </div>
         
-        <button 
-          className="start-quiz-btn" 
+        <button
+          className="start-quiz-btn"
           onClick={handleStartQuiz}
           disabled={loading || !examStage || !subject}
         >
-          {loading ? 'Loading...' : 'Start Quiz'}
+          {loading ? 'Loading...' : `Start ${quizMode === 'ai' ? 'AI' : 'Standard'} Quiz`}
         </button>
       </div>
     </div>
