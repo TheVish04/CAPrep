@@ -331,9 +331,10 @@ const AdminPanel = () => {
       console.log('Submission response:', response.status, result);
       if (response.ok) {
         setLastSubmittedId(result.id);
-        applyFilters(token);
         alert('Question added successfully');
         resetForm();
+        const currentQuery = new URLSearchParams(filters).toString();
+        fetchQuestions(token, currentQuery);
       } else {
         alert(`Failed to add question: ${result.error || 'Unknown error'}`);
       }
@@ -392,9 +393,10 @@ const AdminPanel = () => {
       
       if (response.ok) {
         setLastSubmittedId(editingQuestionId);
-        applyFilters(token);
         alert('Question updated successfully');
         resetForm();
+        const currentQuery = new URLSearchParams(filters).toString();
+        fetchQuestions(token, currentQuery);
       } else {
         const errorMessage = result.details || result.error || 'Unknown error';
         console.error('Failed to update question:', errorMessage);
@@ -479,8 +481,9 @@ const AdminPanel = () => {
       
       if (response.ok) {
         // Success - refresh the questions list
-        applyFilters(token);
         alert('Question deleted successfully');
+        const currentQuery = new URLSearchParams(filters).toString();
+        fetchQuestions(token, currentQuery);
       } else {
         // Error handling with more details
         const errorMessage = result.details || result.error || 'Unknown error';
