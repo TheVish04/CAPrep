@@ -26,17 +26,23 @@ const safetySettings = [
 router.post('/generate', authMiddleware, async (req, res) => {
   try {
     const { subject, examStage, count = 5 } = req.body; // Default to 5 questions
+    
+    console.log('AI Quiz Request:', { subject, examStage, count });
 
     // 1. Input Validation (Basic)
     if (!subject || !examStage) {
+      console.log('Missing required fields:', { subject, examStage });
       return res.status(400).json({ error: 'Subject and Exam Stage are required.' });
     }
     if (!process.env.GEMINI_API_KEY) {
         console.error('GEMINI API Key not configured in .env');
         return res.status(500).json({ error: 'AI service configuration error.' });
     }
+    
+    console.log('Gemini API Key available:', !!process.env.GEMINI_API_KEY);
 
     // 2. Retrieve Example Questions
+    console.log('Fetching example questions for subject:', subject, 'examStage:', examStage);
     const exampleQuestions = await Question.find({ subject, examStage }).limit(20).lean();
      if (!exampleQuestions || exampleQuestions.length === 0) {
        console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Proceeding without examples.`);
@@ -89,88 +95,129 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     // 4. Call Google Gemini API
     console.log("Sending prompt to Google Gemini API...");
+    console.log("Prompt length:", prompt.length, "characters");
     // console.log("Prompt:", prompt); // Uncomment for debugging
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash", 
-      safetySettings 
-    });
+    try {
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash", 
+        safetySettings 
+      });
+      
+      console.log("Using model: gemini-1.5-flash");
 
-    const generationConfig = {
-      temperature: 0.7,
-      maxOutputTokens: 4096,
-    };
+      const generationConfig = {
+        temperature: 0.7,
+        maxOutputTokens: 4096,
+      };
+      
+      console.log("Generation config:", generationConfig);
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
+      console.log("Calling Gemini API...");
+      const result = await model.generateContent(prompt);
+      console.log("Received response from Google Gemini API.");
 
-    console.log("Received response from Google Gemini API.");
+      // 5. Parse Response
+      let generatedQuestions = [];
+      if (result && result.response) {
+        const rawContent = result.response.text();
+        console.log("Raw Content length:", rawContent.length, "characters");
+        // console.log("Raw Content from AI:", rawContent);
 
-    // 5. Parse Response
-    let generatedQuestions = [];
-    if (response && response.text) {
-      const rawContent = response.text();
-      console.log("Raw Content from AI:", rawContent);
-
-      // Attempt to parse the content as JSON
-      try {
-        // Sometimes the AI might wrap the JSON in backticks or add intro text
-        const jsonMatch = rawContent.match(/```json\n?([\s\S]*?)```|(\[[\s\S]*\])/);
-        let jsonString = rawContent.trim();
-        if (jsonMatch) {
-          jsonString = jsonMatch[1] || jsonMatch[2];
-        }
-
-        generatedQuestions = JSON.parse(jsonString);
-
-        // Basic validation of the parsed structure
-        if (!Array.isArray(generatedQuestions)) {
-          throw new Error("Parsed response is not an array.");
-        }
-        
-        generatedQuestions.forEach((q, i) => {
-          if (typeof q.questionText !== 'string' || 
-              !Array.isArray(q.options) || 
-              q.options.length < 2 || 
-              typeof q.correctAnswerIndex !== 'number' || 
-              q.correctAnswerIndex < 0 || 
-              q.correctAnswerIndex >= q.options.length) {
-            throw new Error("Question object at index " + i + " has invalid structure or correctAnswerIndex.");
+        // Attempt to parse the content as JSON
+        try {
+          // Sometimes the AI might wrap the JSON in backticks or add intro text
+          console.log("Attempting to parse JSON response...");
+          const jsonMatch = rawContent.match(/```json\n?([\s\S]*?)```|(\[[\s\S]*\])/);
+          let jsonString = rawContent.trim();
+          if (jsonMatch) {
+            console.log("Found JSON match with regex");
+            jsonString = jsonMatch[1] || jsonMatch[2];
           }
+
+          console.log("Parsing JSON string...");
+          generatedQuestions = JSON.parse(jsonString);
+          console.log("JSON parsed successfully");
+
+          // Basic validation of the parsed structure
+          if (!Array.isArray(generatedQuestions)) {
+            console.error("Parsed response is not an array:", typeof generatedQuestions);
+            throw new Error("Parsed response is not an array.");
+          }
+          
+          console.log("Validating question objects...");
+          let validationErrors = [];
+          
+          generatedQuestions.forEach((q, i) => {
+            if (typeof q.questionText !== 'string') {
+              validationErrors.push(`Question ${i}: questionText is not a string`);
+            }
+            if (!Array.isArray(q.options)) {
+              validationErrors.push(`Question ${i}: options is not an array`);
+            } else if (q.options.length < 2) {
+              validationErrors.push(`Question ${i}: options has less than 2 items`);
+            }
+            if (typeof q.correctAnswerIndex !== 'number') {
+              validationErrors.push(`Question ${i}: correctAnswerIndex is not a number`);
+            } else if (q.correctAnswerIndex < 0 || q.correctAnswerIndex >= q.options.length) {
+              validationErrors.push(`Question ${i}: correctAnswerIndex is out of bounds`);
+            }
+          });
+          
+          if (validationErrors.length > 0) {
+            console.error("Validation errors:", validationErrors);
+            throw new Error("Question objects have invalid structure: " + validationErrors.join("; "));
+          }
+
+          console.log("Successfully parsed " + generatedQuestions.length + " questions.");
+
+        } catch (parseError) {
+          console.error("Failed to parse AI response JSON:", parseError);
+          console.error("First 200 chars of raw content:", rawContent.substring(0, 200));
+          return res.status(500).json({ 
+            error: 'Failed to parse AI response.', 
+            details: parseError.message,
+            rawContentPreview: rawContent.substring(0, 100) + "..." 
+          });
+        }
+
+      } else {
+        // Handle cases where the response might be blocked
+        console.error('No valid text content received from AI API.', 
+                    result ? JSON.stringify(result) : 'No result object');
+        
+        const blockReason = result?.promptFeedback?.blockReason;
+        const safetyRatings = result?.candidates?.[0]?.safetyRatings;
+        
+        return res.status(500).json({
+          error: 'Received no valid text content from AI service.',
+          blockReason: blockReason || 'Unknown',
+          safetyRatings: safetyRatings || []
         });
-
-        console.log("Successfully parsed " + generatedQuestions.length + " questions.");
-
-      } catch (parseError) {
-        console.error("Failed to parse AI response JSON:", parseError);
-        console.error("Raw content received:", rawContent);
-        return res.status(500).json({ error: 'Failed to parse AI response. Raw response logged on server.' });
       }
 
-    } else {
-      // Handle cases where the response might be blocked
-      console.error('No valid text content received from AI API.', 
-                   response ? JSON.stringify(response) : 'No response object');
-      
-      const blockReason = response?.promptFeedback?.blockReason;
-      const safetyRatings = response?.candidates?.[0]?.safetyRatings;
-      
-      return res.status(500).json({
-        error: 'Received no valid text content from AI service.',
-        blockReason: blockReason || 'Unknown',
-        safetyRatings: safetyRatings || []
+      // 6. Send to Frontend
+      console.log("Sending " + generatedQuestions.length + " questions to frontend");
+      res.status(200).json(generatedQuestions);
+
+    } catch (apiError) {
+      console.error('Error calling Gemini API:', apiError);
+      console.error('API error details:', JSON.stringify(apiError, null, 2));
+      return res.status(500).json({ 
+        error: 'Error calling AI service API', 
+        details: apiError.message,
+        apiErrorDetails: JSON.stringify(apiError)
       });
     }
-
-    // 6. Send to Frontend
-    res.status(200).json(generatedQuestions);
 
   } catch (error) {
     // General error handling for API calls or other issues
     console.error('Error generating AI quiz:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Failed to generate AI quiz.', 
-      details: error.message 
+      details: error.message,
+      stack: error.stack
     });
   }
 });

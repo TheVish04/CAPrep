@@ -19,6 +19,7 @@
 .quiz-review-page {
   background-color: var(--background-color);
   min-height: 100vh;
+  padding-top: 90px; /* Add padding to account for fixed navbar height (70px) plus some extra space */
   padding-bottom: 4rem;
 }
 
