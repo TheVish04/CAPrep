@@ -33,6 +33,21 @@ const Quiz = () => {
   const [quizCompleted, setQuizCompleted] = useState(false); // Track if results have been calculated
   const [lastQuizAttempt, setLastQuizAttempt] = useState(null); // Store the details of the last attempt for review
   
+  // Maximum questions allowed based on quiz mode
+  const getMaxQuestions = () => quizMode === 'ai' ? 40 : 1000; // No practical limit for standard quiz
+  
+  // Handle quiz mode change - adjust question count if needed
+  const handleQuizModeChange = (mode) => {
+    setQuizMode(mode);
+    // If current count exceeds the limit for the new mode, adjust it
+    if (mode === 'ai' && questionCount > 40) {
+      setQuestionCount(40);
+      setWarning('AI-generated quizzes are limited to 40 questions maximum.');
+    } else {
+      setWarning(null);
+    }
+  };
+  
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
@@ -194,8 +209,8 @@ const Quiz = () => {
       return;
     }
     
-    if (questionCount < 1 || questionCount > 50) {
-      setError('Please enter a valid number of questions (1-50)');
+    if (questionCount < 1 || questionCount > getMaxQuestions()) {
+      setError(`Please enter a valid number of questions (1-${getMaxQuestions()})`);
       return;
     }
     
@@ -369,13 +384,13 @@ const Quiz = () => {
           <div className="mode-toggle-container">
             <button 
               className={`mode-toggle-btn ${quizMode === 'standard' ? 'active' : ''}`}
-              onClick={() => setQuizMode('standard')}
+              onClick={() => handleQuizModeChange('standard')}
             >
               Standard Quiz
             </button>
             <button 
               className={`mode-toggle-btn ${quizMode === 'ai' ? 'active' : ''}`}
-              onClick={() => setQuizMode('ai')}
+              onClick={() => handleQuizModeChange('ai')}
             >
               AI-Generated Quiz
             </button>
@@ -426,14 +441,18 @@ const Quiz = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="questionCount">Number of Questions (1-50)</label>
+          <label htmlFor="questionCount">Number of Questions (1-{getMaxQuestions()})</label>
           <input
             type="number"
             id="questionCount"
             min="1"
-            max="50"
+            max={getMaxQuestions()}
             value={questionCount}
-            onChange={(e) => setQuestionCount(parseInt(e.target.value) || 10)}
+            onChange={(e) => {
+              const newCount = parseInt(e.target.value) || 10;
+              // Enforce the mode-specific limit
+              setQuestionCount(Math.min(newCount, getMaxQuestions()));
+            }}
             disabled={loading}
           />
         </div>

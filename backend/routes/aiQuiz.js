@@ -37,9 +37,11 @@ router.post('/generate', authMiddleware, async (req, res) => {
     }
 
     // 2. Retrieve Example Questions
-    const exampleQuestions = await Question.find({ subject, examStage }).limit(5).lean();
+    const exampleQuestions = await Question.find({ subject, examStage }).limit(20).lean();
      if (!exampleQuestions || exampleQuestions.length === 0) {
        console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Proceeding without examples.`);
+     } else {
+       console.log(`Using ${exampleQuestions.length} example questions for AI prompt context.`);
      }
 
     // 3. Construct Prompt using simple string concatenation
@@ -96,7 +98,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     const generationConfig = {
       temperature: 0.7,
-      maxOutputTokens: 2048,
+      maxOutputTokens: 4096,
     };
 
     const result = await model.generateContent(prompt);
