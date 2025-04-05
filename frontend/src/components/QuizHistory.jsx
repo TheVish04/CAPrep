@@ -180,9 +180,15 @@ const QuizHistory = () => {
                         </thead>
                         <tbody>
                             {history.map((entry, index) => (
-                                <tr key={entry._id || index}> 
+                                <tr key={entry._id || index} className={entry.isAiQuiz ? 'ai-quiz-row' : ''}> 
                                     <td data-label="Date">{formatDate(entry.date)}</td>
-                                    <td data-label="Subject">{entry.subject}</td>
+                                    <td data-label="Subject">
+                                        {entry.subject}
+                                        {entry.isAiQuiz ? 
+                                            <span className="quiz-type-badge ai-quiz-badge">AI</span> : 
+                                            <span className="quiz-type-badge standard-quiz-badge">Standard</span>
+                                        }
+                                    </td>
                                     <td data-label="Score">{entry.score} / {entry.totalQuestions}</td>
                                     <td data-label="Percentage">{entry.percentage}%</td>
                                     <td data-label="Actions">

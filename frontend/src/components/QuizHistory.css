@@ -66,6 +66,37 @@
     transition: background-color 0.2s ease;
 }
 
+/* Styles for AI Quiz rows */
+.history-table tbody tr.ai-quiz-row {
+    background-color: rgba(3, 169, 244, 0.1); /* Light blue tint for AI quizzes */
+    border-left: 4px solid #03a9f4; /* Blue accent on left side */
+}
+
+.history-table tbody tr.ai-quiz-row:hover {
+    background-color: rgba(3, 169, 244, 0.15); /* Slightly darker on hover */
+}
+
+/* AI quiz badge */
+.quiz-type-badge {
+    display: inline-block;
+    font-size: 0.8em;
+    padding: 2px 6px;
+    margin-left: 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+.ai-quiz-badge {
+    background-color: #03a9f4;
+    color: #121212;
+}
+
+.standard-quiz-badge {
+    background-color: #4caf50;
+    color: #121212;
+}
+
 .history-table tbody tr:hover {
     background-color: #383838; /* Highlight on hover */
 }
@@ -93,6 +124,11 @@
         border: 1px solid #444;
         border-radius: 5px;
         overflow: hidden;
+    }
+    
+    /* Preserve the blue left border for AI quizzes on mobile */
+    .history-table tr.ai-quiz-row {
+        border-left: 4px solid #03a9f4;
     }
 
     .history-table td {
