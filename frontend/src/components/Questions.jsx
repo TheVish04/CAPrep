@@ -398,76 +398,77 @@ const Questions = () => {
             <div className="questions-list">
               {currentQuestions.map((q) => (
                 <div key={q._id} className="question-card">
-                  <div className="question-header">
-                    <h2>
-                      Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
-                      ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
-                    </h2>
                     <button 
                       onClick={() => handleBookmarkToggle(q._id)} 
-                      className="bookmark-btn"
+                      className="bookmark-btn top-right-bookmark"
                       title={bookmarkedQuestionIds.has(q._id) ? 'Remove Bookmark' : 'Add Bookmark'}
                      >
                        <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
                     </button>
-                  </div>
-                  
-                  <p><strong>Question:</strong></p>
-                  <div 
-                     className="question-text"
-                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
-                  />
-
-                  {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
-                    <div className="answer-section main-answer">
-                      <h3>Answer:</h3>
-                      <div 
-                        className="answer-text"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
-                      />
+                    
+                    <div className="question-header">
+                        <h2>
+                          Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
+                          ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
+                        </h2>
                     </div>
-                  )}
-                  
-                  {q.subQuestions && q.subQuestions.length > 0 && (
-                     <div className="subquestions-container">
-                       <h3>Sub-Questions:</h3>
-                       {q.subQuestions.map((subQ, index) => (
-                         <div key={index} className="subquestion-item">
-                            {subQ.subQuestionText && (
-                               <p><strong>Sub-Question {subQ.subQuestionNumber || (index + 1)}:</strong></p>
-                            )}
-                            {subQ.subQuestionText && (
-                               <div 
-                                 className="subquestion-text"
-                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }}
-                               />
-                            )}
-                            
-                            {subQ.subOptions && subQ.subOptions.length > 0 && (
-                              <ul className="subquestion-options">
-                                {subQ.subOptions.map((opt, optIndex) => (
-                                  <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
-                                    {opt.optionText}
-                                    {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                  )}
-                  
-                 {q.pageNumber && (
-                     <p className="page-number-ref"><strong>Reference Page:</strong> {q.pageNumber}</p>
-                 )}
+                    
+                    <p><strong>Question:</strong></p>
+                    <div 
+                       className="question-text"
+                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
+                    />
 
-                 <button 
-                   className="toggle-answer-btn"
-                   onClick={() => toggleIndividualAnswer(q._id)} 
-                 >
-                   {individualShowAnswers[q._id] ? 'Hide Answer/Details' : 'Show Answer/Details'}
-                 </button>
+                    {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                      <div className="answer-section main-answer">
+                        <h3>Answer:</h3>
+                        <div 
+                          className="answer-text"
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
+                        />
+                      </div>
+                    )}
+                    
+                    {q.subQuestions && q.subQuestions.length > 0 && (
+                       <div className="subquestions-container">
+                         <h3>Sub-Questions:</h3>
+                         {q.subQuestions.map((subQ, index) => (
+                           <div key={index} className="subquestion-item">
+                              {subQ.subQuestionText && (
+                                 <p><strong>Sub-Question {subQ.subQuestionNumber || (index + 1)}:</strong></p>
+                              )}
+                              {subQ.subQuestionText && (
+                                 <div 
+                                   className="subquestion-text"
+                                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }}
+                                 />
+                              )}
+                              
+                              {subQ.subOptions && subQ.subOptions.length > 0 && (
+                                <ul className="subquestion-options">
+                                  {subQ.subOptions.map((opt, optIndex) => (
+                                    <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
+                                      {opt.optionText}
+                                      {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                    )}
+                    
+                   {q.pageNumber && (
+                       <p className="page-number-ref"><strong>Reference Page:</strong> {q.pageNumber}</p>
+                   )}
+
+                   <button 
+                     className="toggle-answer-btn"
+                     onClick={() => toggleIndividualAnswer(q._id)} 
+                   >
+                     {individualShowAnswers[q._id] ? 'Hide Answer/Details' : 'Show Answer/Details'}
+                   </button>
                 </div>
               ))}
             </div>
