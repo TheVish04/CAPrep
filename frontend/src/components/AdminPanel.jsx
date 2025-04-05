@@ -49,6 +49,10 @@ const AdminPanel = () => {
       const response = await fetch(`https://caprep.onrender.com/api/questions${query ? `?${query}` : ''}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
+          // Add cache-control headers to prevent browser caching for this fetch
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
       });
       const data = await response.json();
@@ -977,7 +981,7 @@ const AdminPanel = () => {
             ) : (
               <div className="questions-list">
                 {storedQuestions.map((question) => (
-                  <div key={question.id} className="question-card">
+                  <div key={question._id} className="question-card">
                     <p><strong>Subject:</strong> {question.subject || 'N/A'}</p>
                     <p><strong>Paper Type:</strong> {question.paperType || 'N/A'}</p>
                     <p><strong>Year:</strong> {question.year || 'N/A'}</p>
@@ -1029,7 +1033,7 @@ const AdminPanel = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(question._id || question.id)}
+                        onClick={() => handleDelete(question._id)}
                         className="delete-btn"
                       >
                         Delete
