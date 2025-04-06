@@ -312,44 +312,6 @@ const AdminPanel = () => {
         }
         break;
         
-      case 'question-subquestions':
-        // Main question text is required
-        if (!formData.questionText || formData.questionText.trim() === '') {
-          tempErrors.questionText = 'Question text is required for this question type';
-        }
-        
-        // Must have at least one sub-question with options
-        if (formData.subQuestions.length === 0) {
-          tempErrors.subQuestions = 'At least one sub-question with options is required';
-        } else {
-          // Validate each sub-question
-          formData.subQuestions.forEach((subQ, subIndex) => {
-            // Check if sub-question has text
-            if (!subQ.subQuestionText || subQ.subQuestionText.trim() === '') {
-              tempErrors[`subQuestion_${subIndex}`] = `Sub-question ${subIndex + 1} text is required`;
-            }
-            
-            // Check if sub-question has enough options
-            if (!subQ.subOptions || subQ.subOptions.length < 2) {
-              tempErrors[`subQuestion_${subIndex}`] = `Sub-question ${subIndex + 1} needs at least 2 options`;
-            } else {
-              // Check if any option is marked as correct
-              const hasCorrectOption = subQ.subOptions.some(opt => opt.isCorrect);
-              if (!hasCorrectOption) {
-                tempErrors[`subQuestion_${subIndex}`] = `Sub-question ${subIndex + 1} must have one option marked as correct`;
-              }
-              
-              // Check if all options have text
-              subQ.subOptions.forEach((opt, optIndex) => {
-                if (!opt.optionText || opt.optionText.trim() === '') {
-                  tempErrors[`subOption_${subIndex}_${optIndex}`] = `Sub-question ${subIndex + 1}, Option ${optIndex + 1} text is required`;
-                }
-              });
-            }
-          });
-        }
-        break;
-        
       default:
         break;
     }
@@ -491,8 +453,8 @@ const AdminPanel = () => {
         questionData.subQuestions = [];
       }
       
-      // For objective-only and question-subquestions, ensure answer text is empty if not needed
-      if (questionType === 'objective-only' || questionType === 'question-subquestions') {
+      // For objective-only, ensure answer text is empty if not needed
+      if (questionType === 'objective-only') {
         questionData.answerText = '';
       }
       
@@ -580,8 +542,8 @@ const AdminPanel = () => {
         questionData.subQuestions = [];
       }
       
-      // For objective-only and question-subquestions, ensure answer text is empty if not needed
-      if (questionType === 'objective-only' || questionType === 'question-subquestions') {
+      // For objective-only, ensure answer text is empty if not needed
+      if (questionType === 'objective-only') {
         questionData.answerText = '';
       }
       
@@ -634,13 +596,8 @@ const AdminPanel = () => {
       detectedQuestionType = 'subjective-only';
     } else if ((!question.answerText || question.answerText.trim() === '') && 
                question.subQuestions && question.subQuestions.length > 0) {
-      // If it has main question text and sub-questions but no answer, it's question-subquestions
-      if (question.questionText && question.questionText.trim() !== '') {
-        detectedQuestionType = 'question-subquestions';
-      } else {
-        // If it has sub-questions but no answer text and no main question, it's objective-only
-        detectedQuestionType = 'objective-only';
-      }
+      // If it has sub-questions but no answer text, it's objective-only
+      detectedQuestionType = 'objective-only';
     }
     
     setQuestionType(detectedQuestionType);
@@ -654,7 +611,7 @@ const AdminPanel = () => {
       subOptions: sq.subOptions || []
     }));
     
-    // Set form data
+    // Set form data (exclude pageNumber)
     setFormData({
       subject: question.subject || '',
       paperType: question.paperType || '',
@@ -944,14 +901,6 @@ const AdminPanel = () => {
                     <h3>MCQs Only</h3>
                     <p>For objective multiple-choice questions</p>
                   </div>
-                  
-                  <div 
-                    className={`question-type-option ${questionType === 'question-subquestions' ? 'active' : ''}`}
-                    onClick={() => setQuestionType('question-subquestions')}
-                  >
-                    <h3>Question + Subquestions (MCQs)</h3>
-                    <p>For questions with subquestions and options but no answer</p>
-                  </div>
                 </div>
               </div>
 
@@ -1003,7 +952,7 @@ const AdminPanel = () => {
               )}
 
               {/* Conditionally show Sub-Questions section based on question type */}
-              {(questionType === 'objective-subjective' || questionType === 'objective-only' || questionType === 'question-subquestions') && (
+              {(questionType === 'objective-subjective' || questionType === 'objective-only') && (
                 <div className="form-section">
                   <h2>{questionType === 'objective-only' ? 'Options' : 'Sub-Questions with Options'}</h2>
                   {formData.subQuestions.map((subQ, subIndex) => (
