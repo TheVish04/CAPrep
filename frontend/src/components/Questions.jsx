@@ -214,14 +214,21 @@ const Questions = () => {
   };
   
   // Handle PDF export
-  const handleExportPDF = () => {
+  const handleExportPDF = useCallback(() => {
     if (questions.length === 0) {
-      alert('No questions to export based on current filters.');
+      alert('No questions to export');
       return;
     }
-    const doc = generateQuestionsPDF(questions, filters, showAnswers, individualShowAnswers);
-    savePDF(doc);
-  };
+
+    const doc = generateQuestionsPDF(
+      questions,
+      filters,
+      showAnswers,
+      individualShowAnswers
+    );
+    
+    savePDF(doc, `ca-questions-${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [questions, filters, showAnswers, individualShowAnswers]);
 
   return (
     <div className="page-wrapper">
