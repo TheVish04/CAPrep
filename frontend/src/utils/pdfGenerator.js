@@ -6,41 +6,37 @@ const STYLES = `
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
-      color: #333;
+      color: #000;
       max-width: 210mm;
       margin: 0;
       padding: 20px;
     }
     
     .pdf-header {
-      background: #03a9f4;
-      color: white;
+      border-bottom: 2px solid #000;
       padding: 15px;
       text-align: center;
       margin-bottom: 20px;
     }
     
     .filter-info {
-      background: #f5f5f5;
+      border: 1px solid #000;
       padding: 10px;
       margin-bottom: 20px;
       font-size: 12px;
     }
     
     .question-card {
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
+      border: 1px solid #000;
       margin-bottom: 20px;
       padding: 15px;
       page-break-inside: avoid;
     }
     
     .question-header {
-      background: #03a9f4;
-      color: white;
+      border-bottom: 1px solid #000;
       padding: 10px;
       margin: -15px -15px 15px -15px;
-      border-radius: 4px 4px 0 0;
     }
     
     .question-content {
@@ -48,10 +44,9 @@ const STYLES = `
     }
     
     .case-scenario {
-      background: #e3f2fd;
+      border-left: 2px solid #000;
       padding: 10px;
       margin: 10px 0;
-      border-left: 4px solid #03a9f4;
     }
     
     table {
@@ -61,13 +56,13 @@ const STYLES = `
     }
     
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #000;
       padding: 8px;
       text-align: left;
     }
     
     th {
-      background-color: #f5f5f5;
+      border-bottom: 2px solid #000;
     }
     
     .sub-questions {
@@ -84,15 +79,15 @@ const STYLES = `
     }
     
     .correct-option {
-      background: #e8f5e9;
-      border-left: 4px solid #4caf50;
+      border-left: 2px solid #000;
+      font-weight: bold;
     }
     
     .page-number {
       text-align: center;
       font-size: 12px;
       margin-top: 20px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid #000;
       padding-top: 10px;
     }
   </style>
