@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import './PreviewPanel.css'; // Import CSS for styling
 
-const PreviewPanel = ({ data, onClose }) => {
+const PreviewPanel = ({ data, onClose, questionType = 'objective-subjective' }) => {
   // Create a ref for the modal dialog
   const modalRef = useRef(null);
   
@@ -26,9 +26,21 @@ const PreviewPanel = ({ data, onClose }) => {
   }, [onClose]);
 
   // Log the data to debug
-  console.log('Preview Data:', data);
+  console.log('Preview Data:', data, 'Question Type:', questionType);
 
   if (!data) return null;
+
+  // Helper function to determine the title based on question type
+  const getPreviewTitle = () => {
+    switch (questionType) {
+      case 'subjective-only':
+        return 'Subjective Question Preview';
+      case 'objective-only':
+        return 'Multiple Choice Question Preview';
+      default:
+        return 'Question Preview';
+    }
+  };
 
   return (
     <>
@@ -52,7 +64,7 @@ const PreviewPanel = ({ data, onClose }) => {
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
-          Question Preview
+          {getPreviewTitle()}
         </h2>
         <button className="preview-close" onClick={onClose} aria-label="Close">
           ×
@@ -109,7 +121,8 @@ const PreviewPanel = ({ data, onClose }) => {
             />
           </div>
 
-          {data.answerText && (
+          {/* Show answer text for subjective-only and objective-subjective types */}
+          {(questionType === 'subjective-only' || (questionType === 'objective-subjective' && data.answerText)) && (
             <div className="preview-section">
               <h3 className="preview-section-title">Answer Text</h3>
               <div className="preview-question-text"
@@ -124,17 +137,28 @@ const PreviewPanel = ({ data, onClose }) => {
             </div>
           )}
 
-          {data.subQuestions && data.subQuestions.length > 0 && (
+          {/* Show sub-questions for objective-only and objective-subjective types */}
+          {(questionType === 'objective-only' || (questionType === 'objective-subjective' && data.subQuestions && data.subQuestions.length > 0)) && (
             <div className="preview-sub-questions">
-              <h3 className="preview-section-title">Sub-Questions</h3>
+              <h3 className="preview-section-title">
+                {questionType === 'objective-only' ? 'Options' : 'Sub-Questions'}
+              </h3>
               {data.subQuestions.map((subQ, subIdx) => (
                 <div key={subIdx} className="preview-sub-question">
-                  <div className="preview-sub-question-header">
-                    <strong>Sub Question {subQ.subQuestionNumber || (subIdx + 1)}</strong>
-                  </div>
-                  <div className="preview-sub-question-text">
-                    {subQ.subQuestionText || 'N/A'}
-                  </div>
+                  {(questionType !== 'objective-only' || subQ.subQuestionText) && (
+                    <>
+                      <div className="preview-sub-question-header">
+                        <strong>
+                          {questionType === 'objective-only' 
+                            ? 'Question' 
+                            : `Sub Question ${subQ.subQuestionNumber || (subIdx + 1)}`}
+                        </strong>
+                      </div>
+                      <div className="preview-sub-question-text">
+                        {subQ.subQuestionText || 'N/A'}
+                      </div>
+                    </>
+                  )}
                   {subQ.subOptions && subQ.subOptions.length > 0 && (
                     <div className="preview-options">
                       {subQ.subOptions.map((subOpt, optIdx) => (

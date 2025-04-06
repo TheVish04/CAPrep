@@ -22,6 +22,9 @@ const AdminPanel = () => {
     setActiveTab(getActiveTab());
   }, [location.pathname]);
 
+  // Add question type state
+  const [questionType, setQuestionType] = useState('objective-subjective');
+
   const [formData, setFormData] = useState({
     subject: '',
     paperType: '',
@@ -106,7 +109,18 @@ const AdminPanel = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    
+    // If examStage is changing, reset subject and paperNo as they depend on examStage
+    if (name === 'examStage') {
+      setFilters(prev => ({
+        ...prev,
+        [name]: value,
+        subject: '',
+        paperNo: value !== 'Foundation' ? '' : prev.paperNo
+      }));
+    } else {
+      setFilters(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const addSubQuestion = () => {
@@ -248,26 +262,68 @@ const AdminPanel = () => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    const fieldsToValidate = ['subject', 'paperType', 'year', 'month', 'examStage', 'questionNumber', 'pageNumber'];
+    let tempErrors = {};
     
-    if (formData.examStage === 'Foundation') {
-      fieldsToValidate.push('paperNo');
+    // Core field validation for all question types
+    if (!formData.subject || formData.subject === '') tempErrors.subject = 'Subject is required';
+    if (!formData.paperType || formData.paperType === '') tempErrors.paperType = 'Paper Type is required';
+    if (!formData.year || formData.year === '') tempErrors.year = 'Year is required';
+    if (!formData.month || formData.month === '') tempErrors.month = 'Month is required';
+    if (!formData.examStage || formData.examStage === '' || formData.examStage === 'Select Exam Stage') {
+      tempErrors.examStage = 'Exam Stage is required';
+    }
+    if (formData.examStage === 'Foundation' && (!formData.paperNo || formData.paperNo === '' || formData.paperNo === 'Select Paper')) {
+      tempErrors.paperNo = 'Paper No. is required for Foundation stage';
+    }
+    if (!formData.questionNumber) tempErrors.questionNumber = 'Question Number is required';
+    if (!formData.pageNumber) tempErrors.pageNumber = 'Page Number is required';
+    
+    // Question type-specific validation
+    switch (questionType) {
+      case 'objective-subjective':
+        // Both subjective and objective elements, flexible validation
+        break;
+        
+      case 'subjective-only':
+        // Must have answer text for subjective-only
+        if (!formData.answerText || formData.answerText.trim() === '') {
+          tempErrors.answerText = 'Answer text is required for subjective questions';
+        }
+        break;
+        
+      case 'objective-only':
+        // Must have at least one sub-question with options for objective-only
+        if (formData.subQuestions.length === 0) {
+          tempErrors.subQuestions = 'At least one question with options is required';
+        } else {
+          // Validate first sub-question has content and options
+          const firstSubQ = formData.subQuestions[0];
+          if (!firstSubQ.subOptions || firstSubQ.subOptions.length < 2) {
+            tempErrors[`subQuestion_0`] = 'At least 2 options are required';
+          } else {
+            // Check if any option is marked as correct
+            const hasCorrectOption = firstSubQ.subOptions.some(opt => opt.isCorrect);
+            if (!hasCorrectOption) {
+              tempErrors[`subQuestion_0`] = 'One option must be marked as correct';
+            }
+            
+            // Check if all options have text
+            firstSubQ.subOptions.forEach((opt, optIndex) => {
+              if (!opt.optionText || opt.optionText.trim() === '') {
+                tempErrors[`subOption_0_${optIndex}`] = `Option ${optIndex + 1} text is required`;
+              }
+            });
+          }
+        }
+        break;
+        
+      default:
+        break;
     }
     
-    fieldsToValidate.forEach((field) => {
-      validateField(field, formData[field]);
-      if (errors[field]) newErrors[field] = errors[field];
-    });
-    formData.subQuestions.forEach((subQ, index) => {
-      validateSubQuestion(index, 'subQuestionText', subQ.subQuestionText);
-      if (errors[`subQuestion_${index}`]) newErrors[`subQuestion_${index}`] = errors[`subQuestion_${index}`];
-      subQ.subOptions.forEach((opt, optIndex) => {
-        validateSubOption(index, optIndex, 'optionText', opt.optionText);
-        if (errors[`subOption_${index}_${optIndex}`]) newErrors[`subOption_${index}_${optIndex}`] = errors[`subOption_${index}_${optIndex}`];
-      });
-    });
-    return newErrors;
+    // Set errors state
+    setErrors(tempErrors);
+    return tempErrors;
   };
 
   const cleanSubQuestions = (subQuestions) => {
@@ -316,31 +372,41 @@ const AdminPanel = () => {
 
   // Modify resetForm to preserve cached selections
   const resetForm = () => {
-    // Cache current dropdown selections before reset
-    cacheFormSelections();
-    
-    // Get cached selections
-    const cachedSelections = JSON.parse(localStorage.getItem('adminFormSelections') || '{}');
-    
+    // Reset form data
     setFormData({
-      // Preserve dropdown selections from cache
-      subject: cachedSelections.subject || '',
-      paperType: cachedSelections.paperType || '',
-      year: cachedSelections.year || '',
-      month: cachedSelections.month || '',
-      examStage: cachedSelections.examStage || '',
-      paperNo: cachedSelections.paperNo || '',
-      
-      // Reset input fields
+      subject: '',
+      paperType: '',
+      year: '',
+      month: '',
+      examStage: '',
+      paperNo: '',
       questionNumber: '',
       questionText: '',
       answerText: '',
       pageNumber: '',
       subQuestions: [],
     });
-    
     setErrors({});
-    setEditingQuestionId(null);
+    setQuestionType('objective-subjective'); // Reset question type
+    
+    // Try to load cached selections
+    const cachedSelections = localStorage.getItem('adminFormSelections');
+    if (cachedSelections) {
+      try {
+        const { subject, paperType, year, month, examStage, paperNo } = JSON.parse(cachedSelections);
+        setFormData(prev => ({
+          ...prev,
+          subject: subject || '',
+          paperType: paperType || '',
+          year: year || '',
+          month: month || '',
+          examStage: examStage || '',
+          paperNo: paperNo || '',
+        }));
+      } catch (error) {
+        console.error('Error loading cached form selections:', error);
+      }
+    }
   };
 
   // Add function to clear cached selections
@@ -365,60 +431,83 @@ const AdminPanel = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate the form
     const validation = validateForm();
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
-      alert('Please fix the validation errors before submitting.');
-      return;
+      
+      const errorMessages = Object.values(validation).filter(v => v);
+      if (errorMessages.length > 0) {
+        alert(`Please fix the following errors:\n- ${errorMessages.join('\n- ')}`);
+        return;
+      }
     }
-
+    
     setIsSubmitting(true);
-    const token = localStorage.getItem('token');
-
-    const sanitizedData = {
-      subject: formData.subject,
-      paperType: formData.paperType,
-      year: formData.year,
-      month: formData.month,
-      examStage: formData.examStage,
-      paperNo: formData.paperNo,
-      questionNumber: formData.questionNumber,
-      questionText: DOMPurify.sanitize(formData.questionText),
-      answerText: DOMPurify.sanitize(formData.answerText || ''),
-      pageNumber: formData.pageNumber,
-      subQuestions: cleanSubQuestions(formData.subQuestions),
-    };
-
-    console.log('Form Data before submission:', formData);
-    console.log('Sanitized Data:', sanitizedData);
-
+    
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found. Please login again.');
+      }
+      
+      // Prepare question data based on question type
+      let questionData = { ...formData };
+      
+      // For subjective-only, ensure subQuestions is empty
+      if (questionType === 'subjective-only') {
+        questionData.subQuestions = [];
+      }
+      
+      // For objective-only, ensure answer text is empty if not needed
+      if (questionType === 'objective-only') {
+        questionData.answerText = '';
+      }
+      
+      // Clean and prepare data
+      const cleanedSubQuestions = cleanSubQuestions(questionData.subQuestions);
+      questionData.subQuestions = cleanedSubQuestions;
+      
       const response = await fetch('https://caprep.onrender.com/api/questions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(sanitizedData),
+        body: JSON.stringify(questionData),
       });
-      const result = await response.json();
-      console.log('Submission response:', response.status, result);
+      
+      const data = await response.json();
+      
       if (response.ok) {
-        setLastSubmittedId(result.id);
-        alert('Question added successfully');
+        setLastSubmittedId(data._id || data.id);
+        alert('Question saved successfully!');
         
-        // Cache the selections before resetting the form
+        // Cache selections for convenience
         cacheFormSelections();
         
+        // Reset form but keep common fields like exam stage, subject
+        const { examStage, subject, paperType, year, month, paperNo } = formData;
         resetForm();
-        const currentQuery = new URLSearchParams(filters).toString();
-        fetchQuestions(token, currentQuery);
+        setFormData(prev => ({
+          ...prev,
+          examStage, 
+          subject, 
+          paperType, 
+          year, 
+          month, 
+          paperNo
+        }));
+        
+        // Refresh the questions list
+        fetchQuestions(token);
       } else {
-        alert(`Failed to add question: ${result.error || 'Unknown error'}`);
+        throw new Error(data.error || 'Failed to save question');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert(`Error submitting form: ${error.message}`);
+      console.error('Error submitting question:', error);
+      alert(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -426,86 +515,110 @@ const AdminPanel = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    
+    if (!editingQuestionId) {
+      alert('No question selected for editing.');
+      return;
+    }
+    
+    // Validate form before submission
     const validation = validateForm();
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
-      alert('Please fix the validation errors before updating.');
-      return;
+      
+      const errorMessages = Object.values(validation).filter(v => v);
+      if (errorMessages.length > 0) {
+        alert(`Please fix the following errors:\n- ${errorMessages.join('\n- ')}`);
+        return;
+      }
     }
-
-    if (!editingQuestionId) {
-      console.error('No question ID for update');
-      alert('Cannot update: No question ID found');
-      return;
-    }
-
-    console.log('Updating question with ID:', editingQuestionId);
-    setIsSubmitting(true);
-    const token = localStorage.getItem('token');
     
-    const sanitizedData = {
-      subject: formData.subject,
-      paperType: formData.paperType,
-      year: formData.year,
-      month: formData.month,
-      examStage: formData.examStage,
-      paperNo: formData.paperNo,
-      questionNumber: formData.questionNumber,
-      questionText: DOMPurify.sanitize(formData.questionText),
-      answerText: DOMPurify.sanitize(formData.answerText || ''),
-      pageNumber: formData.pageNumber,
-      subQuestions: cleanSubQuestions(formData.subQuestions),
-    };
-
+    setIsSubmitting(true);
+    
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found. Please login again.');
+      }
+      
+      // Prepare question data based on question type
+      let questionData = { ...formData };
+      
+      // For subjective-only, ensure subQuestions is empty
+      if (questionType === 'subjective-only') {
+        questionData.subQuestions = [];
+      }
+      
+      // For objective-only, ensure answer text is empty if not needed
+      if (questionType === 'objective-only') {
+        questionData.answerText = '';
+      }
+      
+      // Clean and prepare data
+      const cleanedSubQuestions = cleanSubQuestions(questionData.subQuestions);
+      questionData.subQuestions = cleanedSubQuestions;
+      
       const response = await fetch(`https://caprep.onrender.com/api/questions/${editingQuestionId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(sanitizedData),
+        body: JSON.stringify(questionData),
       });
-      const result = await response.json();
-      console.log('Update response:', response.status, result);
+      
+      const data = await response.json();
       
       if (response.ok) {
-        setLastSubmittedId(editingQuestionId);
-        alert('Question updated successfully');
+        alert('Question updated successfully!');
+        
+        // Cache selections for convenience
+        cacheFormSelections();
+        
+        // Reset form and exit edit mode
         resetForm();
-        const currentQuery = new URLSearchParams(filters).toString();
-        fetchQuestions(token, currentQuery);
+        setEditingQuestionId(null);
+        
+        // Refresh the questions list
+        fetchQuestions(token);
       } else {
-        const errorMessage = result.details || result.error || 'Unknown error';
-        console.error('Failed to update question:', errorMessage);
-        alert(`Failed to update question: ${errorMessage}`);
+        throw new Error(data.error || 'Failed to update question');
       }
     } catch (error) {
-      console.error('Error updating question:', {
-        error: error.message,
-        questionId: editingQuestionId
-      });
-      alert(`Error updating question: ${error.message || 'Unknown error'}`);
+      console.error('Error updating question:', error);
+      alert(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleEdit = (question) => {
-    console.log('Editing question:', question);
+    setEditingQuestionId(question._id);
     
-    if (!question) {
-      console.error('Cannot edit: Invalid question object');
-      return;
+    // Determine question type based on content
+    let detectedQuestionType = 'objective-subjective'; // Default
+    
+    if (question.answerText && (!question.subQuestions || question.subQuestions.length === 0)) {
+      // If it has answer text but no sub-questions, it's subjective-only
+      detectedQuestionType = 'subjective-only';
+    } else if ((!question.answerText || question.answerText.trim() === '') && 
+               question.subQuestions && question.subQuestions.length > 0) {
+      // If it has sub-questions but no answer text, it's objective-only
+      detectedQuestionType = 'objective-only';
     }
     
-    const questionId = question._id || question.id;
+    setQuestionType(detectedQuestionType);
     
-    if (!questionId) {
-      console.error('Cannot edit: Missing question ID');
-      return;
-    }
+    // Ensure subQuestions is always an array
+    const subQuestions = question.subQuestions || [];
     
+    // Map subQuestions to ensure each has subOptions as an array
+    const formattedSubQuestions = subQuestions.map(sq => ({
+      ...sq,
+      subOptions: sq.subOptions || []
+    }));
+    
+    // Set form data
     setFormData({
       subject: question.subject || '',
       paperType: question.paperType || '',
@@ -517,15 +630,11 @@ const AdminPanel = () => {
       questionText: question.questionText || '',
       answerText: question.answerText || '',
       pageNumber: question.pageNumber || '',
-      subQuestions: question.subQuestions ? [...question.subQuestions] : [],
+      subQuestions: formattedSubQuestions,
     });
     
-    setEditingQuestionId(questionId);
-    
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    // Scroll to the top of the form
+    window.scrollTo(0, 0);
   };
 
   const handleDelete = async (id) => {
@@ -588,6 +697,15 @@ const AdminPanel = () => {
                 </ul>
               </div>
             )}
+            
+            {previewVisible && (
+              <PreviewPanel
+                data={formData}
+                onClose={closePreview}
+                questionType={questionType}
+              />
+            )}
+            
             <div className="form-mode-indicator">
               <h2>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h2>
               {editingQuestionId && (
@@ -766,6 +884,35 @@ const AdminPanel = () => {
               </div>
 
               <div className="form-section">
+                <h2>Question Type</h2>
+                <div className="question-type-selector">
+                  <div 
+                    className={`question-type-option ${questionType === 'objective-subjective' ? 'active' : ''}`}
+                    onClick={() => setQuestionType('objective-subjective')}
+                  >
+                    <h3>Question + Answer + Options</h3>
+                    <p>For questions with both objective and subjective components</p>
+                  </div>
+                  
+                  <div 
+                    className={`question-type-option ${questionType === 'subjective-only' ? 'active' : ''}`}
+                    onClick={() => setQuestionType('subjective-only')}
+                  >
+                    <h3>Question + Answer Only</h3>
+                    <p>For subjective questions without options</p>
+                  </div>
+                  
+                  <div 
+                    className={`question-type-option ${questionType === 'objective-only' ? 'active' : ''}`}
+                    onClick={() => setQuestionType('objective-only')}
+                  >
+                    <h3>MCQs Only</h3>
+                    <p>For objective multiple-choice questions</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
                 <h2>Question Details</h2>
                 <div className="form-group">
                   <label>Question Number:</label>
@@ -793,23 +940,28 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              <div className="form-section">
-                <h2>Answer (for Subjective Questions)</h2>
-                <div className="form-group">
-                  <label>Answer Text:</label>
-                  <textarea
-                    name="answerText"
-                    value={formData.answerText}
-                    onChange={handleChange}
-                    rows={6}
-                    className="form-input"
-                    placeholder="Paste HTML code for tables, or just type your answer..."
-                  />
+              {/* Conditionally show Answer section based on question type */}
+              {(questionType === 'objective-subjective' || questionType === 'subjective-only') && (
+                <div className="form-section">
+                  <h2>Answer (for Subjective Questions)</h2>
+                  <div className="form-group">
+                    <label>Answer Text:</label>
+                    <textarea
+                      name="answerText"
+                      value={formData.answerText}
+                      onChange={handleChange}
+                      rows={6}
+                      className="form-input"
+                      placeholder="Paste HTML code for tables, or just type your answer..."
+                      required={questionType === 'subjective-only'}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
+              {/* Remove Reference section */}
               <div className="form-section">
-                <h2>Reference</h2>
+                <h2>Page Details</h2>
                 <div className="form-group">
                   <label>Page Number:</label>
                   <input
@@ -824,70 +976,77 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              <div className="form-section">
-                <h2>Sub-Questions (Optional)</h2>
-                {formData.subQuestions.map((subQ, subIndex) => (
-                  <div key={subIndex} className={`sub-question-section sub-question-${subIndex}`}>
-                    <div className="form-group">
-                      <label>Sub Question {subIndex + 1}:</label>
-                      <textarea
-                        name="subQuestionText"
-                        value={subQ.subQuestionText}
-                        onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
-                        className="form-input"
-                        rows={6}
-                        placeholder="Paste HTML code for tables, or just type your sub-question..."
-                      />
-                      {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
-                    </div>
-                    <div className="sub-options-section">
-                      {subQ.subOptions.map((subOpt, optIndex) => (
-                        <div 
-                          key={optIndex} 
-                          className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
-                        >
-                          <label>Option {optIndex + 1}:</label>
-                          <input
-                            type="text"
-                            name="optionText"
-                            value={subOpt.optionText}
-                            onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
-                            className="form-input"
-                          />
-                          <div className="option-actions">
-                            <button
-                              type="button"
-                              onClick={() => markCorrectSubOption(subIndex, optIndex)}
-                              className="mark-correct-btn"
-                            >
-                              Mark as Correct
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeSubOption(subIndex, optIndex)}
-                              className="remove-btn"
-                            >
-                              Remove Option
-                            </button>
+              {/* Conditionally show Sub-Questions section based on question type */}
+              {(questionType === 'objective-subjective' || questionType === 'objective-only') && (
+                <div className="form-section">
+                  <h2>{questionType === 'objective-only' ? 'Options' : 'Sub-Questions with Options'}</h2>
+                  {formData.subQuestions.map((subQ, subIndex) => (
+                    <div key={subIndex} className={`sub-question-section sub-question-${subIndex}`}>
+                      <div className="form-group">
+                        <label>{questionType === 'objective-only' ? 'Question' : `Sub Question ${subIndex + 1}`}:</label>
+                        <textarea
+                          name="subQuestionText"
+                          value={subQ.subQuestionText}
+                          onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
+                          className="form-input"
+                          rows={questionType === 'objective-only' ? 1 : 6}
+                          placeholder={questionType === 'objective-only' ? 
+                            "Enter question text (if different from main question)" : 
+                            "Paste HTML code for tables, or just type your sub-question..."}
+                          required={questionType === 'objective-only' && subIndex === 0}
+                        />
+                        {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
+                      </div>
+                      <div className="sub-options-section">
+                        {subQ.subOptions.map((subOpt, optIndex) => (
+                          <div 
+                            key={optIndex} 
+                            className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
+                          >
+                            <label>Option {optIndex + 1}:</label>
+                            <input
+                              type="text"
+                              name="optionText"
+                              value={subOpt.optionText}
+                              onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
+                              className="form-input"
+                              required={questionType === 'objective-only' && subIndex === 0}
+                            />
+                            <div className="option-actions">
+                              <button
+                                type="button"
+                                onClick={() => markCorrectSubOption(subIndex, optIndex)}
+                                className="mark-correct-btn"
+                              >
+                                Mark as Correct
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSubOption(subIndex, optIndex)}
+                                className="remove-btn"
+                              >
+                                Remove Option
+                              </button>
+                            </div>
+                            {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
                           </div>
-                          {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => addSubOption(subIndex)} className="add-btn">
-                        Add Sub Option
-                      </button>
+                        ))}
+                        <button type="button" onClick={() => addSubOption(subIndex)} className="add-btn">
+                          Add Option
+                        </button>
+                      </div>
+                      <div className="sub-question-actions">
+                        <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
+                          Remove {questionType === 'objective-only' ? 'This Question' : 'This Sub Question'}
+                        </button>
+                      </div>
                     </div>
-                    <div className="sub-question-actions">
-                      <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
-                        Remove This Sub Question
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <button type="button" onClick={addSubQuestion} className="add-btn">
-                  Add Sub Question
-                </button>
-              </div>
+                  ))}
+                  <button type="button" onClick={addSubQuestion} className="add-btn">
+                    {questionType === 'objective-only' ? 'Add Another Question' : 'Add Sub Question'}
+                  </button>
+                </div>
+              )}
 
               <div className="form-actions-container">
                 <div className="form-actions">
@@ -925,7 +1084,7 @@ const AdminPanel = () => {
 
             <div className="filter-section">
               <h2>Filter Questions</h2>
-              <div className="filter-grid">
+              <div className="form-grid">
                 <div className="form-group">
                   <label>Exam Stage:</label>
                   <select
@@ -942,33 +1101,46 @@ const AdminPanel = () => {
                 </div>
                 <div className="form-group">
                   <label>Subject:</label>
-                  <input
-                    type="text"
+                  <select
                     name="subject"
                     value={filters.subject}
                     onChange={handleFilterChange}
                     className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Year:</label>
-                  <input
-                    type="text"
-                    name="year"
-                    value={filters.year}
-                    onChange={handleFilterChange}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Question Number:</label>
-                  <input
-                    type="text"
-                    name="questionNumber"
-                    value={filters.questionNumber}
-                    onChange={handleFilterChange}
-                    className="form-input"
-                  />
+                  >
+                    <option value="">All Subjects</option>
+                    {filters.examStage === 'Foundation' ? (
+                      <>
+                        <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
+                        <option value="Business Law">Business Law</option>
+                        <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
+                        <option value="Business Mathematics">Business Mathematics</option>
+                        <option value="Logical Reasoning">Logical Reasoning</option>
+                        <option value="Statistics">Statistics</option>
+                        <option value="Business Economics">Business Economics</option>
+                        <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
+                      </>
+                    ) : filters.examStage === 'Intermediate' ? (
+                      <>
+                        <option value="Advanced Accounting">Advanced Accounting</option>
+                        <option value="Corporate Laws">Corporate Laws</option>
+                        <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                        <option value="Taxation">Taxation</option>
+                        <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                        <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                      </>
+                    ) : filters.examStage === 'Final' ? (
+                      <>
+                        <option value="Financial Reporting">Financial Reporting</option>
+                        <option value="Advanced Financial Management">Advanced Financial Management</option>
+                        <option value="Advanced Auditing">Advanced Auditing</option>
+                        <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                        <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                        <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                      </>
+                    ) : (
+                      <option value="">Select an Exam Stage first</option>
+                    )}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Paper Type:</label>
@@ -982,6 +1154,20 @@ const AdminPanel = () => {
                     <option value="MTP">MTP</option>
                     <option value="RTP">RTP</option>
                     <option value="PYQS">PYQS</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Year:</label>
+                  <select
+                    name="year"
+                    value={filters.year}
+                    onChange={handleFilterChange}
+                    className="form-input"
+                  >
+                    <option value="">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -1024,6 +1210,17 @@ const AdminPanel = () => {
                     </select>
                   </div>
                 )}
+                <div className="form-group">
+                  <label>Question Number:</label>
+                  <input
+                    type="text"
+                    name="questionNumber"
+                    value={filters.questionNumber}
+                    onChange={handleFilterChange}
+                    className="form-input"
+                    placeholder="e.g. 1, 2a, etc."
+                  />
+                </div>
                 <div className="form-group">
                   <label>Search Keyword:</label>
                   <input
@@ -1111,8 +1308,6 @@ const AdminPanel = () => {
                 </div>
               )}
             </div>
-
-            {previewVisible && <PreviewPanel data={formData} onClose={closePreview} />}
           </>
         );
     }
