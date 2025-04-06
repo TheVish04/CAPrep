@@ -37,6 +37,8 @@ const PreviewPanel = ({ data, onClose, questionType = 'objective-subjective' }) 
         return 'Subjective Question Preview';
       case 'objective-only':
         return 'Multiple Choice Question Preview';
+      case 'question-subquestions':
+        return 'Question with Subquestions Preview';
       default:
         return 'Question Preview';
     }
