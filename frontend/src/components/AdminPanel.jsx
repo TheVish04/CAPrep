@@ -963,20 +963,36 @@ const AdminPanel = () => {
                           name="subQuestionText"
                           value={subQ.subQuestionText}
                           onChange={(e) => handleSubQuestionChange(subIndex, e.target.name, e.target.value)}
-                          className="form-input"
-                          rows={questionType === 'objective-only' ? 1 : 6}
-                          placeholder={questionType === 'objective-only' ? 
-                            "Enter question text (if different from main question)" : 
-                            "Paste HTML code for tables, or just type your sub-question..."}
+                          className="form-input html-content"
+                          rows={questionType === 'objective-only' ? 4 : 6}
+                          placeholder={
+                            questionType === 'objective-only' 
+                              ? "Enter question text with HTML formatting (tables, lists, etc.)" 
+                              : "Paste HTML code for tables, lists, or format your sub-question with HTML tags..."
+                          }
                           required={questionType === 'objective-only' && subIndex === 0}
                         />
-                        {errors[`subQuestion_${subIndex}`] && <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>}
+                        {/* Add HTML preview for sub-question */}
+                        <div 
+                          className="rich-text-preview"
+                          dangerouslySetInnerHTML={{ 
+                            __html: DOMPurify.sanitize(subQ.subQuestionText || '') 
+                          }}
+                        />
+                        <span className="html-help-tooltip" title="You can use HTML tags for formatting">
+                          HTML enabled
+                        </span>
+                        {errors[`subQuestion_${subIndex}`] && 
+                          <p className="error-message">{errors[`subQuestion_${subIndex}`]}</p>
+                        }
                       </div>
                       <div className="sub-options-section">
                         {subQ.subOptions.map((subOpt, optIndex) => (
                           <div 
                             key={optIndex} 
-                            className={`form-group option-item option-item-${subIndex}-${optIndex} ${subOpt.isCorrect ? 'correct-option' : ''}`}
+                            className={`form-group option-item option-item-${subIndex}-${optIndex} ${
+                              subOpt.isCorrect ? 'correct-option' : ''
+                            }`}
                           >
                             <label>Option {optIndex + 1}:</label>
                             <input
@@ -985,33 +1001,54 @@ const AdminPanel = () => {
                               value={subOpt.optionText}
                               onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
                               className="form-input"
-                              required={questionType === 'objective-only' && subIndex === 0}
+                              placeholder="Enter option text..."
+                              required
                             />
-                            <div className="option-actions">
-                              <button
-                                type="button"
-                                onClick={() => markCorrectSubOption(subIndex, optIndex)}
-                                className="mark-correct-btn"
-                              >
-                                Mark as Correct
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeSubOption(subIndex, optIndex)}
-                                className="remove-btn"
-                              >
-                                Remove Option
-                              </button>
+                            {errors[`subOption_${subIndex}_${optIndex}`] && 
+                              <p className="error-message">
+                                {errors[`subOption_${subIndex}_${optIndex}`]}
+                              </p>
+                            }
+                            <div className="option-controls">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  name="isCorrect"
+                                  checked={subOpt.isCorrect}
+                                  onChange={(e) => 
+                                    handleSubOptionChange(subIndex, optIndex, {
+                                      target: { name: 'isCorrect', value: e.target.checked }
+                                    })
+                                  }
+                                />
+                                Correct Answer
+                              </label>
+                              {subQ.subOptions.length > 1 && (
+                                <button 
+                                  type="button" 
+                                  onClick={() => removeSubOption(subIndex, optIndex)}
+                                  className="remove-btn"
+                                >
+                                  Remove Option
+                                </button>
+                              )}
                             </div>
-                            {errors[`subOption_${subIndex}_${optIndex}`] && <p className="error-message">{errors[`subOption_${subIndex}_${optIndex}`]}</p>}
                           </div>
                         ))}
-                        <button type="button" onClick={() => addSubOption(subIndex)} className="add-btn">
+                        <button 
+                          type="button" 
+                          onClick={() => addSubOption(subIndex)} 
+                          className="add-btn"
+                        >
                           Add Option
                         </button>
                       </div>
                       <div className="sub-question-actions">
-                        <button type="button" onClick={() => removeSubQuestion(subIndex)} className="remove-btn">
+                        <button 
+                          type="button" 
+                          onClick={() => removeSubQuestion(subIndex)} 
+                          className="remove-btn"
+                        >
                           Remove {questionType === 'objective-only' ? 'This Question' : 'This Sub Question'}
                         </button>
                       </div>
