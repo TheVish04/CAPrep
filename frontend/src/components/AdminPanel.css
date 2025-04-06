@@ -927,35 +927,38 @@ form.edit-mode .submit-btn:hover {
 .question-type-option {
   flex: 1;
   min-width: 250px;
-  padding: 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  padding: 20px;
+  border: 2px solid #1F2833;
+  border-radius: 12px;
+  background-color: #121212;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .question-type-option:hover {
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  border-color: #03a9f4;
 }
 
 .question-type-option.active {
-  border-color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.1);
-  box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.5);
+  border-color: #03a9f4;
+  background-color: rgba(3, 169, 244, 0.1);
+  box-shadow: 0 0 0 1px rgba(3, 169, 244, 0.5);
 }
 
 .question-type-option h3 {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 1.1rem;
+  margin: 0 0 10px 0;
+  color: #03a9f4;
+  font-size: 1.2rem;
 }
 
 .question-type-option p {
   margin: 0;
-  color: #666;
+  color: #9B9C9D;
   font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 /* Media queries for responsive design */
@@ -967,5 +970,10 @@ form.edit-mode .submit-btn:hover {
   
   .question-type-option {
     min-width: auto;
+    padding: 15px;
+  }
+  
+  .question-type-option h3 {
+    font-size: 1.1rem;
   }
 }
