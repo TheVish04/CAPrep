@@ -3,17 +3,22 @@ import DOMPurify from 'dompurify';
 
 const STYLES = `
   <style>
+    /* Reset all backgrounds to white and text to black */
+    * {
+      background-color: #fff !important;
+      color: #000 !important;
+    }
+    
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
-      color: #000;
       max-width: 210mm;
       margin: 0;
       padding: 20px;
     }
     
     .pdf-header {
-      border-bottom: 2px solid #000;
+      border-bottom: 1px solid #000;
       padding: 15px;
       text-align: center;
       margin-bottom: 20px;
@@ -39,30 +44,10 @@ const STYLES = `
       margin: -15px -15px 15px -15px;
     }
     
-    .question-content {
-      margin-bottom: 15px;
-    }
-    
     .case-scenario {
-      border-left: 2px solid #000;
+      border-left: 1px solid #000;
       padding: 10px;
       margin: 10px 0;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-    
-    th, td {
-      border: 1px solid #000;
-      padding: 8px;
-      text-align: left;
-    }
-    
-    th {
-      border-bottom: 2px solid #000;
     }
     
     .sub-questions {
@@ -79,16 +64,25 @@ const STYLES = `
     }
     
     .correct-option {
-      border-left: 2px solid #000;
+      border-left: 1px solid #000;
       font-weight: bold;
     }
-    
-    .page-number {
-      text-align: center;
-      font-size: 12px;
-      margin-top: 20px;
-      border-top: 1px solid #000;
-      padding-top: 10px;
+
+    /* Remove any custom colors from question elements */
+    .question-title,
+    .case-scenario-title,
+    .sub-question-title {
+      color: #000 !important;
+      background-color: #fff !important;
+    }
+
+    /* Force override any inline styles */
+    [style*="color"] {
+      color: #000 !important;
+    }
+
+    [style*="background"] {
+      background-color: #fff !important;
     }
   </style>
 `;
@@ -123,7 +117,9 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
             </div>
             
             <div class="question-content">
-              ${DOMPurify.sanitize(question.questionText || '')}
+              ${DOMPurify.sanitize(question.questionText || '', {
+                FORBID_ATTR: ['style', 'color', 'background-color']
+              })}
             </div>
             
             ${question.subQuestions?.map((subQ, subIndex) => `
