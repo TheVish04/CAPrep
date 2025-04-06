@@ -214,20 +214,18 @@ const Questions = () => {
   };
   
   // Handle PDF export
-  const handleExportPDF = useCallback(() => {
+  const handleExportPDF = useCallback(async () => {
     if (questions.length === 0) {
       alert('No questions to export');
       return;
     }
 
-    const doc = generateQuestionsPDF(
-      questions,
-      filters,
-      showAnswers,
-      individualShowAnswers
-    );
-    
-    savePDF(doc, `ca-questions-${new Date().toISOString().slice(0, 10)}.pdf`);
+    try {
+      await savePDF(questions, filters, showAnswers, individualShowAnswers);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   }, [questions, filters, showAnswers, individualShowAnswers]);
 
   return (

@@ -15,6 +15,7 @@
     "axios": "^1.8.3",
     "dompurify": "^3.2.4",
     "framer-motion": "^12.5.0",
+    "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
     "react": "^19.0.0",
     "react-countup": "^6.5.3",
