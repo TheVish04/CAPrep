@@ -238,11 +238,47 @@
   }
   
   .question-text {
-    font-size: 1.2rem;
-    line-height: 1.6;
     margin-bottom: 20px;
-    color: #239ecf;
-    font-weight: 500;
+    line-height: 1.6;
+    font-size: 1.1rem;
+    color: #ffffff;
+    text-align: left;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .question-text img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+  }
+  
+  .question-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    display: block;
+  }
+  
+  .question-text th, 
+  .question-text td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .question-text ul, 
+  .question-text ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .question-text p {
+    margin-bottom: 1rem;
   }
   
   /* Styles for aligning Question label and text */
@@ -292,10 +328,46 @@
   }
   
   .answer-text {
-     margin: 0;
-     line-height: 1.6;
-     flex-grow: 1;
-     color: #ffffff;
+    margin: 0;
+    line-height: 1.6;
+    flex-grow: 1;
+    color: #ffffff;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .answer-text img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+  }
+  
+  .answer-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    display: block;
+  }
+  
+  .answer-text th, 
+  .answer-text td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .answer-text ul, 
+  .answer-text ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .answer-text p {
+    margin-bottom: 1rem;
   }
   
   /* Sub Questions Styling */
@@ -1077,179 +1149,36 @@
   }
 
   .sub-question-text {
-    font-size: 1.2rem;
     margin-bottom: 15px;
-    color: #239ecf;
+    line-height: 1.6;
+    font-size: 1.1rem;
+    color: #ffffff;
+    text-align: left;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
-  .results-title {
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 40px;
-    color: #239ecf;
+  .sub-question-text img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
   }
 
-  .score-value {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #239ecf;
+  .sub-question-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    display: block;
   }
 
-  /* Questions Actions */
-  .questions-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .export-btn, .toggle-answers-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-
-  .export-btn {
-    background-color: #ff9800;
-    color: white;
-  }
-
-  .export-btn:hover {
-    background-color: #f57c00;
-  }
-
-  .toggle-answers-btn {
-    background-color: #2196f3;
-    color: white;
-  }
-
-  .toggle-answers-btn:hover {
-    background-color: #1976d2;
-  }
-
-  .toggle-answers-btn.active {
-    background-color: #1565c0;
-  }
-
-  /* Support section for donation in About and Contact pages */
-  .support-section {
-    margin-top: 40px;
-    padding: 30px;
-    background-color: var(--secondary-color);
-    border-radius: var(--border-radius);
-    border: 1px solid #2d2d2d;
-    border-left: 5px solid var(--primary-color);
-    box-shadow: var(--box-shadow);
-    transition: var(--transition);
-  }
-
-  .support-section:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-  }
-
-  .support-section h2, .support-section h3 {
-    color: var(--accent-color);
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-  }
-
-  /* Media queries for mobile responsiveness */
-  @media (max-width: 768px) {
-    .questions-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .questions-actions button,
-    .questions-actions .donation-button-container {
-      width: 100%;
-    }
-  }
-
-  .bookmark-btn {
-    background: none;
-    border: none;
-    padding: 0 5px;
-    cursor: pointer;
-    color: #aaa;
-    margin-left: 10px;
-    flex-shrink: 0;
-  }
-
-  .bookmark-btn:hover {
-    color: #03a9f4;
-  }
-
-  .bookmark-btn svg {
-    vertical-align: middle;
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Style for the bookmark filter */
-  .filter-group-bookmark {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    min-width: auto;
-    padding-left: 20px;
-  }
-
-  .bookmark-filter-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    color: #b0b0b0;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .bookmark-checkbox {
-    margin-right: 8px;
-    cursor: pointer;
-    appearance: none;
-    background-color: #333;
-    border: 1px solid #555;
-    padding: 8px;
-    border-radius: 3px;
-    display: inline-block;
-    position: relative;
-  }
-
-  .bookmark-checkbox:checked {
-    background-color: #03a9f4;
-    border-color: #03a9f4;
-  }
-
-  .bookmark-checkbox:checked::after {
-    content: '\2714';
-    font-size: 12px;
-    color: white;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .loading-indicator {
-    text-align: center;
-    padding: 20px;
-    color: #aaa;
-    font-style: italic;
-  }
-
-  .search-input {
-    padding: 10px;
+  .sub-question-text th, 
+  .sub-question-text td {
     border: 1px solid #333;
+    padding: 8px;
     border-radius: 4px;
     background-color: #121212;
     color: #b0b0b0;
@@ -1353,4 +1282,68 @@
     vertical-align: middle;
     width: 22px;
     height: 22px;
+  }
+
+  /* Enhanced styling for HTML content in questions and answers */
+  .question-text,
+  .answer-text,
+  .subquestion-text {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .question-text img,
+  .answer-text img,
+  .subquestion-text img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+  }
+
+  .question-text table,
+  .answer-text table,
+  .subquestion-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .question-text th, 
+  .question-text td,
+  .answer-text th, 
+  .answer-text td,
+  .subquestion-text th, 
+  .subquestion-text td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .question-text ul, 
+  .question-text ol,
+  .answer-text ul, 
+  .answer-text ol,
+  .subquestion-text ul, 
+  .subquestion-text ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .question-text p,
+  .answer-text p,
+  .subquestion-text p {
+    margin-bottom: 1rem;
+  }
+
+  /* Case scenario styling */
+  .case-scenario {
+    background-color: rgba(3, 169, 244, 0.1);
+    border-left: 4px solid #03a9f4;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
   }

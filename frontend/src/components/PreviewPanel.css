@@ -132,6 +132,42 @@
     padding: 20px;
     border-radius: 10px;
     border: 1px solid #03a9f4;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.preview-question-text img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+
+.preview-question-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    display: block;
+}
+
+.preview-question-text th, 
+.preview-question-text td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+}
+
+.preview-question-text ul, 
+.preview-question-text ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.preview-question-text p {
+    margin-bottom: 1rem;
 }
 
 .preview-sub-questions {

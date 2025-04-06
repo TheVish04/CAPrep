@@ -107,9 +107,7 @@ const PreviewPanel = ({ data, onClose, questionType = 'objective-subjective' }) 
             <div className="preview-question-text" 
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
-                    data.questionText ? 
-                      data.questionText.replace(/\n/g, '<br>') : 
-                      'N/A'
+                    data.questionText || 'N/A'
                   ) 
                 }}
             />
@@ -122,9 +120,7 @@ const PreviewPanel = ({ data, onClose, questionType = 'objective-subjective' }) 
               <div className="preview-question-text"
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
-                    data.answerText ? 
-                      data.answerText.replace(/\n/g, '<br>') : 
-                      'N/A'
+                    data.answerText || 'N/A'
                   ) 
                 }}
               />

@@ -103,6 +103,104 @@
   line-height: 1.7;
   font-size: 1.1rem;
   color: var(--text-color);
+  text-align: left;
+}
+
+.question-content-wrapper {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.question-content-wrapper img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+.question-content-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  display: block;
+}
+
+.question-content-wrapper th, 
+.question-content-wrapper td {
+  border: 1px solid var(--border-color-light);
+  padding: 8px;
+  text-align: left;
+}
+
+.question-content-wrapper ul, 
+.question-content-wrapper ol {
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.question-content-wrapper p {
+  margin-bottom: 1rem;
+}
+
+/* HTML content styles for review question text */
+.review-question-text p {
+  margin-bottom: 1rem;
+}
+
+.review-question-text strong, 
+.review-question-text b {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.review-question-text ul, 
+.review-question-text ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.review-question-text li {
+  margin-bottom: 0.5rem;
+}
+
+.review-question-text ul li {
+  list-style-type: disc;
+}
+
+.review-question-text ul li::marker {
+  color: var(--accent-color);
+}
+
+/* Table styles */
+.review-question-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.review-question-text th,
+.review-question-text td {
+  border: 1px solid var(--border-color-light);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.review-question-text th {
+  background-color: rgba(3, 169, 244, 0.1);
+  color: var(--accent-color);
+}
+
+/* Case scenario style */
+.review-question-text .case-scenario {
+  background-color: rgba(3, 169, 244, 0.1);
+  border-left: 4px solid var(--accent-color);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .review-subquestion-text {

@@ -557,7 +557,7 @@ const Quiz = () => {
         </div>
         
         <div className="quiz-question">
-          <div className="question-text" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQuestion.questionText) }}></div>
+          <div className="question-text question-content-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQuestion.questionText) }}></div>
           
           {currentQuestion.subQuestions.map((subQuestion, subIndex) => (
             <div key={subIndex} className="sub-question">

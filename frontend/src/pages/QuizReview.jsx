@@ -147,7 +147,7 @@ const QuizReview = () => {
                                         {attempt.explanation && (
                                             <div className="answer-explanation">
                                                 <h4>Explanation:</h4>
-                                                <p dangerouslySetInnerHTML={{ 
+                                                <p className="question-content-wrapper" dangerouslySetInnerHTML={{ 
                                                     __html: DOMPurify.sanitize(attempt.explanation) 
                                                 }}></p>
                                             </div>
@@ -165,7 +165,7 @@ const QuizReview = () => {
                         return (
                             <div key={fullQuestion._id} className={`review-question-card ${attempt.isCorrect ? 'correct' : 'incorrect'}`}>
                                 <h2>Question {index + 1}</h2>
-                                <div className="review-question-text" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(fullQuestion.questionText) }}></div>
+                                <div className="review-question-text question-content-wrapper" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(fullQuestion.questionText) }}></div>
                                 {subQuestion.subQuestionText && <h3 className="review-subquestion-text">{subQuestion.subQuestionText}</h3>}
                                 
                                 <div className="review-options">
@@ -195,7 +195,7 @@ const QuizReview = () => {
                                     {(attempt.explanation || (fullQuestion && fullQuestion.explanation)) && (
                                         <div className="answer-explanation">
                                             <h4>Explanation:</h4>
-                                            <p dangerouslySetInnerHTML={{ 
+                                            <p className="question-content-wrapper" dangerouslySetInnerHTML={{ 
                                                 __html: DOMPurify.sanitize(attempt.explanation || fullQuestion.explanation) 
                                             }}></p>
                                         </div>

@@ -175,6 +175,83 @@ textarea.form-input {
   line-height: 1.5;
 }
 
+/* Enhanced styling for HTML content in admin panel questions */
+.form-group textarea {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.rich-text-preview {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.rich-text-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+.rich-text-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  display: block;
+}
+
+.rich-text-preview th, 
+.rich-text-preview td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: left;
+}
+
+.rich-text-preview ul, 
+.rich-text-preview ol {
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.rich-text-preview p {
+  margin-bottom: 1rem;
+}
+
+/* Case scenario styling */
+.rich-text-preview .case-scenario {
+  background-color: rgba(3, 169, 244, 0.1);
+  border-left: 4px solid #03a9f4;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Improved editor display */
+.question-editor-container {
+  position: relative;
+}
+
+.html-help-tooltip {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 12px;
+  color: #03a9f4;
+  background: rgba(3, 169, 244, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: help;
+}
+
 /* Sub-Question and Options */
 .sub-question-section {
   border: 1px solid #03a9f4;
