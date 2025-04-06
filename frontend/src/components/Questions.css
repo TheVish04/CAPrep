@@ -237,6 +237,7 @@
     font-size: 1.2rem;
   }
   
+  /* Fix for question text truncation in Questions component */
   .question-text {
     margin-bottom: 20px;
     line-height: 1.6;
@@ -248,6 +249,12 @@
     word-break: break-word;
     max-width: 100%;
     overflow-x: auto;
+    max-height: none !important; /* Remove any height restrictions */
+    overflow: visible !important; /* Ensure overflow is visible */
+    text-overflow: clip !important; /* Prevent text truncation */
+    display: block !important; /* Override any display that might truncate */
+    -webkit-line-clamp: unset !important; /* Remove line clamping */
+    -webkit-box-orient: unset !important; /* Remove orientation that might cause truncation */
   }
   
   .question-text img {
@@ -271,10 +278,17 @@
     text-align: left;
   }
   
+  /* Ensure bullet points display correctly */
   .question-text ul, 
   .question-text ol {
-    padding-left: 2rem;
+    padding-left: 2.5rem;
     margin-bottom: 1rem;
+  }
+  
+  .question-text ul li,
+  .question-text ol li {
+    display: list-item;
+    margin-bottom: 0.5rem;
   }
   
   .question-text p {
@@ -1346,4 +1360,14 @@
     border-left: 4px solid #03a9f4;
     padding: 1rem;
     margin-bottom: 1.5rem;
+  }
+
+  /* Remove text truncation from the admin panel's question cards */
+  .question-card .question-text {
+    max-height: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
   }

@@ -651,13 +651,22 @@ textarea.form-input {
 }
 
 .question-text {
-  max-height: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
+  max-height: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: vertical !important;
+}
+
+/* Specifically override the truncation in question cards */
+.admin-container .question-card .question-text {
+  max-height: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: vertical !important;
   margin-bottom: 15px !important;
 }
 
