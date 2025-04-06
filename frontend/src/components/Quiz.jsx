@@ -156,6 +156,7 @@ const Quiz = () => {
           // For AI questions, store the full question text since we can't look it up later
           questionText: isAiQuestion ? question.questionText : undefined,
           optionTexts: isAiQuestion ? optionTexts : undefined,
+          explanation: isAiQuestion ? question.explanation : undefined,
           isAiGenerated: isAiQuestion
       };
     });
@@ -273,6 +274,7 @@ const Quiz = () => {
           return {
             _id: `ai-question-${index}`,
             questionText: aiQuestion.questionText,
+            explanation: aiQuestion.explanation,
             subQuestions: [
               {
                 subQuestionNumber: '1',

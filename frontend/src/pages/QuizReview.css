@@ -199,6 +199,38 @@
   background-color: rgba(42, 42, 42, 0.5);
 }
 
+/* New styles for explanation section */
+.answer-explanation {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border-color-light);
+}
+
+.answer-explanation h4 {
+  color: var(--accent-color);
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.answer-explanation h4::before {
+  content: "💡";
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.answer-explanation p {
+  color: var(--text-color);
+  line-height: 1.6;
+  font-size: 1rem;
+  background-color: rgba(0, 188, 212, 0.05);
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-color);
+}
+
+/* Status styles continued... */
 .review-feedback .status {
   font-weight: 600;
   font-size: 1.1rem;
@@ -299,13 +331,13 @@
 @media (max-width: 768px) {
   .quiz-review-page .quiz-review-container {
     width: 95%;
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
   
   .quiz-summary-bar {
     flex-direction: column;
     gap: 0.5rem;
-    padding: 1rem;
+    align-items: flex-start;
   }
   
   .review-question-card {
@@ -313,17 +345,23 @@
   }
   
   .review-option {
-    padding: 0.8rem;
+    padding: 0.75rem;
     padding-left: 2.5rem;
   }
   
   .review-option .option-marker {
-    left: 0.8rem;
     width: 22px;
     height: 22px;
+    left: 0.75rem;
+  }
+  
+  .answer-explanation p {
+    padding: 0.75rem;
+    font-size: 0.95rem;
   }
   
   .btn {
-    padding: 10px 20px;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
   }
 } 

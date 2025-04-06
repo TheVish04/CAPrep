@@ -144,6 +144,14 @@ const QuizReview = () => {
                                             <strong>Status: </strong> 
                                             {attempt.isCorrect ? 'Correct' : 'Incorrect'}
                                         </p>
+                                        {attempt.explanation && (
+                                            <div className="answer-explanation">
+                                                <h4>Explanation:</h4>
+                                                <p dangerouslySetInnerHTML={{ 
+                                                    __html: DOMPurify.sanitize(attempt.explanation) 
+                                                }}></p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -184,7 +192,14 @@ const QuizReview = () => {
                                     ) : (
                                         <p className="status incorrect"><strong>Status: </strong> Incorrect</p>
                                     )}
-                                    {/* Explanation would go here if we add it later */} 
+                                    {(attempt.explanation || (fullQuestion && fullQuestion.explanation)) && (
+                                        <div className="answer-explanation">
+                                            <h4>Explanation:</h4>
+                                            <p dangerouslySetInnerHTML={{ 
+                                                __html: DOMPurify.sanitize(attempt.explanation || fullQuestion.explanation) 
+                                            }}></p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );

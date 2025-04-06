@@ -70,7 +70,8 @@ const UserSchema = new Schema({
         isCorrect: { type: Boolean, required: true },
         isAiGenerated: { type: Boolean, default: false }, // Flag for AI-generated questions
         questionText: { type: String, required: false }, // Store question text for AI questions
-        optionTexts: { type: [String], required: false } // Store option texts for AI questions
+        optionTexts: { type: [String], required: false }, // Store option texts for AI questions
+        explanation: { type: String, required: false } // Store explanation for AI-generated questions
       }
     ]
   }],

@@ -67,12 +67,19 @@ router.post('/generate', authMiddleware, async (req, res) => {
     }
 
     // 3. Construct Prompt using simple string concatenation
-    let prompt = "You are an expert CA exam question generator. Generate " + count + 
-                 " new, unique multiple-choice questions suitable for the CA " + examStage + 
-                 " level, specifically for the subject \"" + subject + "\".\n\n";
+    let prompt = "You are an expert CA exam question generator with deep knowledge of Chartered Accountancy in India. Generate " + count + 
+                 " new, unique, high-quality multiple-choice questions suitable for the CA " + examStage + 
+                 " level, specifically for the subject \"" + subject + "\".\n\n" +
+                 "For each question:\n" +
+                 "1. Ensure questions are clear, unambiguous, and test conceptual understanding\n" +
+                 "2. Include 4 options with only one correct answer\n" +
+                 "3. Make incorrect options plausible but clearly wrong to a knowledgeable student\n" +
+                 "4. Provide a detailed explanation for the correct answer that explains both why it is correct and why other options are incorrect\n" +
+                 "5. Aim for a mix of difficulty levels from straightforward to challenging\n" +
+                 "6. Ensure questions are relevant to the latest CA curriculum and reflect current accounting standards and practices\n\n";
 
     if (exampleQuestions.length > 0) {
-      prompt += "Here are some examples of existing questions:\n\n";
+      prompt += "Here are some examples of existing questions to understand the style and format:\n\n";
       exampleQuestions.forEach((q, index) => {
         prompt += "Example " + (index + 1) + ":\nQuestion: " + q.questionText + "\n";
         
@@ -104,9 +111,10 @@ router.post('/generate', authMiddleware, async (req, res) => {
     // Reinforce JSON output format instructions
     prompt += "Important: Format your response strictly as a JSON array of objects. " +
               "Each object must have these exact keys: \"questionText\" (string), " +
-              "\"options\" (array of 4 strings), and \"correctAnswerIndex\" (integer from 0 to 3 " +
-              "indicating the index of the correct option in the 'options' array). Do not include " +
-              "any introductory text, explanations, or markdown formatting like ```json outside " +
+              "\"options\" (array of 4 strings), \"correctAnswerIndex\" (integer from 0 to 3 " +
+              "indicating the index of the correct option in the 'options' array), and " +
+              "\"explanation\" (string containing a detailed explanation of why the correct answer is right and why the others are wrong). " +
+              "Do not include any introductory text, explanations, or markdown formatting like ```json outside " +
               "the JSON array itself. Only output the valid JSON array.";
 
     // 4. Call Google Gemini API
@@ -178,11 +186,39 @@ router.post('/generate', authMiddleware, async (req, res) => {
             } else if (q.correctAnswerIndex < 0 || q.correctAnswerIndex >= q.options.length) {
               validationErrors.push(`Question ${i}: correctAnswerIndex is out of bounds`);
             }
+            if (typeof q.explanation !== 'string' || !q.explanation) {
+              validationErrors.push(`Question ${i}: missing or invalid explanation`);
+            }
+          });
+          
+          // Additional quality validation
+          let qualityErrors = [];
+          generatedQuestions.forEach((q, i) => {
+            // Check for minimum question length (at least 20 characters)
+            if (q.questionText.length < 20) {
+              qualityErrors.push(`Question ${i}: questionText is too short`);
+            }
+            
+            // Check for minimum explanation length (at least 50 characters)
+            if (q.explanation && q.explanation.length < 50) {
+              qualityErrors.push(`Question ${i}: explanation is too brief`);
+            }
+            
+            // Check that all options are unique
+            const uniqueOptions = new Set(q.options);
+            if (uniqueOptions.size !== q.options.length) {
+              qualityErrors.push(`Question ${i}: contains duplicate options`);
+            }
           });
           
           if (validationErrors.length > 0) {
             console.error("Validation errors:", validationErrors);
             throw new Error("Question objects have invalid structure: " + validationErrors.join("; "));
+          }
+          
+          if (qualityErrors.length > 0) {
+            console.warn("Quality issues with generated questions:", qualityErrors);
+            // We don't throw an error for quality issues, just log warnings
           }
 
           console.log("Successfully parsed " + generatedQuestions.length + " questions.");
