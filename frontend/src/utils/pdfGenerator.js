@@ -3,12 +3,130 @@ import DOMPurify from 'dompurify';
 
 const STYLES = `
   <style>
-    /* Reset all backgrounds to white and text to black */
+    /* Base styles */
     * {
       background-color: #fff !important;
       color: #000 !important;
     }
     
+    /* Typography */
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      font-size: 12pt;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      margin: 1em 0 0.5em;
+      font-weight: bold;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-left: 20px;
+      padding-left: 20px;
+      margin-bottom: 1em;
+    }
+
+    ul { list-style-type: disc; }
+    ol { list-style-type: decimal; }
+    ul ul { list-style-type: circle; }
+    ul ul ul { list-style-type: square; }
+    
+    li {
+      margin: 8px 0;
+      padding-left: 10px;
+    }
+
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0 !important;
+      font-weight: bold;
+    }
+
+    /* Code blocks */
+    pre, code {
+      font-family: "Courier New", Courier, monospace;
+      background-color: #f5f5f5 !important;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Blockquotes */
+    blockquote {
+      margin: 1em 0;
+      padding: 10px 20px;
+      border-left: 3px solid #000;
+      background-color: #f9f9f9 !important;
+    }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+      margin: 1em 0;
+    }
+
+    /* Mathematical expressions */
+    .math {
+      font-family: "Times New Roman", Times, serif;
+      font-style: italic;
+    }
+
+    /* Subscript and Superscript */
+    sub, sup {
+      font-size: 75%;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    sup { top: -0.5em; }
+    sub { bottom: -0.25em; }
+
+    /* Text formatting */
+    strong, b { font-weight: bold; }
+    em, i { font-style: italic; }
+    u { text-decoration: underline; }
+    s, strike { text-decoration: line-through; }
+
+    /* Definition lists */
+    dl {
+      margin: 1em 0;
+    }
+    dt {
+      font-weight: bold;
+      margin-top: 0.5em;
+    }
+    dd {
+      margin-left: 20px;
+    }
+
+    /* Case scenario styles */
+    .case-scenario {
+      margin: 15px 0;
+    }
+
+    .case-scenario-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
@@ -88,6 +206,68 @@ const STYLES = `
 `;
 
 export const generateQuestionsPDF = async (questions, filters, includeAnswers, individualAnswers) => {
+  const formatContent = (text) => {
+    if (!text) return '';
+    
+    let formattedText = text;
+
+    // Convert bullet points
+    formattedText = formattedText.replace(/•\s*(.*?)(?=(?:•|\n|$))/g, '<li>$1</li>');
+    if (formattedText.includes('<li>')) {
+      formattedText = `<ul>${formattedText}</ul>`;
+    }
+
+    // Convert numbered lists (e.g., "1.", "2.", etc.)
+    formattedText = formattedText.replace(/^\d+\.\s*(.*?)(?=(?:\n\d+\.|\n|$))/gm, '<li>$1</li>');
+    if (formattedText.match(/^\d+\./m)) {
+      formattedText = `<ol>${formattedText}</ol>`;
+    }
+
+    // Convert simple table syntax (if used)
+    // Example: | Header 1 | Header 2 | -> proper HTML table
+    if (formattedText.includes('|')) {
+      const rows = formattedText.split('\n').filter(row => row.trim().startsWith('|'));
+      if (rows.length > 0) {
+        const tableRows = rows.map(row => {
+          const cells = row.split('|').filter(cell => cell.trim());
+          return `<tr>${cells.map(cell => `<td>${cell.trim()}</td>`).join('')}</tr>`;
+        });
+        formattedText = `<table>${tableRows.join('')}</table>`;
+      }
+    }
+
+    // Handle code blocks
+    formattedText = formattedText.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+    // Handle inline code
+    formattedText = formattedText.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Handle mathematical expressions
+    formattedText = formattedText.replace(/\$([^$]+)\$/g, '<span class="math">$1</span>');
+
+    return formattedText;
+  };
+
+  const sanitizeOptions = {
+    ALLOWED_TAGS: [
+      // Structure
+      'div', 'p', 'br', 'hr',
+      // Typography
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+      'sub', 'sup',
+      // Lists
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      // Tables
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      // Other
+      'blockquote', 'pre', 'code',
+      'img', 'span'
+    ],
+    ALLOWED_ATTR: ['src', 'alt', 'title', 'class', 'id'],
+    FORBID_ATTR: ['style', 'color', 'background', 'background-color'],
+  };
+
   // Create HTML content
   const htmlContent = `
     <!DOCTYPE html>
@@ -117,16 +297,14 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
             </div>
             
             <div class="question-content">
-              ${DOMPurify.sanitize(question.questionText || '', {
-                FORBID_ATTR: ['style', 'color', 'background-color']
-              })}
+              ${DOMPurify.sanitize(formatContent(question.questionText || ''), sanitizeOptions)}
             </div>
             
             ${question.subQuestions?.map((subQ, subIndex) => `
               <div class="sub-questions">
                 <h3>Sub-Question ${subQ.subQuestionNumber || (subIndex + 1)}</h3>
                 ${subQ.subQuestionText ? 
-                  `<div>${DOMPurify.sanitize(subQ.subQuestionText)}</div>` : ''}
+                  `<div>${DOMPurify.sanitize(formatContent(subQ.subQuestionText), sanitizeOptions)}</div>` : ''}
                 
                 ${subQ.subOptions?.length ? `
                   <div class="options">
@@ -165,7 +343,10 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
       format: 'a4', 
       orientation: 'portrait'
     },
-    pagebreak: { mode: 'avoid-all' }
+    pagebreak: { 
+      mode: 'avoid-all',
+      before: '.question-card'
+    }
   };
 
   // Create temporary container
