@@ -10,23 +10,33 @@ import DOMPurify from 'dompurify';
  * @returns {jsPDF} - The generated PDF document
  */
 export const generateQuestionsPDF = (questions, filters, includeAnswers, individualAnswers) => {
-  // Create a new PDF document
-  const doc = new jsPDF();
+  // Create a new PDF document - use a4 paper size for better spacing
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
   
   // Set initial position
   let y = 20;
   
-  // Add title
-  doc.setFontSize(18);
+  // Add title - use a better font with better character spacing
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('CA Exam Questions', 105, y, { align: 'center' });
+  doc.text('CA Exam Questions', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
   y += 15;
   
   // Add date of generation
   const today = new Date();
-  doc.setFontSize(12);
+  const formattedDate = today.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+  
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'italic');
-  doc.text(`Generated on: ${today.toLocaleDateString()}`, 20, y);
+  doc.text(`Generated on: ${formattedDate}`, 20, y);
   y += 15;
   
   // Process each question
@@ -38,13 +48,13 @@ export const generateQuestionsPDF = (questions, filters, includeAnswers, individ
     }
     
     // Question number
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.text(`${index + 1}.`, 20, y);
     y += 8;
     
     // Question text
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     
     // Question text label
@@ -204,12 +214,29 @@ function processHtmlContent(element) {
         
         // Add remaining lines, potentially as bullet points
         for (let i = scenarioIndex + 1; i < lines.length; i++) {
-          const line = lines[i];
+          const line = lines[i].trim();
+          
+          // Skip empty lines
+          if (!line) continue;
+          
+          // Special handling for cost/financial lines
+          if (line.includes('₹') || line.includes('crore') || line.includes('lacs') || 
+              line.match(/^\s*The cost of/i) || line.match(/^\s*Cost of/i)) {
+            
+            // Fix the spacing for financial data
+            const cleanedLine = processCostLine(line);
+            result.push({ text: cleanedLine, indent: 1, bold: false });
+          } 
           // Check if line starts with a bullet or looks like a bullet point
-          if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || 
+          else if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || 
               line.match(/^\d+\.\s/) || line.match(/^[a-zA-Z]\)\s/)) {
             result.push({ text: line, indent: 1, bold: false });
-          } else if (line.trim().length > 0) {
+          } 
+          // Important notes like "Ignore the effect of depreciation"
+          else if (line.toLowerCase().startsWith('ignore') || line.toLowerCase().startsWith('answer the')) {
+            result.push({ text: line, indent: 0, bold: false });
+          }
+          else if (line.trim().length > 0) {
             // Regular line, not a bullet
             result.push({ text: line, indent: 0, bold: false });
           }
@@ -228,6 +255,42 @@ function processHtmlContent(element) {
   }
   
   return result;
+}
+
+/**
+ * Process a cost line to fix spacing and format currency values correctly
+ * @param {String} line - The line of text to process
+ * @returns {String} - Formatted line with proper spacing
+ */
+function processCostLine(line) {
+  // Replace multiple spaces with a single space
+  let cleanedLine = line.replace(/\s+/g, ' ');
+  
+  // Fix currency spacing - ensure ₹ symbol is properly connected to numbers
+  cleanedLine = cleanedLine.replace(/₹\s+/g, '₹');
+  
+  // Fix any weird spacing around numbers
+  cleanedLine = cleanedLine.replace(/(\d)\s+(\d)/g, '$1$2');
+  
+  // Fix "crore", "lacs" formatting
+  cleanedLine = cleanedLine.replace(/\s+crore/, ' crore');
+  cleanedLine = cleanedLine.replace(/\s+lacs/, ' lacs');
+  
+  // Normalize currency format
+  cleanedLine = cleanedLine.replace(/rupees\s+/gi, '₹');
+  
+  // Fix character spacing around numbers and words
+  cleanedLine = cleanedLine.replace(/([a-zA-Z])\s+(\d)/g, '$1 $2');
+  cleanedLine = cleanedLine.replace(/(\d)\s+([a-zA-Z])/g, '$1 $2');
+  
+  // If the line has "cost" or similar words at the beginning, add a bullet
+  if (!cleanedLine.startsWith('•') && !cleanedLine.startsWith('-')) {
+    if (cleanedLine.match(/^The cost|^Cost|^The Company|^At the/i)) {
+      cleanedLine = '• ' + cleanedLine;
+    }
+  }
+  
+  return cleanedLine;
 }
 
 /**
@@ -252,8 +315,11 @@ function addFormattedTextToPdf(doc, formattedText, x, y, maxWidth) {
     // Adjust maxWidth based on indentation
     const adjustedMaxWidth = maxWidth - (item.indent * 10);
     
+    // Clean and fix the text
+    let cleanedText = fixTextSpacing(item.text);
+    
     // Split text to fit within adjusted max width
-    const splitText = doc.splitTextToSize(item.text, adjustedMaxWidth);
+    const splitText = doc.splitTextToSize(cleanedText, adjustedMaxWidth);
     
     // Check if we need a new page
     if (currentY + (splitText.length * 7) > 280) {
@@ -269,6 +335,37 @@ function addFormattedTextToPdf(doc, formattedText, x, y, maxWidth) {
   });
   
   return currentY;
+}
+
+/**
+ * Fix text spacing issues that commonly occur in PDF generation
+ * @param {String} text - The text to fix
+ * @returns {String} - Text with fixed spacing
+ */
+function fixTextSpacing(text) {
+  let fixedText = text;
+  
+  // Replace multiple spaces with a single space
+  fixedText = fixedText.replace(/\s{2,}/g, ' ');
+  
+  // Fix currency spacing
+  fixedText = fixedText.replace(/₹\s+/g, '₹');
+  fixedText = fixedText.replace(/rupees\s+/gi, '₹');
+  
+  // Fix number spacing
+  fixedText = fixedText.replace(/(\d)\s+(\d)/g, '$1$2');
+  
+  // Fix spacing around common financial terms
+  fixedText = fixedText.replace(/\s+crore/g, ' crore');
+  fixedText = fixedText.replace(/\s+lacs/g, ' lacs');
+  fixedText = fixedText.replace(/\s+lakhs/g, ' lakhs');
+  
+  // Fix spacing between letters in financial amounts
+  fixedText = fixedText.replace(/(\d)\s+([cC]rore)/g, '$1 $2');
+  fixedText = fixedText.replace(/(\d)\s+([lL]acs)/g, '$1 $2');
+  fixedText = fixedText.replace(/(\d)\s+([lL]akhs)/g, '$1 $2');
+  
+  return fixedText;
 }
 
 /**
