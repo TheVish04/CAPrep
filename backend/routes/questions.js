@@ -42,7 +42,7 @@ const questionSchema = Joi.object({
       })
     }),
   paperType: Joi.string().required().valid('MTP', 'RTP', 'PYQS'),
-  year: Joi.string().required().valid('2024', '2023', '2022'),
+  year: Joi.string().required().valid('2025', '2024', '2023'),
   month: Joi.string().required().valid(
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
