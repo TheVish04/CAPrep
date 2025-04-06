@@ -994,16 +994,26 @@ const AdminPanel = () => {
                               subOpt.isCorrect ? 'correct-option' : ''
                             }`}
                           >
-                            <label>Option {optIndex + 1}:</label>
-                            <input
-                              type="text"
+                            <label>Option {String.fromCharCode(65 + optIndex)}:</label>
+                            <textarea
                               name="optionText"
                               value={subOpt.optionText}
                               onChange={(e) => handleSubOptionChange(subIndex, optIndex, e)}
-                              className="form-input"
-                              placeholder="Enter option text..."
+                              className="form-input html-content"
+                              rows={3}
+                              placeholder="Enter option text with HTML formatting (tables, lists, etc.)"
                               required
                             />
+                            {/* Add HTML preview for option */}
+                            <div 
+                              className="rich-text-preview option-preview"
+                              dangerouslySetInnerHTML={{ 
+                                __html: DOMPurify.sanitize(subOpt.optionText || '') 
+                              }}
+                            />
+                            <span className="html-help-tooltip" title="You can use HTML tags for formatting">
+                              HTML enabled
+                            </span>
                             {errors[`subOption_${subIndex}_${optIndex}`] && 
                               <p className="error-message">
                                 {errors[`subOption_${subIndex}_${optIndex}`]}

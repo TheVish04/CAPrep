@@ -1063,3 +1063,130 @@ form.edit-mode .submit-btn:hover {
     font-size: 1.1rem;
   }
 }
+
+/* Option item styling */
+.option-item {
+  position: relative;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.option-item.correct-option {
+  border-left: 4px solid #4CAF50;
+}
+
+/* HTML content textarea for options */
+.option-item textarea.html-content {
+  width: 100%;
+  font-family: monospace;
+  white-space: pre-wrap;
+  tab-size: 2;
+  margin-bottom: 10px;
+  background-color: #121212;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.option-item textarea.html-content:focus {
+  border-color: #03a9f4;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.2);
+}
+
+/* Rich text preview specifically for options */
+.option-item .rich-text-preview {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  min-height: 30px;
+}
+
+.option-item .rich-text-preview:empty {
+  display: none;
+}
+
+/* HTML elements within option preview */
+.option-item .rich-text-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.option-item .rich-text-preview th,
+.option-item .rich-text-preview td {
+  border: 1px solid #444;
+  padding: 6px;
+  text-align: left;
+}
+
+.option-item .rich-text-preview ul,
+.option-item .rich-text-preview ol {
+  margin-left: 20px;
+  padding-left: 15px;
+}
+
+.option-item .rich-text-preview li {
+  margin: 4px 0;
+}
+
+.option-item .rich-text-preview code {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.option-item .rich-text-preview pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.option-item .rich-text-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 8px 0;
+}
+
+/* Option controls positioning */
+.option-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #333;
+}
+
+/* Checkbox styling */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* HTML help tooltip for options */
+.option-item .html-help-tooltip {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 12px;
+  color: #03a9f4;
+  background: rgba(3, 169, 244, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: help;
+}
