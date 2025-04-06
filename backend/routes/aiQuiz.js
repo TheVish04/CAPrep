@@ -43,12 +43,28 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     // 2. Retrieve Example Questions
     console.log('Fetching example questions for subject:', subject, 'examStage:', examStage);
-    const exampleQuestions = await Question.find({ subject, examStage }).limit(20).lean();
-     if (!exampleQuestions || exampleQuestions.length === 0) {
-       console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Proceeding without examples.`);
-     } else {
-       console.log(`Using ${exampleQuestions.length} example questions for AI prompt context.`);
-     }
+    // Get the total count of available questions first
+    const totalQuestions = await Question.countDocuments({ subject, examStage });
+    
+    // Random sampling logic for example questions
+    let exampleQuestions = [];
+    if (totalQuestions > 0) {
+      // Determine how many examples to use (up to 20)
+      const sampleSize = Math.min(totalQuestions, 20);
+      console.log(`Found ${totalQuestions} total questions, will sample ${sampleSize} random questions for AI context.`);
+      
+      // Use MongoDB's aggregate with $sample for truly random selection
+      exampleQuestions = await Question.aggregate([
+        { $match: { subject, examStage } },
+        { $sample: { size: sampleSize } }
+      ]);
+    }
+    
+    if (!exampleQuestions || exampleQuestions.length === 0) {
+      console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Proceeding without examples.`);
+    } else {
+      console.log(`Using ${exampleQuestions.length} random example questions for AI prompt context.`);
+    }
 
     // 3. Construct Prompt using simple string concatenation
     let prompt = "You are an expert CA exam question generator. Generate " + count + 
