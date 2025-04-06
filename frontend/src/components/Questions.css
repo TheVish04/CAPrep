@@ -1371,3 +1371,100 @@
     -webkit-line-clamp: unset !important;
     -webkit-box-orient: unset !important;
   }
+
+  /* Questions Actions */
+  .questions-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .export-btn, .toggle-answers-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    min-width: 120px;
+  }
+
+  .export-btn {
+    background-color: #03a9f4;
+    color: white;
+  }
+
+  .export-btn:hover {
+    background-color: #0288d1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .toggle-answers-btn {
+    background-color: #121212;
+    color: white;
+    border: 2px solid #03a9f4;
+  }
+
+  .toggle-answers-btn:hover {
+    background-color: rgba(3, 169, 244, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .toggle-answers-btn.active {
+    background-color: #03a9f4;
+    color: white;
+    border-color: #03a9f4;
+  }
+
+  /* Mobile responsive styles for questions actions */
+  @media (max-width: 768px) {
+    .questions-actions {
+      flex-direction: column;
+      width: 100%;
+      gap: 10px;
+    }
+    
+    .export-btn, .toggle-answers-btn {
+      width: 100%;
+      padding: 10px 20px;
+    }
+    
+    .support-us-container {
+      width: 100%;
+    }
+    
+    .support-us-container button {
+      width: 100%;
+    }
+  }
+
+  /* Support Us button styling in questions-actions */
+  .questions-actions .donation-button-container {
+    display: inline-flex;
+  }
+
+  .questions-actions .donation-button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    min-width: 120px;
+    background-color: #ff9800;
+    color: white;
+  }
+
+  .questions-actions .donation-button:hover {
+    background-color: #f57c00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
