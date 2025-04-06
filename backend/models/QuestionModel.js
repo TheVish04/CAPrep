@@ -65,11 +65,6 @@ const QuestionSchema = new Schema({
   answerText: {
     type: String
   },
-  pageNumber: {
-    type: String,
-    required: true,
-    match: [/^\d+$/, 'Page number must be a valid number']
-  },
   subQuestions: [SubQuestionSchema],
   createdAt: {
     type: Date,

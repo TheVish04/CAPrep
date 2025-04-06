@@ -57,10 +57,6 @@ const questionSchema = Joi.object({
   questionNumber: Joi.string().required(),
   questionText: Joi.string().allow('').optional(),
   answerText: Joi.string().allow('').optional(),
-  pageNumber: Joi.string()
-    .required()
-    .pattern(/^\d+$/)
-    .message('Page number must be a valid number'),
   subQuestions: Joi.array()
     .optional()
     .items(
@@ -93,7 +89,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber,
       questionText,
       answerText,
-      pageNumber,
       subQuestions,
     } = req.body;
 
@@ -107,7 +102,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber,
       questionText,
       answerText: answerText || '',
-      pageNumber,
       subQuestions: subQuestions || [],
     };
 
@@ -129,7 +123,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber,
       questionText,
       answerText: answerText || '',
-      pageNumber,
       subQuestions: dataToValidate.subQuestions,
     };
 
@@ -158,7 +151,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber,
       questionText,
       answerText,
-      pageNumber,
       subQuestions,
     } = req.body;
 
@@ -175,7 +167,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber: questionNumber || question.questionNumber,
       questionText: questionText || question.questionText,
       answerText: answerText || question.answerText || '',
-      pageNumber: pageNumber || question.pageNumber,
       subQuestions: subQuestions || question.subQuestions || [],
     };
 
@@ -195,7 +186,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       questionNumber: dataToValidate.questionNumber,
       questionText: dataToValidate.questionText,
       answerText: dataToValidate.answerText,
-      pageNumber: dataToValidate.pageNumber,
       subQuestions: dataToValidate.subQuestions,
     };
 

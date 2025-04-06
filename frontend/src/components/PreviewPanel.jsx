@@ -100,12 +100,6 @@ const PreviewPanel = ({ data, onClose, questionType = 'objective-subjective' }) 
               <span className="preview-label">Question Number</span>
               <span className="preview-value">{data.questionNumber || 'N/A'}</span>
             </div>
-            {data.pageNumber && (
-              <div className="preview-info-item">
-                <span className="preview-label">Page Number</span>
-                <span className="preview-value">{data.pageNumber}</span>
-              </div>
-            )}
           </div>
 
           <div className="preview-section">

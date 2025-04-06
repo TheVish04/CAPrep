@@ -35,7 +35,6 @@ const AdminPanel = () => {
     questionNumber: '',
     questionText: '',
     answerText: '',
-    pageNumber: '',
     subQuestions: [],
   });
 
@@ -239,9 +238,6 @@ const AdminPanel = () => {
       case 'questionNumber':
         if (!value) error = 'Question Number is required';
         break;
-      case 'pageNumber':
-        if (!value) error = 'Page Number is required';
-        break;
       case 'questionText':
         // Question text is now optional
         break;
@@ -276,7 +272,6 @@ const AdminPanel = () => {
       tempErrors.paperNo = 'Paper No. is required for Foundation stage';
     }
     if (!formData.questionNumber) tempErrors.questionNumber = 'Question Number is required';
-    if (!formData.pageNumber) tempErrors.pageNumber = 'Page Number is required';
     
     // Question type-specific validation
     switch (questionType) {
@@ -383,7 +378,6 @@ const AdminPanel = () => {
       questionNumber: '',
       questionText: '',
       answerText: '',
-      pageNumber: '',
       subQuestions: [],
     });
     setErrors({});
@@ -422,7 +416,6 @@ const AdminPanel = () => {
       questionNumber: '',
       questionText: '',
       answerText: '',
-      pageNumber: '',
       subQuestions: [],
     });
     setErrors({});
@@ -618,7 +611,7 @@ const AdminPanel = () => {
       subOptions: sq.subOptions || []
     }));
     
-    // Set form data
+    // Set form data (exclude pageNumber)
     setFormData({
       subject: question.subject || '',
       paperType: question.paperType || '',
@@ -629,7 +622,6 @@ const AdminPanel = () => {
       questionNumber: question.questionNumber || '',
       questionText: question.questionText || '',
       answerText: question.answerText || '',
-      pageNumber: question.pageNumber || '',
       subQuestions: formattedSubQuestions,
     });
     
@@ -959,23 +951,6 @@ const AdminPanel = () => {
                 </div>
               )}
 
-              {/* Remove Reference section */}
-              <div className="form-section">
-                <h2>Page Details</h2>
-                <div className="form-group">
-                  <label>Page Number:</label>
-                  <input
-                    type="text"
-                    name="pageNumber"
-                    value={formData.pageNumber}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                  />
-                  {errors.pageNumber && <p className="error-message">{errors.pageNumber}</p>}
-                </div>
-              </div>
-
               {/* Conditionally show Sub-Questions section based on question type */}
               {(questionType === 'objective-subjective' || questionType === 'objective-only') && (
                 <div className="form-section">
@@ -1288,7 +1263,6 @@ const AdminPanel = () => {
                           ))}
                         </div>
                       )}
-                      <p><strong>Page Number:</strong> {question.pageNumber || 'N/A'}</p>
                       <div className="question-actions">
                         <button
                           onClick={() => handleEdit(question)}
