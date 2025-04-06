@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import DOMPurify from 'dompurify';
-import { texify } from 'texifier';
+// We won't use texifier, but we'll implement a LaTeX-inspired approach
 
 /**
  * Generates a PDF from filtered questions
@@ -26,255 +26,489 @@ export const generateQuestionsPDF = (questions, filters, includeAnswers, individ
     year: 'numeric'
   });
   
-  // Generate LaTeX content
-  const latexContent = generateLatexContent(questions, includeAnswers, individualAnswers, formattedDate);
-  
   try {
-    // Convert LaTeX to PDF using jsPDF
-    renderLatexToPDF(doc, latexContent);
+    // Use LaTeX-inspired structured document approach
+    generateStructuredPDF(doc, questions, includeAnswers, individualAnswers, formattedDate);
   } catch (error) {
-    console.error("Error rendering LaTeX to PDF:", error);
-    // Fallback to direct rendering if LaTeX conversion fails
-    fallbackDirectRendering(doc, questions, includeAnswers, individualAnswers, formattedDate);
+    console.error("Error in structured PDF generation:", error);
+    // Fallback to direct rendering if structure approach fails
+    enhancedDirectRendering(doc, questions, includeAnswers, individualAnswers, formattedDate);
   }
   
   return doc;
 };
 
 /**
- * Generate LaTeX content from questions
+ * Generate a structured PDF with LaTeX-inspired formatting
+ * @param {jsPDF} doc - The PDF document
  * @param {Array} questions - The questions to include
  * @param {Boolean} includeAnswers - Whether to include all answers
  * @param {Object} individualAnswers - Individual answers to show
  * @param {String} formattedDate - The formatted date
- * @returns {String} - LaTeX document content
  */
-function generateLatexContent(questions, includeAnswers, individualAnswers, formattedDate) {
-  // LaTeX document preamble
-  let latexContent = `
-\\documentclass[12pt,a4paper]{article}
-\\usepackage[utf8]{inputenc}
-\\usepackage{geometry}
-\\geometry{a4paper, margin=2cm}
-\\usepackage{amsmath,amssymb}
-\\usepackage{enumitem}
-\\usepackage{fancyhdr}
-\\usepackage{xcolor}
-\\usepackage{array}
-\\usepackage{hyperref}
-\\usepackage{fontspec}
-\\setmainfont{Arial}
-
-\\pagestyle{fancy}
-\\fancyhf{}
-\\rhead{CA Exam Questions}
-\\lhead{Generated on: ${formattedDate}}
-\\cfoot{Page \\thepage}
-
-\\setlength{\\parindent}{0pt}
-\\setlength{\\parskip}{6pt}
-
-\\begin{document}
-
-\\begin{center}
-\\textbf{\\Large CA Exam Questions}
-\\end{center}
-
-\\vspace{0.5cm}
-\\noindent\\textit{Generated on: ${formattedDate}}
-\\vspace{0.5cm}
-
-`;
-
-  // Process each question
-  questions.forEach((question, index) => {
-    // Question number and title
-    latexContent += `\\section*{${index + 1}.}\n`;
-    latexContent += `\\textbf{Question:}\n\n`;
-    
-    // Process question text
-    const questionText = processTextForLatex(question.questionText);
-    
-    // Check for case scenario
-    if (questionText.includes('Case Scenario:')) {
-      latexContent += formatCaseScenario(questionText);
-    } else {
-      latexContent += `${questionText}\n\n`;
-    }
-    
-    // Process sub-questions if they exist
-    if (question.subQuestions && question.subQuestions.length > 0) {
-      latexContent += `\\textbf{Sub-Questions:}\n\n`;
-      
-      question.subQuestions.forEach((subQ, subIndex) => {
-        latexContent += `\\subsection*{${subIndex + 1}. ${subQ.subQuestionNumber ? `Sub-Question ${subQ.subQuestionNumber}:` : ''}}\n`;
-        
-        if (subQ.subQuestionText) {
-          latexContent += `${processTextForLatex(subQ.subQuestionText)}\n\n`;
-        }
-        
-        // Process options for this sub-question
-        if (subQ.subOptions && subQ.subOptions.length > 0) {
-          latexContent += `\\begin{enumerate}[label=\\Alph*.]\n`;
-          
-          subQ.subOptions.forEach((opt, optIndex) => {
-            const optionText = processTextForLatex(opt.optionText || '');
-            
-            if (opt.isCorrect && (includeAnswers || individualAnswers[question._id])) {
-              latexContent += `\\item \\textbf{${optionText} (Correct)}\n`;
-            } else {
-              latexContent += `\\item ${optionText}\n`;
-            }
-          });
-          
-          latexContent += `\\end{enumerate}\n\n`;
-        }
-      });
-    }
-    
-    // Add answer if needed
-    if ((includeAnswers || individualAnswers[question._id]) && question.answerText) {
-      latexContent += `\\textbf{Answer:}\n\n`;
-      latexContent += `${processTextForLatex(question.answerText)}\n\n`;
-    }
-    
-    // Add a separator between questions
-    if (index < questions.length - 1) {
-      latexContent += `\\vspace{0.5cm}\\hrule\\vspace{0.5cm}\n\n`;
-    }
+function generateStructuredPDF(doc, questions, includeAnswers, individualAnswers, formattedDate) {
+  // Set document properties
+  doc.setProperties({
+    title: 'CA Exam Questions',
+    subject: 'Generated CA Exam Questions',
+    author: 'CA Exam Platform',
+    keywords: 'CA, Exam, Questions',
+    creator: 'CA Exam Platform'
   });
   
-  // Close the LaTeX document
-  latexContent += `\\end{document}`;
+  // Add headers and footers to all pages
+  const totalPages = calculateTotalPages(doc, questions, includeAnswers, individualAnswers);
+  setupHeadersAndFooters(doc, formattedDate, totalPages);
   
-  return latexContent;
+  // Set initial position
+  let y = 30; // Start a bit lower to account for header
+  
+  // Add title
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CA Exam Questions', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+  y += 15;
+  
+  // Add date of generation
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'italic');
+  doc.text(`Generated on: ${formattedDate}`, 20, y);
+  y += 15;
+  
+  // Process each question using improved typesetting
+  let currentPage = 1;
+  
+  questions.forEach((question, index) => {
+    // Check if we need a new page
+    if (y > 250) {
+      doc.addPage();
+      currentPage++;
+      y = 30; // Start below header
+    }
+    
+    // Question number and title with section formatting
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${index + 1}.`, 20, y);
+    y += 8;
+    
+    // Question text label
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Question:', 20, y);
+    y += 7;
+    
+    // Process question text with enhanced formatting
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = DOMPurify.sanitize(question.questionText);
+    const text = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Format case scenarios with proper typesetting
+    if (text.includes('Case Scenario:')) {
+      y = addStructuredCaseScenario(doc, text, 20, y);
+    } else {
+      // Process regular question text with proper spacing and hyphenation
+      y = addFormattedParagraphs(doc, text, 20, y, 170);
+    }
+    
+    // Add sub-questions with proper enumeration
+    if (question.subQuestions && question.subQuestions.length > 0) {
+      if (y > 240) {
+        doc.addPage();
+        currentPage++;
+        y = 30;
+      }
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Sub-Questions:', 20, y);
+      y += 10;
+      
+      question.subQuestions.forEach((subQ, subIndex) => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${subIndex + 1}. ${subQ.subQuestionNumber ? `Sub-Question ${subQ.subQuestionNumber}:` : ''}`, 20, y);
+        y += 7;
+        
+        if (subQ.subQuestionText) {
+          y = addFormattedParagraphs(doc, subQ.subQuestionText, 20, y, 170);
+        }
+        
+        // Process options with proper enumeration
+        if (subQ.subOptions && subQ.subOptions.length > 0) {
+          y = addFormattedOptions(doc, subQ.subOptions, y, includeAnswers, individualAnswers, question._id);
+        }
+      });
+      y += 5;
+    }
+    
+    // Add answer if needed with proper formatting
+    if ((includeAnswers || individualAnswers[question._id]) && question.answerText) {
+      if (y > 240) {
+        doc.addPage();
+        currentPage++;
+        y = 30;
+      }
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Answer:', 20, y);
+      y += 7;
+      
+      y = addFormattedParagraphs(doc, question.answerText, 20, y, 170);
+    }
+    
+    // Add a separator between questions (horizontal rule)
+    if (index < questions.length - 1) {
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, y, 190, y);
+      y += 10;
+    }
+    
+    // New page for next question if needed
+    if (y > 270 && index < questions.length - 1) {
+      doc.addPage();
+      currentPage++;
+      y = 30;
+    }
+  });
 }
 
 /**
- * Process text for LaTeX compatibility
- * @param {String} text - The HTML text to process
- * @returns {String} - LaTeX-compatible text
+ * Add formatted paragraphs to the PDF with proper text flow
+ * @param {jsPDF} doc - The PDF document
+ * @param {String} text - The text to format
+ * @param {Number} x - The x position
+ * @param {Number} y - The y position
+ * @param {Number} maxWidth - Maximum width for text
+ * @returns {Number} - The new y position
  */
-function processTextForLatex(text) {
-  // Create a temporary div to parse HTML
+function addFormattedParagraphs(doc, text, x, y, maxWidth) {
+  // Clean up the HTML content
   const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = DOMPurify.sanitize(text || '');
+  tempDiv.innerHTML = DOMPurify.sanitize(text);
   
-  // Get the clean text
-  let cleanText = tempDiv.textContent || tempDiv.innerText || '';
+  // Get the cleaned text
+  const cleanedText = tempDiv.textContent || tempDiv.innerText || '';
   
-  // Escape LaTeX special characters
-  cleanText = cleanText.replace(/\\/g, '\\textbackslash')
-                       .replace(/&/g, '\\&')
-                       .replace(/%/g, '\\%')
-                       .replace(/\$/g, '\\$')
-                       .replace(/#/g, '\\#')
-                       .replace(/_/g, '\\_')
-                       .replace(/\{/g, '\\{')
-                       .replace(/\}/g, '\\}')
-                       .replace(/~/g, '\\textasciitilde')
-                       .replace(/\^/g, '\\textasciicircum');
+  // Process text with proper spacing fixes
+  const processedText = fixTextSpacing(cleanedText);
   
-  // Format currency symbols
-  cleanText = cleanText.replace(/₹/g, '₹');
+  // Split into paragraphs
+  const paragraphs = processedText.split('\n')
+    .map(para => para.trim())
+    .filter(para => para.length > 0);
   
-  return cleanText;
+  let currentY = y;
+  doc.setFont('helvetica', 'normal');
+  
+  paragraphs.forEach(paragraph => {
+    // Check if we need a new page
+    if (currentY > 270) {
+      doc.addPage();
+      currentY = 30;
+    }
+    
+    // Split text to fit within max width with improved hyphenation
+    const splitText = doc.splitTextToSize(paragraph, maxWidth);
+    
+    // Add the paragraph
+    doc.text(splitText, x, currentY);
+    currentY += splitText.length * 7 + 3; // Add a bit more space between paragraphs
+  });
+  
+  return currentY + 2; // Return the new position with a little extra space
 }
 
 /**
- * Format a case scenario for LaTeX
+ * Add a structured case scenario with proper formatting
+ * @param {jsPDF} doc - The PDF document
  * @param {String} text - The case scenario text
- * @returns {String} - Formatted LaTeX text
+ * @param {Number} x - The x position
+ * @param {Number} y - The y position
+ * @returns {Number} - The new y position
  */
-function formatCaseScenario(text) {
+function addStructuredCaseScenario(doc, text, x, y) {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-  let latexOutput = '';
+  let currentY = y;
   
   // Find the case scenario title
   const scenarioIndex = lines.findIndex(line => line.includes('Case Scenario:'));
   if (scenarioIndex >= 0) {
-    // Add the case scenario title
-    latexOutput += `\\textbf{${lines[scenarioIndex]}}\n\n`;
+    // Add the title in bold with proper formatting
+    doc.setFont('helvetica', 'bold');
+    const titleText = doc.splitTextToSize(lines[scenarioIndex], 170);
+    doc.text(titleText, x, currentY);
+    currentY += titleText.length * 7 + 3;
     
-    // Start itemized list for bullet points
-    latexOutput += `\\begin{itemize}[leftmargin=*,label={$\\bullet$}]\n`;
+    // Create an indented list for the case points
+    doc.setFont('helvetica', 'normal');
     
-    // Process remaining lines
+    // First, collect sections to process them properly
+    const sections = [];
+    let currentSection = [];
+    
     for (let i = scenarioIndex + 1; i < lines.length; i++) {
       const line = lines[i].trim();
-      
-      // Skip empty lines
       if (!line) continue;
       
-      // Special handling for financial lines
-      if (line.includes('₹') || line.includes('crore') || line.includes('lacs') || 
-          line.match(/^\s*The cost of/i) || line.match(/^\s*Cost of/i) ||
-          line.match(/^The Company/i) || line.match(/^At the beginning/i)) {
-        
-        // Clean up the line for LaTeX
-        const cleanedLine = line.replace(/\s+/g, ' ')
-                                .replace(/₹\s+/g, '₹')
-                                .replace(/(\d)\s+(\d)/g, '$1$2')
-                                .replace(/\s+crore/g, ' crore')
-                                .replace(/\s+lacs/g, ' lacs');
-        
-        latexOutput += `\\item ${cleanedLine}\n`;
-      }
-      // Notes like "Ignore the effect of depreciation"
-      else if (line.toLowerCase().startsWith('ignore') || line.toLowerCase().startsWith('answer the')) {
-        latexOutput += `\\end{itemize}\n\n${line}\n\n`;
-      }
-      // Regular bullet point
-      else if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
-        latexOutput += `\\item ${line.substring(1).trim()}\n`;
-      }
-      // Other lines
-      else {
-        latexOutput += `\\item ${line}\n`;
+      // Special handling for section breaks
+      if (line.toLowerCase().startsWith('ignore') || line.toLowerCase().startsWith('answer the')) {
+        if (currentSection.length > 0) {
+          sections.push({type: 'bullet-list', lines: currentSection});
+          currentSection = [];
+        }
+        sections.push({type: 'note', text: line});
+      } else {
+        // Add to current section
+        currentSection.push(line);
       }
     }
     
-    // Close the itemized list if not already closed
-    if (!latexOutput.endsWith('\\end{itemize}\n\n')) {
-      latexOutput += `\\end{itemize}\n\n`;
+    // Add the last section if any
+    if (currentSection.length > 0) {
+      sections.push({type: 'bullet-list', lines: currentSection});
     }
+    
+    // Now process each section with proper spacing and formatting
+    sections.forEach(section => {
+      // Check if we need a new page
+      if (currentY > 270) {
+        doc.addPage();
+        currentY = 30;
+      }
+      
+      if (section.type === 'note') {
+        // Process notes without bullet points
+        const splitLine = doc.splitTextToSize(section.text, 170);
+        doc.text(splitLine, x, currentY);
+        currentY += splitLine.length * 7 + 5;
+      } else if (section.type === 'bullet-list') {
+        // Process bullet list with proper indentation and bullet points
+        section.lines.forEach(line => {
+          // Check if we need a new page
+          if (currentY > 270) {
+            doc.addPage();
+            currentY = 30;
+          }
+          
+          // Clean up the line - fix spacing issues
+          let cleanedLine = fixTextSpacing(line);
+          
+          // Special formatting for financial items and other key lines
+          if (line.includes('₹') || line.includes('crore') || line.includes('lacs') || 
+              line.match(/^\s*The cost of/i) || line.match(/^\s*Cost of/i) ||
+              line.match(/^The Company/i) || line.match(/^At the beginning/i)) {
+            
+            // Add bullet point if not already present
+            if (!cleanedLine.startsWith('•') && !cleanedLine.startsWith('-')) {
+              cleanedLine = '• ' + cleanedLine;
+            }
+          }
+          // Regular bullet point - ensure it starts with a bullet
+          else if (!line.startsWith('•') && !line.startsWith('-') && !line.startsWith('*')) {
+            cleanedLine = '• ' + cleanedLine;
+          }
+          
+          // Format the line as a bullet point with proper spacing
+          const bulletText = cleanedLine.startsWith('•') ? cleanedLine : 
+                            cleanedLine.startsWith('-') ? '•' + cleanedLine.substring(1) :
+                            cleanedLine.startsWith('*') ? '•' + cleanedLine.substring(1) : 
+                            '• ' + cleanedLine;
+          
+          const splitLine = doc.splitTextToSize(bulletText, 160);
+          
+          // Handle multi-line bullet points with proper indentation
+          doc.text(splitLine[0], x + 5, currentY);
+          currentY += 7;
+          
+          // Handle continuation lines with indentation
+          if (splitLine.length > 1) {
+            for (let i = 1; i < splitLine.length; i++) {
+              doc.text(splitLine[i], x + 10, currentY);
+              currentY += 7;
+            }
+          }
+          
+          currentY += 2; // Add a small space between bullet points
+        });
+      }
+    });
   } else {
-    // If no case scenario format detected, just return the text
-    latexOutput = `${text}\n\n`;
+    // Just add the text normally if no case scenario format is detected
+    doc.setFont('helvetica', 'normal');
+    const splitText = doc.splitTextToSize(text, 170);
+    doc.text(splitText, x, currentY);
+    currentY += splitText.length * 7 + 5;
   }
   
-  return latexOutput;
+  return currentY;
 }
 
 /**
- * Render LaTeX content to PDF
+ * Add formatted options to the PDF with proper enumeration
  * @param {jsPDF} doc - The PDF document
- * @param {String} latexContent - The LaTeX content
+ * @param {Array} options - The options to add
+ * @param {Number} y - The starting y position
+ * @param {Boolean} includeAnswers - Whether to include all answers
+ * @param {Object} individualAnswers - Individual answers to show
+ * @param {String} questionId - The ID of the question
+ * @returns {Number} - The new y position
  */
-function renderLatexToPDF(doc, latexContent) {
-  // NOTE: In a real implementation, this would use a LaTeX to PDF conversion service or library
-  // For now, we'll use a simulated approach since full LaTeX rendering in browser is complex
+function addFormattedOptions(doc, options, y, includeAnswers, individualAnswers, questionId) {
+  let currentY = y;
   
-  try {
-    // If a LaTeX rendering library exists, use it
-    if (typeof texify === 'function') {
-      const pdfBuffer = texify(latexContent);
-      doc.addPDF(pdfBuffer);
-    } else {
-      // Otherwise fall back to direct rendering
-      throw new Error("LaTeX rendering library not available");
+  options.forEach((opt, optIndex) => {
+    // Check if we need a new page
+    if (currentY > 270) {
+      doc.addPage();
+      currentY = 30;
     }
-  } catch (error) {
-    console.error("LaTeX rendering failed:", error);
-    throw error; // Let the main function handle the fallback
-  }
+    
+    const optionLetter = String.fromCharCode(65 + optIndex); // A, B, C, etc.
+    const optDiv = document.createElement('div');
+    optDiv.innerHTML = DOMPurify.sanitize(opt.optionText || '');
+    const optionText = optDiv.textContent || optDiv.innerText || '';
+    
+    // Process option text with proper spacing
+    const cleanedOptionText = fixTextSpacing(optionText);
+    
+    if (opt.isCorrect && (includeAnswers || individualAnswers[questionId])) {
+      doc.setFont('helvetica', 'bold');
+      const optionLine = `${optionLetter}. ${cleanedOptionText} (Correct)`;
+      const splitOptText = doc.splitTextToSize(optionLine, 160);
+      
+      // First line with option letter
+      doc.text(splitOptText[0], 25, currentY);
+      currentY += 7;
+      
+      // Continuation lines with indentation
+      if (splitOptText.length > 1) {
+        for (let i = 1; i < splitOptText.length; i++) {
+          doc.text(splitOptText[i], 30, currentY);
+          currentY += 7;
+        }
+      }
+    } else {
+      doc.setFont('helvetica', 'normal');
+      const optionLine = `${optionLetter}. ${cleanedOptionText}`;
+      const splitOptText = doc.splitTextToSize(optionLine, 160);
+      
+      // First line with option letter
+      doc.text(splitOptText[0], 25, currentY);
+      currentY += 7;
+      
+      // Continuation lines with indentation
+      if (splitOptText.length > 1) {
+        for (let i = 1; i < splitOptText.length; i++) {
+          doc.text(splitOptText[i], 30, currentY);
+          currentY += 7;
+        }
+      }
+    }
+    
+    currentY += 3; // Add space between options
+  });
+  
+  return currentY + 5; // Return with some extra spacing
 }
 
 /**
- * Fallback method for direct PDF rendering when LaTeX fails
- * This is essentially our original implementation with improved formatting
+ * Calculate approximate total pages needed
+ * @param {jsPDF} doc - The PDF document
+ * @param {Array} questions - The questions to include
+ * @param {Boolean} includeAnswers - Whether to include all answers
+ * @param {Object} individualAnswers - Individual answers to show
+ * @returns {Number} - Estimated total pages
  */
-function fallbackDirectRendering(doc, questions, includeAnswers, individualAnswers, formattedDate) {
+function calculateTotalPages(doc, questions, includeAnswers, individualAnswers) {
+  let totalLines = 0;
+  const linesPerPage = 40; // Approximate lines per page
+  
+  questions.forEach(question => {
+    // Add lines for question text (estimate)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = DOMPurify.sanitize(question.questionText);
+    const text = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Estimate lines needed for question text
+    totalLines += Math.ceil(text.length / 70) + 5; // Rough estimate + some padding
+    
+    // Add lines for sub-questions
+    if (question.subQuestions && question.subQuestions.length > 0) {
+      question.subQuestions.forEach(subQ => {
+        if (subQ.subQuestionText) {
+          totalLines += Math.ceil(subQ.subQuestionText.length / 70) + 2;
+        }
+        
+        // Add lines for options
+        if (subQ.subOptions && subQ.subOptions.length > 0) {
+          totalLines += subQ.subOptions.length * 3; // Each option takes approximately 3 lines
+        }
+      });
+    }
+    
+    // Add lines for answer if included
+    if ((includeAnswers || individualAnswers[question._id]) && question.answerText) {
+      totalLines += Math.ceil(question.answerText.length / 70) + 3;
+    }
+    
+    // Add lines for separators
+    totalLines += 3;
+  });
+  
+  // Calculate pages and add a buffer
+  return Math.ceil(totalLines / linesPerPage) + 1;
+}
+
+/**
+ * Set up headers and footers for all pages
+ * @param {jsPDF} doc - The PDF document
+ * @param {String} formattedDate - The formatted date
+ * @param {Number} totalPages - Total number of pages
+ */
+function setupHeadersAndFooters(doc, formattedDate, totalPages) {
+  // We'll need to add this after content is complete
+  const addHeadersAndFooters = () => {
+    const pageCount = doc.internal.getNumberOfPages();
+    
+    // For each page, add header and footer
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      // Header - right aligned date
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Generated on: ${formattedDate}`, 190, 10, { align: 'right' });
+      
+      // Header - left aligned title
+      doc.text('CA Exam Questions', 20, 10);
+      
+      // Footer - centered page number
+      doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.getWidth() / 2, 
+               doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    }
+  };
+  
+  // Store the function to be called after all content is added
+  doc.headerFooterCallback = addHeadersAndFooters;
+  
+  // Create a wrapper for the save function to ensure headers/footers are added
+  const originalSave = doc.save;
+  doc.save = function(filename) {
+    if (this.headerFooterCallback) {
+      this.headerFooterCallback();
+    }
+    return originalSave.call(this, filename);
+  };
+}
+
+/**
+ * Enhanced direct PDF rendering with improved formatting for financial data
+ * @param {jsPDF} doc - The PDF document
+ * @param {Array} questions - Questions to add to the document
+ * @param {Boolean} includeAnswers - Whether to include all answers
+ * @param {Object} individualAnswers - Individual answers to show
+ * @param {String} formattedDate - The formatted date
+ */
+function enhancedDirectRendering(doc, questions, includeAnswers, individualAnswers, formattedDate) {
   // Set initial position
   let y = 20;
   
@@ -450,11 +684,7 @@ function addFormattedCaseScenario(doc, text, x, y) {
       }
       
       // Clean up the line - fix spacing issues
-      let cleanedLine = line.replace(/\s+/g, ' ')
-                           .replace(/₹\s+/g, '₹')
-                           .replace(/(\d)\s+(\d)/g, '$1$2')
-                           .replace(/\s+crore/g, ' crore')
-                           .replace(/\s+lacs/g, ' lacs');
+      let cleanedLine = fixTextSpacing(line);
       
       // Special formatting for financial items and other key lines
       if (line.includes('₹') || line.includes('crore') || line.includes('lacs') || 
@@ -502,10 +732,46 @@ function addFormattedCaseScenario(doc, text, x, y) {
 }
 
 /**
+ * Processes text to fix spacing issues in financial and numeric text
+ * @param {String} text - The text to process
+ * @returns {String} - Cleaned text with fixed spacing
+ */
+function fixTextSpacing(text) {
+  let fixedText = text;
+  
+  // Replace multiple spaces with a single space
+  fixedText = fixedText.replace(/\s{2,}/g, ' ');
+  
+  // Fix currency spacing
+  fixedText = fixedText.replace(/₹\s+/g, '₹');
+  fixedText = fixedText.replace(/rupees\s+/gi, '₹');
+  
+  // Fix number spacing
+  fixedText = fixedText.replace(/(\d)\s+(\d)/g, '$1$2');
+  
+  // Fix spacing around common financial terms
+  fixedText = fixedText.replace(/\s+crore/g, ' crore');
+  fixedText = fixedText.replace(/\s+lacs/g, ' lacs');
+  fixedText = fixedText.replace(/\s+lakhs/g, ' lakhs');
+  
+  // Fix spacing between letters in financial amounts
+  fixedText = fixedText.replace(/(\d)\s+([cC]rore)/g, '$1 $2');
+  fixedText = fixedText.replace(/(\d)\s+([lL]acs)/g, '$1 $2');
+  fixedText = fixedText.replace(/(\d)\s+([lL]akhs)/g, '$1 $2');
+  
+  return fixedText;
+}
+
+/**
  * Saves the PDF with a simple filename
  * @param {jsPDF} doc - The PDF document to save
  */
 export const savePDF = (doc) => {
+  // Add headers and footers before saving if the callback exists
+  if (doc.headerFooterCallback) {
+    doc.headerFooterCallback();
+  }
+  
   // Generate filename with date
   const date = new Date();
   const dateStr = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
