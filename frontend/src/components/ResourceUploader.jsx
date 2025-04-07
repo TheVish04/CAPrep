@@ -155,6 +155,13 @@ const ResourceUploader = () => {
       } else {
         setErrors((prev) => ({ ...prev, file: '' }));
         setFile(selectedFile);
+        
+        // Set title based on filename (removing .pdf extension)
+        const fileName = selectedFile.name.replace(/\.pdf$/i, '');
+        setFormData(prev => ({
+          ...prev,
+          title: fileName
+        }));
       }
     }
   };
@@ -424,6 +431,8 @@ const ResourceUploader = () => {
                 value={formData.title}
                 onChange={handleChange}
                 className={errors.title ? 'error' : ''}
+                readOnly={!isEditMode && file !== null}
+                title={!isEditMode && file !== null ? "Title is automatically set from PDF filename" : ""}
               />
               {errors.title && <div className="error-message">{errors.title}</div>}
             </div>
