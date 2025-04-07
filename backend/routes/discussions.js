@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Discussion = require('../models/DiscussionModel');
+const User = require('../models/UserModel');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
 
@@ -27,7 +28,7 @@ router.get('/:itemType/:itemId', authMiddleware, async (req, res) => {
       itemId 
     }).populate({
       path: 'messages.userId',
-      select: 'name email'
+      select: 'fullName email role' // These are the fields from UserModel
     });
     
     if (!discussion) {
@@ -43,22 +44,31 @@ router.get('/:itemType/:itemId', authMiddleware, async (req, res) => {
       // Immediately populate the user info for the new discussion
       discussion = await Discussion.findById(discussion._id).populate({
         path: 'messages.userId',
-        select: 'name email'
+        select: 'fullName email role'
       });
     }
     
     res.json(discussion);
   } catch (error) {
     console.error('Error fetching discussion:', error);
-    res.status(500).json({ error: 'Failed to fetch discussion' });
+    res.status(500).json({ 
+      error: 'Failed to fetch discussion',
+      message: error.message 
+    });
   }
 });
 
 // Add message to discussion
 router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
   try {
+    console.log('Received message POST request:', {
+      params: req.params,
+      body: req.body,
+      user: req.user ? { _id: req.user._id, role: req.user.role } : 'No user'
+    });
+    
     const { itemType, itemId } = req.params;
-    const { content } = req.body;
+    const { content, parentMessageId } = req.body;
     
     // Validate input
     if (!['question', 'resource'].includes(itemType)) {
@@ -71,6 +81,11 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
     
     if (!content || content.trim() === '') {
       return res.status(400).json({ error: 'Message content cannot be empty' });
+    }
+    
+    // If parentMessageId is provided, validate it
+    if (parentMessageId && !mongoose.Types.ObjectId.isValid(parentMessageId)) {
+      return res.status(400).json({ error: 'Invalid parent message ID' });
     }
     
     const itemModel = itemType === 'question' ? 'Question' : 'Resource';
@@ -91,7 +106,9 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
     // Add message to discussion
     const newMessage = {
       userId: req.user._id,
-      content: content.trim()
+      content: content.trim(),
+      parentMessageId: parentMessageId || null,
+      likes: []
     };
     
     discussion.messages.push(newMessage);
@@ -107,13 +124,192 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
     const updatedDiscussion = await Discussion.findById(discussion._id)
       .populate({
         path: 'messages.userId',
-        select: 'name email'
+        select: 'fullName email role' // Include role to identify admins
+      });
+    
+    console.log('Successfully added message, returning updated discussion');
+    res.json(updatedDiscussion);
+  } catch (error) {
+    console.error('Error adding message:', error);
+    res.status(500).json({ 
+      error: 'Failed to add message',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Like a message
+router.post('/:discussionId/message/:messageId/like', authMiddleware, async (req, res) => {
+  try {
+    const { discussionId, messageId } = req.params;
+    
+    // Validate IDs
+    if (!mongoose.Types.ObjectId.isValid(discussionId) || !mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    const discussion = await Discussion.findById(discussionId);
+    
+    if (!discussion) {
+      return res.status(404).json({ error: 'Discussion not found' });
+    }
+    
+    // Find the message
+    const message = discussion.messages.id(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    
+    // Check if user already liked the message
+    const userIndex = message.likes.indexOf(req.user._id);
+    
+    if (userIndex === -1) {
+      // User hasn't liked the message yet, add the like
+      message.likes.push(req.user._id);
+    } else {
+      // User already liked the message, remove the like
+      message.likes.splice(userIndex, 1);
+    }
+    
+    await discussion.save();
+    
+    // Return the updated discussion
+    const updatedDiscussion = await Discussion.findById(discussionId)
+      .populate({
+        path: 'messages.userId',
+        select: 'fullName email role'
       });
     
     res.json(updatedDiscussion);
   } catch (error) {
-    console.error('Error adding message:', error);
-    res.status(500).json({ error: 'Failed to add message' });
+    console.error('Error toggling like:', error);
+    res.status(500).json({ error: 'Failed to toggle like' });
+  }
+});
+
+// Edit a message
+router.put('/:discussionId/message/:messageId', authMiddleware, async (req, res) => {
+  try {
+    const { discussionId, messageId } = req.params;
+    const { content } = req.body;
+    
+    // Validate parameters
+    if (!mongoose.Types.ObjectId.isValid(discussionId) || !mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ error: 'Message content cannot be empty' });
+    }
+    
+    const discussion = await Discussion.findById(discussionId);
+    
+    if (!discussion) {
+      return res.status(404).json({ error: 'Discussion not found' });
+    }
+    
+    // Find the message
+    const message = discussion.messages.id(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    
+    // Check permissions: only allow users to edit their own messages or admins to edit any message
+    const isAdmin = req.user.role === 'admin';
+    const isAuthor = message.userId.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({ error: 'You do not have permission to edit this message' });
+    }
+    
+    // Update the message
+    message.content = content.trim();
+    message.edited = true;
+    message.editedAt = Date.now();
+    
+    await discussion.save();
+    
+    // Return the updated discussion
+    const updatedDiscussion = await Discussion.findById(discussionId)
+      .populate({
+        path: 'messages.userId',
+        select: 'fullName email role'
+      });
+    
+    res.json(updatedDiscussion);
+  } catch (error) {
+    console.error('Error editing message:', error);
+    res.status(500).json({ 
+      error: 'Failed to edit message',
+      message: error.message
+    });
+  }
+});
+
+// Delete a message
+router.delete('/:discussionId/message/:messageId', authMiddleware, async (req, res) => {
+  try {
+    const { discussionId, messageId } = req.params;
+    
+    // Validate parameters
+    if (!mongoose.Types.ObjectId.isValid(discussionId) || !mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    const discussion = await Discussion.findById(discussionId);
+    
+    if (!discussion) {
+      return res.status(404).json({ error: 'Discussion not found' });
+    }
+    
+    // Find the message
+    const message = discussion.messages.id(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    
+    // Check permissions: only allow users to delete their own messages or admins to delete any message
+    const isAdmin = req.user.role === 'admin';
+    const isAuthor = message.userId.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({ error: 'You do not have permission to delete this message' });
+    }
+    
+    // If the message being deleted has replies, mark it as deleted rather than removing it
+    const hasReplies = discussion.messages.some(m => 
+      m.parentMessageId && m.parentMessageId.toString() === messageId
+    );
+    
+    if (hasReplies) {
+      message.content = "[This message was deleted]";
+      message.deleted = true;
+      message.deletedAt = Date.now();
+    } else {
+      // If there are no replies, remove the message completely
+      discussion.messages.pull(messageId);
+    }
+    
+    await discussion.save();
+    
+    // Return the updated discussion
+    const updatedDiscussion = await Discussion.findById(discussionId)
+      .populate({
+        path: 'messages.userId',
+        select: 'fullName email role'
+      });
+    
+    res.json(updatedDiscussion);
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete message',
+      message: error.message
+    });
   }
 });
 

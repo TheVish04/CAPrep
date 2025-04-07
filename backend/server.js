@@ -67,9 +67,9 @@ const corsOptions = {
 // Add CORS preflight handling for all routes
 app.options('*', cors(corsOptions));
 
-// Special handler for verify-otp which seems to have issues
-app.options('/api/auth/verify-otp', (req, res) => {
-  console.log('Handling OPTIONS preflight for verify-otp specifically');
+// Specific preflight handler for discussion routes
+app.options('/api/discussions/:itemType/:itemId/message', (req, res) => {
+  console.log('Handling OPTIONS preflight for discussion message posting');
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With, Cache-Control, Pragma, Expires');
@@ -78,31 +78,21 @@ app.options('/api/auth/verify-otp', (req, res) => {
   res.status(204).end();
 });
 
+// Apply CORS for all routes
 app.use(cors(corsOptions));
 
-// Add a manual CORS middleware as backup for handling preflight requests
+// More aggressive CORS handling for all requests
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  // Log all requests to help debug CORS issues
-  console.log(`[CORS] ${req.method} ${req.path} - Origin: ${origin || 'No origin'}`);
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Access-Control-Allow-Origin, AccessToken, Origin, Accept, X-Requested-With, Cache-Control, Pragma, Expires');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
-  if (
-    origin === 'https://caprep.onrender.com' || 
-    origin === 'https://caprep.vercel.app' || 
-    origin === 'http://localhost:5173' ||
-    origin === 'https://ca-exam-platform.vercel.app'
-  ) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With, Cache-Control, Pragma, Expires');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Preflight request handling
-    if (req.method === 'OPTIONS') {
-      console.log(`Handling OPTIONS preflight for ${req.path} in backup middleware`);
-      return res.status(204).end();
-    }
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
   }
+  
   next();
 });
 

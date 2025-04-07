@@ -15,6 +15,30 @@ const MessageSchema = new Schema({
   timestamp: {
     type: Date,
     default: Date.now
+  },
+  parentMessageId: {
+    type: Schema.Types.ObjectId,
+    default: null
+  },
+  likes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  edited: {
+    type: Boolean,
+    default: false
+  },
+  editedAt: {
+    type: Date,
+    default: null
+  },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 });
 
