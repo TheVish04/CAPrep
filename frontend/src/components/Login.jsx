@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import './Login.css';
@@ -7,10 +7,28 @@ import './Login.css';
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
+
+  // Check for session expired message on component mount
+  useEffect(() => {
+    // Check URL parameters for expired token
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('expired') === 'true') {
+      setInfoMessage('Your session has expired. Please log in again.');
+    }
+    
+    // Check if there's a message from redirect state (from authUtils)
+    if (location.state?.message) {
+      setInfoMessage(location.state.message);
+      // Clear the state message after displaying it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -19,6 +37,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setInfoMessage('');
 
     try {
       const response = await axios.post('https://caprep.onrender.com/api/auth/login', credentials);
@@ -51,6 +70,7 @@ const Login = () => {
         <div className="auth-form">
           <h2>Login</h2>
           {error && <p className="error">{error}</p>}
+          {infoMessage && <p className="info-message">{infoMessage}</p>}
           <form onSubmit={handleSubmit} id="login-form" aria-labelledby="login-tab">
             <div>
               <label>Email:</label>

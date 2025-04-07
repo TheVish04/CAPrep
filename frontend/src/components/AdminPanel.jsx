@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import DOMPurify from 'dompurify';
 import AdminAnalytics from './AdminAnalytics';
 import ResourceUploader from './ResourceUploader';
+import authUtils from '../utils/authUtils';
 import './AdminPanel.css';
 
 const AdminPanel = () => {
@@ -69,7 +70,9 @@ const AdminPanel = () => {
           'Expires': '0',
         },
       });
+      
       const data = await response.json();
+      
       if (response.ok) {
         const questions = Array.isArray(data) ? data : [data];
         const sortedQuestions = [...questions].sort((a, b) => 
@@ -78,13 +81,27 @@ const AdminPanel = () => {
         setStoredQuestions(sortedQuestions);
       } else {
         console.error('Failed to fetch questions:', response.statusText, data);
-        alert(`Failed to fetch questions: ${response.statusText} - ${data.error || 'Unknown error'}`);
+        
+        // Check for token expiration and handle automatic logout
+        if (authUtils.handleTokenExpiration(data, navigate)) {
+          return; // Return early if token expired and user is being redirected
+        }
+        
+        if (data.error) {
+          alert(`Failed to fetch questions: ${data.error}`);
+        } else {
+          alert(`Failed to fetch questions: ${response.statusText} - ${data.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
       console.error('Error fetching questions:', error);
-      alert(`Error fetching questions: ${error.message}`);
+      
+      // Check if it's a token expiration error and handle automatic logout
+      if (!authUtils.handleTokenExpiration(error, navigate)) {
+        alert(`Error fetching questions: ${error.message}`);
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const applyFilters = useCallback((token) => {
     const query = new URLSearchParams(filters).toString();
@@ -424,27 +441,22 @@ const AdminPanel = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate the form
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     const validation = validateForm();
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
-      
-      const errorMessages = Object.values(validation).filter(v => v);
-      if (errorMessages.length > 0) {
-        alert(`Please fix the following errors:\n- ${errorMessages.join('\n- ')}`);
-        return;
-      }
+      console.log('Form validation errors:', validation);
+      return;
     }
-    
+
     setIsSubmitting(true);
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found. Please login again.');
-      }
-      
       // Prepare question data based on question type
       let questionData = { ...formData };
       
@@ -496,11 +508,26 @@ const AdminPanel = () => {
         // Refresh the questions list
         fetchQuestions(token);
       } else {
-        throw new Error(data.error || 'Failed to save question');
+        console.error('Error submitting question:', data);
+        
+        // Check for token expiration and handle automatic logout
+        if (authUtils.handleTokenExpiration(data, navigate)) {
+          return; // Return early if token expired and user is being redirected
+        }
+        
+        if (data.message) {
+          alert(`Failed to submit: ${data.message}`);
+        } else {
+          alert('Failed to submit question. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Error submitting question:', error);
-      alert(`Error: ${error.message}`);
+      
+      // Check if it's a token expiration error and handle automatic logout
+      if (!authUtils.handleTokenExpiration(error, navigate)) {
+        alert(`Error submitting question: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -508,32 +535,22 @@ const AdminPanel = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
-    if (!editingQuestionId) {
-      alert('No question selected for editing.');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
       return;
     }
-    
-    // Validate form before submission
+
     const validation = validateForm();
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
-      
-      const errorMessages = Object.values(validation).filter(v => v);
-      if (errorMessages.length > 0) {
-        alert(`Please fix the following errors:\n- ${errorMessages.join('\n- ')}`);
-        return;
-      }
+      console.log('Form validation errors on update:', validation);
+      return;
     }
-    
+
     setIsSubmitting(true);
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found. Please login again.');
-      }
-      
       // Prepare question data based on question type
       let questionData = { ...formData };
       
@@ -575,11 +592,26 @@ const AdminPanel = () => {
         // Refresh the questions list
         fetchQuestions(token);
       } else {
-        throw new Error(data.error || 'Failed to update question');
+        console.error('Error updating question:', data);
+        
+        // Check for token expiration and handle automatic logout
+        if (authUtils.handleTokenExpiration(data, navigate)) {
+          return; // Return early if token expired and user is being redirected
+        }
+        
+        if (data.message) {
+          alert(`Failed to update: ${data.message}`);
+        } else {
+          alert('Failed to update question. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Error updating question:', error);
-      alert(`Error: ${error.message}`);
+      
+      // Check if it's a token expiration error and handle automatic logout
+      if (!authUtils.handleTokenExpiration(error, navigate)) {
+        alert(`Error updating question: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -630,40 +662,45 @@ const AdminPanel = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this question?')) return;
-
-    console.log('Attempting to delete question with ID:', id);
-    
-    if (!id) {
-      alert('Cannot delete: Invalid question ID');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
       return;
     }
-
-    const token = localStorage.getItem('token');
+    
+    const confirmDelete = window.confirm('Are you sure you want to delete this question?');
+    if (!confirmDelete) return;
+    
     try {
       const response = await fetch(`https://caprep.onrender.com/api/questions/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
         },
       });
-      
-      const result = await response.json();
-      console.log('Delete response:', response.status, result);
       
       if (response.ok) {
         alert('Question deleted successfully');
         const currentQuery = new URLSearchParams(filters).toString();
         fetchQuestions(token, currentQuery);
       } else {
-        const errorMessage = result.details || result.error || 'Unknown error';
-        console.error('Failed to delete question:', errorMessage);
-        alert(`Failed to delete question: ${errorMessage}`);
+        const data = await response.json();
+        console.error('Error deleting question:', data);
+        
+        // Check for token expiration and handle automatic logout
+        if (authUtils.handleTokenExpiration(data, navigate)) {
+          return; // Return early if token expired and user is being redirected
+        }
+        
+        alert(`Failed to delete question: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting question:', error);
-      alert(`Error deleting question: ${error.message || 'Unknown error'}`);
+      
+      // Check if it's a token expiration error and handle automatic logout
+      if (!authUtils.handleTokenExpiration(error, navigate)) {
+        alert(`Error deleting question: ${error.message}`);
+      }
     }
   };
 
