@@ -242,7 +242,45 @@ const initializeDatabase = async () => {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
     
-    // Serve uploaded files statically
+    // Replace static file serving with a custom route for downloads
+    app.get('/uploads/resources/:filename', async (req, res) => {
+      try {
+        const filename = req.params.filename;
+        
+        // Find the resource in database by the filename
+        const resource = await Resource.findOne({ 
+          fileUrl: { $regex: filename, $options: 'i' } 
+        });
+        
+        if (!resource) {
+          return res.status(404).send('File not found');
+        }
+        
+        // Construct file path
+        const filePath = path.join(__dirname, 'uploads', 'resources', filename);
+        
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+          return res.status(404).send('File not found on server');
+        }
+        
+        // Get proper filename based on resource title
+        const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+        
+        // Set headers for file download
+        res.setHeader('Content-Disposition', `attachment; filename="${properFilename}"`);
+        res.setHeader('Content-Type', 'application/pdf');
+        
+        // Stream the file
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+      } catch (error) {
+        console.error('Error serving PDF file:', error);
+        res.status(500).send('Server error while serving file');
+      }
+    });
+    
+    // Serve uploads directory for other files that don't need custom handling
     app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
     
     console.log('API routes initialized successfully');

@@ -181,14 +181,25 @@ const Resources = () => {
           headers: { 'Authorization': `Bearer ${token}` }
       }).catch(err => console.error('Failed to increment download count:', err)); // Log error if count fails
       
-      // Construct the full URL correctly for opening
-      // Assuming fileUrl is like "/uploads/resources/filename.pdf"
+      // Construct the full URL correctly for download
       const resourceUrl = `${API_BASE_URL}${resource.fileUrl}`;
       
-      window.open(resourceUrl, '_blank');
-    } catch (error) { // Catch errors related to window.open or URL construction
+      // Create a proper filename from the resource title
+      const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+      
+      // Create a temporary anchor element to trigger the download with the proper filename
+      const link = document.createElement('a');
+      link.href = resourceUrl;
+      link.download = properFilename;
+      link.target = '_blank';
+      
+      // Append to body, click and remove (to trigger download with filename)
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
       console.error('Error preparing resource download:', error);
-      alert('Failed to open the resource. Please check pop-up blockers or try again.');
+      alert('Failed to download the resource. Please check pop-up blockers or try again.');
     }
   };
 

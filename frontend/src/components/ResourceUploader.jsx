@@ -435,6 +435,31 @@ const ResourceUploader = () => {
     localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
   };
 
+  // Add a new function to handle viewing resources with proper filename
+  const handleViewResource = (resource) => {
+    try {
+      // Create a proper filename from the resource title
+      const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+      
+      // Construct the full URL 
+      const resourceUrl = `https://caprep.onrender.com${resource.fileUrl}`;
+      
+      // Create a temporary anchor element to trigger the download with the proper filename
+      const link = document.createElement('a');
+      link.href = resourceUrl;
+      link.download = properFilename;
+      link.target = '_blank';
+      
+      // Append to body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error viewing resource:', error);
+      alert('Failed to open the resource. Please try again.');
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -701,14 +726,12 @@ const ResourceUploader = () => {
                             >
                               Delete
                             </button>
-                            <a
-                              href={`https://caprep.onrender.com${resource.fileUrl}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
                               className="view-btn"
+                              onClick={() => handleViewResource(resource)}
                             >
                               View
-                            </a>
+                            </button>
                           </td>
                         </tr>
                       ))}
