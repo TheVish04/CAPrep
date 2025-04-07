@@ -1,0 +1,110 @@
+/* MoreMenu.css */
+
+.more-menu-container {
+  position: relative;
+  z-index: 5;
+}
+
+.more-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5568;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+}
+
+.more-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #2c3e50;
+}
+
+.more-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 161, 175, 0.25);
+}
+
+.more-button i {
+  font-size: 16px;
+}
+
+.more-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 10;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  gap: 10px;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f5f7fa;
+  color: #4CA1AF;
+}
+
+.menu-item i {
+  color: #4a5568;
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.menu-item:hover i {
+  color: #4CA1AF;
+}
+
+/* Animation for menu appearance */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .more-button {
+    padding: 6px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .more-menu {
+    min-width: 140px;
+  }
+  
+  .menu-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+} 

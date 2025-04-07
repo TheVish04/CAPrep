@@ -4,6 +4,8 @@ import Navbar from './Navbar';
 import './Resources.css';
 import DonationButton from './DonationButton';
 import axios from 'axios';
+import MoreMenu from './MoreMenu';
+import DiscussionModal from './DiscussionModal';
 
 // Re-use Bookmark icon from Questions component (or define it here if preferred)
 const BookmarkIcon = ({ filled }) => (
@@ -32,6 +34,8 @@ const Resources = () => {
   const [bookmarkedResourceIds, setBookmarkedResourceIds] = useState(new Set());
   const resourcesPerPage = 10;
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
+  const [currentDiscussionResource, setCurrentDiscussionResource] = useState(null);
+  const [showDiscussionModal, setShowDiscussionModal] = useState(false);
 
   // --- Fetch Bookmarked Resource IDs --- 
   const fetchBookmarkIds = useCallback(async (token) => {
@@ -199,6 +203,17 @@ const Resources = () => {
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // --- Handle opening the discussion modal ---
+  const handleOpenDiscussion = (resource) => {
+    setCurrentDiscussionResource(resource);
+    setShowDiscussionModal(true);
+  };
+
+  // --- Handle closing the discussion modal ---
+  const handleCloseDiscussion = () => {
+    setShowDiscussionModal(false);
+  };
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -353,13 +368,18 @@ const Resources = () => {
             <div className="resources-list">
               {currentResources.map((r) => (
                 <div key={r._id} className="resource-card">
-                  <button 
-                    onClick={() => handleBookmarkToggle(r._id)} 
-                    className="bookmark-btn resource-top-right-bookmark"
-                    title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                  >
-                    <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
-                  </button>
+                  <div className="resource-actions">
+                    <button 
+                      onClick={() => handleBookmarkToggle(r._id)} 
+                      className="bookmark-btn resource-bookmark"
+                      title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                    >
+                      <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
+                    </button>
+                    <div className="more-menu-wrapper">
+                      <MoreMenu onDiscuss={() => handleOpenDiscussion(r)} />
+                    </div>
+                  </div>
                   <div className="resource-header">
                     <h3 className="resource-title">{r.title}</h3>
                   </div>
@@ -398,6 +418,17 @@ const Resources = () => {
            )}
         </div>
       </div>
+
+      {/* Discussion Modal */}
+      {showDiscussionModal && currentDiscussionResource && (
+        <DiscussionModal
+          isOpen={showDiscussionModal}
+          onClose={handleCloseDiscussion}
+          itemType="resource"
+          itemId={currentDiscussionResource._id}
+          itemTitle={currentDiscussionResource.title}
+        />
+      )}
     </div>
   );
 };

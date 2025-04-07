@@ -6,6 +6,8 @@ import { generateQuestionsPDF, savePDF } from '../utils/pdfGenerator';
 import './Questions.css';
 import DonationButton from './DonationButton';
 import axios from 'axios';
+import MoreMenu from './MoreMenu';
+import DiscussionModal from './DiscussionModal';
 
 // Add a Bookmark icon component (simple example)
 const BookmarkIcon = ({ filled }) => (
@@ -39,6 +41,8 @@ const Questions = () => {
   const [bookmarkedQuestionIds, setBookmarkedQuestionIds] = useState(new Set());
   const questionsPerPage = 5;
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
+  const [currentDiscussionQuestion, setCurrentDiscussionQuestion] = useState(null);
+  const [showDiscussionModal, setShowDiscussionModal] = useState(false);
 
   // --- Fetch Bookmarked Question IDs --- 
   const fetchBookmarkIds = useCallback(async (token) => {
@@ -194,7 +198,6 @@ const Questions = () => {
           console.error('Error response status:', err.response.status);
           console.error('Error response headers:', err.response.headers);
       }
-      alert(err.response?.data?.error || 'Failed to update bookmark');
     }
   };
 
@@ -227,6 +230,17 @@ const Questions = () => {
       alert('Failed to generate PDF. Please try again.');
     }
   }, [questions, filters, showAnswers, individualShowAnswers]);
+
+  // --- Handle opening the discussion modal ---
+  const handleOpenDiscussion = (question) => {
+    setCurrentDiscussionQuestion(question);
+    setShowDiscussionModal(true);
+  };
+
+  // --- Handle closing the discussion modal ---
+  const handleCloseDiscussion = () => {
+    setShowDiscussionModal(false);
+  };
 
   return (
     <div className="page-wrapper">
@@ -403,20 +417,48 @@ const Questions = () => {
               <div className="questions-list">
               {currentQuestions.map((q) => (
                 <div key={q._id} className="question-card">
+                  <div className="question-actions">
                     <button 
                       onClick={() => handleBookmarkToggle(q._id)} 
                       className="bookmark-btn top-right-bookmark"
                       title={bookmarkedQuestionIds.has(q._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                     >
-                       <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
+                    >
+                      <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
                     </button>
-                    
-                    <div className="question-header">
-                        <h2>
-                          Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
-                          ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
-                    </h2>
+                    <div className="more-menu-wrapper">
+                      <MoreMenu onDiscuss={() => handleOpenDiscussion(q)} />
                     </div>
+                  </div>
+                  
+                  <div className="question-header">
+                    <h2>
+                      Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
+                      ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
+                    </h2>
+                  </div>
+                  
+                  <div className="question-content-container">
+                    <p className="question-label"><strong>Question:</strong></p>
+                    <div 
+                       className="question-text"
+                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
+                    />
+                  </div>
+
+                  {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                    <div className="answer-section main-answer">
+                      <h3>Answer:</h3>
+                      <div 
+                        className="answer-text"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
+                      />
+                    </div>
+                  )}
+                  
+                  {q.subQuestions && q.subQuestions.length > 0 && (
+                     <div className="subquestions-container">
+                       <h3>Sub-Questions:</h3>
+                       {q.subQuestions.map((subQ, index) => (
                     
                     <div className="question-content-container">
                       <p className="question-label"><strong>Question:</strong></p>
@@ -496,6 +538,17 @@ const Questions = () => {
           )}
         </div>
       </div>
+      
+      {/* Discussion Modal */}
+      {showDiscussionModal && currentDiscussionQuestion && (
+        <DiscussionModal
+          isOpen={showDiscussionModal}
+          onClose={handleCloseDiscussion}
+          itemType="question"
+          itemId={currentDiscussionQuestion._id}
+          itemTitle={`Question ${currentDiscussionQuestion.questionNumber} - ${currentDiscussionQuestion.subject}`}
+        />
+      )}
     </div>
   );
 };

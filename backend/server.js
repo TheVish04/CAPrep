@@ -3,12 +3,14 @@ const connectDB = require('./config/database');
 const User = require('./models/UserModel');
 const Question = require('./models/QuestionModel');
 const Resource = require('./models/ResourceModel');
+const Discussion = require('./models/DiscussionModel');
 const authRoutes = require('./routes/auth');
 const questionRoutes = require('./routes/questions');
 const paymentRoutes = require('./routes/payment');
 const resourceRoutes = require('./routes/resources');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
+const discussionRoutes = require('./routes/discussions');
 const { authMiddleware, adminMiddleware } = require('./middleware/authMiddleware');
 const cors = require('cors');
 const path = require('path');
@@ -172,6 +174,20 @@ const initializeDatabase = async () => {
       console.log('Resource model loaded successfully');
     }
 
+    // Verify Discussion model
+    if (!Discussion) {
+      console.error('Discussion model is undefined. Import path or file issue:', {
+        filePath: './models/DiscussionModel',
+        cwd: process.cwd(),
+      });
+      modelsValid = false;
+    } else if (typeof Discussion.findOne !== 'function') {
+      console.error('Discussion model lacks findOne method:', Discussion);
+      modelsValid = false;
+    } else {
+      console.log('Discussion model loaded successfully');
+    }
+
     if (!modelsValid) {
       throw new Error('One or more required models failed to initialize');
     }
@@ -217,6 +233,7 @@ const initializeDatabase = async () => {
     app.use('/api/users', userRoutes);
     app.use('/api/admin', adminRoutes);
     app.use('/api/ai-quiz', aiQuizRoutes);
+    app.use('/api/discussions', discussionRoutes);
     
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(__dirname, 'uploads');
@@ -247,6 +264,7 @@ const initializeDatabase = async () => {
       app.use('/api/users', userRoutes);
       app.use('/api/admin', adminRoutes);
       app.use('/api/ai-quiz', aiQuizRoutes);
+      app.use('/api/discussions', discussionRoutes);
       return true;
     }
     
