@@ -59,6 +59,39 @@ const ResourceUploader = () => {
       return;
     }
 
+    // Load cached selections if available
+    const cachedSelections = localStorage.getItem('resourceUploaderSelections');
+    if (cachedSelections) {
+      try {
+        const { 
+          examStage, 
+          subject, 
+          paperType, 
+          year, 
+          month, 
+          paperNo,
+          title,
+          description 
+        } = JSON.parse(cachedSelections);
+        setFilters(prev => ({
+          ...prev,
+          examStage: examStage || '',
+          subject: subject || '',
+          paperType: paperType || '',
+          year: year || '',
+          month: month || '',
+          paperNo: paperNo || '',
+        }));
+        setFormData(prev => ({
+          ...prev,
+          title: title || '',
+          description: description || '',
+        }));
+      } catch (error) {
+        console.error('Error parsing cached selections:', error);
+      }
+    }
+
     // Fetch resources
     fetchResources(token);
   }, [navigate]);
@@ -81,18 +114,33 @@ const ResourceUploader = () => {
     }
   };
 
-  const applyFilters = () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  // Cache form selections
+  const cacheFormSelections = () => {
+    const selectionsToCache = {
+      examStage: formData.examStage,
+      subject: formData.subject,
+      paperType: formData.paperType,
+      year: formData.year,
+      month: formData.month,
+      paperNo: formData.paperNo,
+      title: formData.title,
+      description: formData.description
+    };
+    localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
+  };
 
-    const query = new URLSearchParams(filters).toString();
-    fetchResources(token, query);
+  // Clear cached selections
+  const clearCachedSelections = () => {
+    localStorage.removeItem('resourceUploaderSelections');
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
+    
+    // Cache selections when any field is changed
+    setTimeout(() => cacheFormSelections(), 100);
   };
 
   const handleFileChange = (e) => {
@@ -299,6 +347,14 @@ const ResourceUploader = () => {
     setErrors({});
     setIsEditMode(false);
     setEditingResourceId(null);
+    
+    // Don't clear cached selections when resetting the form
+  };
+
+  // Add method to completely reset form and clear cache
+  const resetFormAndCache = () => {
+    resetForm();
+    clearCachedSelections();
   };
 
   // Filtered resources for display
@@ -324,6 +380,25 @@ const ResourceUploader = () => {
   const totalPages = Math.ceil(filteredResources.length / resourcesPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const applyFilters = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const query = new URLSearchParams(filters).toString();
+    fetchResources(token, query);
+    
+    // Cache the filter selections
+    const selectionsToCache = {
+      examStage: filters.examStage,
+      subject: filters.subject,
+      paperType: filters.paperType,
+      year: filters.year,
+      month: filters.month,
+      paperNo: filters.paperNo
+    };
+    localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
+  };
 
   return (
     <div className="page-wrapper">
@@ -556,6 +631,14 @@ const ResourceUploader = () => {
                   Cancel
                 </button>
               )}
+              
+              <button 
+                type="button" 
+                className="reset-btn"
+                onClick={resetFormAndCache}
+              >
+                Reset All
+              </button>
             </div>
           </form>
           
