@@ -52,9 +52,6 @@ const QuestionSchema = new Schema({
     required: true,
     enum: ['Foundation', 'Intermediate', 'Final']
   },
-  paperNo: {
-    type: String
-  },
   questionNumber: {
     type: String,
     required: true
@@ -85,7 +82,6 @@ QuestionSchema.index({
   paperType: 1, 
   year: 1, 
   month: 1, 
-  paperNo: 1, 
   questionNumber: 1 
 });
 

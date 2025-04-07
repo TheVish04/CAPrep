@@ -5,6 +5,8 @@ import './ResourceUploader.css';
 
 const ResourceUploader = () => {
   const navigate = useNavigate();
+  
+  // Initialize form state with empty values
   const [formData, setFormData] = useState({
     title: '',
     subject: '',
@@ -12,8 +14,8 @@ const ResourceUploader = () => {
     year: '',
     month: '',
     examStage: '',
-    paperNo: '',
   });
+  
   const [file, setFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,7 +28,6 @@ const ResourceUploader = () => {
     year: '',
     month: '',
     examStage: '',
-    paperNo: '',
     search: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,7 +69,6 @@ const ResourceUploader = () => {
           paperType, 
           year, 
           month, 
-          paperNo,
           title
         } = JSON.parse(cachedSelections);
         setFilters(prev => ({
@@ -78,7 +78,6 @@ const ResourceUploader = () => {
           paperType: paperType || '',
           year: year || '',
           month: month || '',
-          paperNo: paperNo || '',
         }));
         setFormData(prev => ({
           ...prev,
@@ -119,7 +118,6 @@ const ResourceUploader = () => {
       paperType: formData.paperType,
       year: formData.year,
       month: formData.month,
-      paperNo: formData.paperNo,
       title: formData.title
     };
     localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
@@ -169,44 +167,71 @@ const ResourceUploader = () => {
 
   const validateField = (name, value) => {
     let error = '';
+    
     switch (name) {
       case 'title':
-        if (!value.trim()) error = 'Title is required';
-        break;
-      case 'subject':
-        if (!value) error = 'Subject is required';
-        break;
-      case 'paperType':
-        if (!value) error = 'Paper Type is required';
-        break;
-      case 'year':
-        if (!value) error = 'Year is required';
-        break;
-      case 'month':
-        if (!value) error = 'Month is required';
-        break;
-      case 'examStage':
-        if (!value) error = 'Exam Stage is required';
-        break;
-      case 'paperNo':
-        if (formData.examStage === 'Foundation' && !value) {
-          error = 'Paper No. is required for Foundation stage';
+        if (!value || value.trim() === '') {
+          error = 'Title is required';
+        } else if (value.length < 5) {
+          error = 'Title must be at least 5 characters';
+        } else if (value.length > 100) {
+          error = 'Title must be less than 100 characters';
         }
         break;
+        
+      case 'subject':
+        if (!value || value === '') {
+          error = 'Subject is required';
+        }
+        break;
+        
+      case 'paperType':
+        if (!value || value === '') {
+          error = 'Paper Type is required';
+        }
+        break;
+        
+      case 'year':
+        if (!value || value === '') {
+          error = 'Year is required';
+        }
+        break;
+        
+      case 'month':
+        if (!value || value === '') {
+          error = 'Month is required';
+        }
+        break;
+        
+      case 'examStage':
+        if (!value || value === '') {
+          error = 'Exam Stage is required';
+        }
+        break;
+        
+      case 'file':
+        if (!value && !isEditMode) {
+          error = 'File is required';
+        } else if (value && value.type !== 'application/pdf') {
+          error = 'Only PDF files are allowed';
+        } else if (value && value.size > 15 * 1024 * 1024) { // 15MB limit
+          error = 'File size must be less than 15MB';
+        }
+        break;
+        
       default:
         break;
     }
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    
+    // Update error state for the specific field
+    setErrors(prev => ({ ...prev, [name]: error }));
+    
+    return error === '';
   };
 
   const validateForm = () => {
     const newErrors = {};
     const requiredFields = ['title', 'subject', 'paperType', 'year', 'month', 'examStage'];
-    
-    // Add paperNo to required fields if examStage is Foundation
-    if (formData.examStage === 'Foundation') {
-      requiredFields.push('paperNo');
-    }
     
     requiredFields.forEach((field) => {
       validateField(field, formData[field]);
@@ -298,7 +323,6 @@ const ResourceUploader = () => {
       year: resource.year || '',
       month: resource.month || '',
       examStage: resource.examStage || '',
-      paperNo: resource.paperNo || '',
     });
     setIsEditMode(true);
     setEditingResourceId(resource._id);
@@ -342,7 +366,6 @@ const ResourceUploader = () => {
       year: '',
       month: '',
       examStage: '',
-      paperNo: '',
     });
     setFile(null);
     setErrors({});
@@ -366,7 +389,6 @@ const ResourceUploader = () => {
       (!filters.year || r.year === filters.year) &&
       (!filters.month || r.month === filters.month) &&
       (!filters.examStage || r.examStage === filters.examStage) &&
-      (!filters.paperNo || r.paperNo === filters.paperNo) &&
       (!filters.search || 
         (r.title && r.title.toLowerCase().includes(filters.search.toLowerCase()))
       )
@@ -395,7 +417,6 @@ const ResourceUploader = () => {
       paperType: filters.paperType,
       year: filters.year,
       month: filters.month,
-      paperNo: filters.paperNo
     };
     localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
   };
@@ -443,7 +464,6 @@ const ResourceUploader = () => {
                     ...prev, 
                     examStage: e.target.value,
                     subject: '',
-                    paperNo: ''
                   }));
                 }}
                 className={errors.examStage ? 'error' : ''}
@@ -469,14 +489,10 @@ const ResourceUploader = () => {
                 {formData.examStage === 'Foundation' ? (
                   // Foundation subjects
                   <>
-                    <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                    <option value="Business Law">Business Law</option>
-                    <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                    <option value="Business Mathematics">Business Mathematics</option>
-                    <option value="Logical Reasoning">Logical Reasoning</option>
-                    <option value="Statistics">Statistics</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Business Laws">Business Laws</option>
+                    <option value="Quantitative Aptitude">Quantitative Aptitude</option>
                     <option value="Business Economics">Business Economics</option>
-                    <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                   </>
                 ) : formData.examStage === 'Intermediate' ? (
                   // Intermediate subjects
@@ -569,26 +585,6 @@ const ResourceUploader = () => {
                 {errors.month && <div className="error-message">{errors.month}</div>}
               </div>
             </div>
-            
-            {formData.examStage === 'Foundation' && (
-              <div className="form-group">
-                <label htmlFor="paperNo">Paper Number *</label>
-                <select
-                  id="paperNo"
-                  name="paperNo"
-                  value={formData.paperNo}
-                  onChange={handleChange}
-                  className={errors.paperNo ? 'error' : ''}
-                >
-                  <option value="">Select Paper Number</option>
-                  <option value="1">Paper 1</option>
-                  <option value="2">Paper 2</option>
-                  <option value="3">Paper 3</option>
-                  <option value="4">Paper 4</option>
-                </select>
-                {errors.paperNo && <div className="error-message">{errors.paperNo}</div>}
-              </div>
-            )}
             
             {!isEditMode && (
               <div className="form-group">

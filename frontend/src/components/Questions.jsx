@@ -287,14 +287,10 @@ const Questions = () => {
                 <option value="">All</option>
                 {filters.examStage === 'Foundation' ? (
                   <>
-                    <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                    <option value="Business Law">Business Law</option>
-                    <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                    <option value="Business Mathematics">Business Mathematics</option>
-                    <option value="Logical Reasoning">Logical Reasoning</option>
-                    <option value="Statistics">Statistics</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Business Laws">Business Laws</option>
+                    <option value="Quantitative Aptitude">Quantitative Aptitude</option>
                     <option value="Business Economics">Business Economics</option>
-                    <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                   </>
                 ) : filters.examStage === 'Intermediate' ? (
                   <>
@@ -359,18 +355,6 @@ const Questions = () => {
                 <option value="December">December</option>
               </select>
             </div>
-            {filters.examStage === 'Foundation' && (
-              <div className="filter-group">
-                <label>Paper No.:</label>
-                <select name="paperNo" value={filters.paperNo} onChange={handleFilterChange} disabled={loading}>
-                  <option value="">All</option>
-                  <option value="Paper 1">Paper 1</option>
-                  <option value="Paper 2">Paper 2</option>
-                  <option value="Paper 3">Paper 3</option>
-                  <option value="Paper 4">Paper 4</option>
-                </select>
-              </div>
-            )}
             <div className="filter-group">
               <label>Question No.:</label>
               <select name="questionNumber" value={filters.questionNumber} onChange={handleFilterChange} disabled={loading || !filters.subject}>
@@ -434,7 +418,7 @@ const Questions = () => {
                   <div className="question-header">
                     <h2>
                       Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
-                      ({q.paperType} {q.examStage} {q.paperNo ? `- ${q.paperNo}` : ''}) 
+                      ({q.paperType} {q.examStage}) 
                     </h2>
                   </div>
                   

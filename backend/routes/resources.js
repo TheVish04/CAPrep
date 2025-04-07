@@ -45,7 +45,7 @@ const upload = multer({
 // GET all resources with optional filtering
 router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
   try {
-    const { subject, paperType, examStage, year, month, paperNo, search, bookmarked } = req.query;
+    const { subject, paperType, examStage, year, month, search, bookmarked } = req.query;
     const filters = {};
     
     // Apply standard filters
@@ -54,7 +54,6 @@ router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
     if (examStage) filters.examStage = examStage;
     if (year) filters.year = year;
     if (month) filters.month = month;
-    if (paperNo) filters.paperNo = paperNo;
     
     // Text search
     if (search) {
@@ -122,7 +121,6 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       year: req.body.year,
       month: req.body.month,
       examStage: req.body.examStage,
-      paperNo: req.body.paperNo,
       fileUrl: fileUrl,
       fileType: 'pdf',
       fileSize: req.file.size
@@ -147,7 +145,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const allowedUpdates = [
       'title', 'subject', 'paperType', 
-      'year', 'month', 'examStage', 'paperNo'
+      'year', 'month', 'examStage'
     ];
     
     const updates = {};

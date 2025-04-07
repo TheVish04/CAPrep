@@ -32,7 +32,6 @@ const AdminPanel = () => {
     year: '',
     month: '',
     examStage: '',
-    paperNo: '',
     questionNumber: '',
     questionText: '',
     answerText: '',
@@ -50,7 +49,6 @@ const AdminPanel = () => {
     paperType: '',
     month: '',
     examStage: '',
-    paperNo: '',
     search: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,13 +124,12 @@ const AdminPanel = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     
-    // If examStage is changing, reset subject and paperNo as they depend on examStage
+    // If examStage is changing, reset subject as it depends on examStage
     if (name === 'examStage') {
       setFilters(prev => ({
         ...prev,
         [name]: value,
-        subject: '',
-        paperNo: value !== 'Foundation' ? '' : prev.paperNo
+        subject: ''
       }));
     } else {
       setFilters(prev => ({ ...prev, [name]: value }));
@@ -247,11 +244,6 @@ const AdminPanel = () => {
       case 'examStage':
         if (!value || value === '' || value === 'Select Exam Stage') error = 'Exam Stage is required';
         break;
-      case 'paperNo':
-        if (formData.examStage === 'Foundation' && (!value || value === '' || value === 'Select Paper')) {
-          error = 'Paper No. is required for Foundation stage';
-        }
-        break;
       case 'questionNumber':
         if (!value) error = 'Question Number is required';
         break;
@@ -285,10 +277,6 @@ const AdminPanel = () => {
     if (!formData.examStage || formData.examStage === '' || formData.examStage === 'Select Exam Stage') {
       tempErrors.examStage = 'Exam Stage is required';
     }
-    if (formData.examStage === 'Foundation' && (!formData.paperNo || formData.paperNo === '' || formData.paperNo === 'Select Paper')) {
-      tempErrors.paperNo = 'Paper No. is required for Foundation stage';
-    }
-    if (!formData.questionNumber) tempErrors.questionNumber = 'Question Number is required';
     
     // Question type-specific validation
     switch (questionType) {
@@ -361,7 +349,6 @@ const AdminPanel = () => {
           year: parsedSelections.year || '',
           month: parsedSelections.month || '',
           examStage: parsedSelections.examStage || '',
-          paperNo: parsedSelections.paperNo || '',
         }));
       } catch (e) {
         console.error('Error parsing cached form selections:', e);
@@ -377,7 +364,6 @@ const AdminPanel = () => {
       year: formData.year,
       month: formData.month,
       examStage: formData.examStage,
-      paperNo: formData.paperNo,
     };
     localStorage.setItem('adminFormSelections', JSON.stringify(selectionsToCache));
   };
@@ -391,7 +377,6 @@ const AdminPanel = () => {
       year: '',
       month: '',
       examStage: '',
-      paperNo: '',
       questionNumber: '',
       questionText: '',
       answerText: '',
@@ -404,7 +389,7 @@ const AdminPanel = () => {
     const cachedSelections = localStorage.getItem('adminFormSelections');
     if (cachedSelections) {
       try {
-        const { subject, paperType, year, month, examStage, paperNo } = JSON.parse(cachedSelections);
+        const { subject, paperType, year, month, examStage } = JSON.parse(cachedSelections);
         setFormData(prev => ({
           ...prev,
           subject: subject || '',
@@ -412,7 +397,6 @@ const AdminPanel = () => {
           year: year || '',
           month: month || '',
           examStage: examStage || '',
-          paperNo: paperNo || '',
         }));
       } catch (error) {
         console.error('Error loading cached form selections:', error);
@@ -429,7 +413,6 @@ const AdminPanel = () => {
       year: '',
       month: '',
       examStage: '',
-      paperNo: '',
       questionNumber: '',
       questionText: '',
       answerText: '',
@@ -493,7 +476,7 @@ const AdminPanel = () => {
         cacheFormSelections();
         
         // Reset form but keep common fields like exam stage, subject
-        const { examStage, subject, paperType, year, month, paperNo } = formData;
+        const { examStage, subject, paperType, year, month } = formData;
         resetForm();
         setFormData(prev => ({
           ...prev,
@@ -501,8 +484,7 @@ const AdminPanel = () => {
           subject, 
           paperType, 
           year, 
-          month, 
-          paperNo
+          month
         }));
         
         // Refresh the questions list
@@ -650,7 +632,6 @@ const AdminPanel = () => {
       year: question.year || '',
       month: question.month || '',
       examStage: question.examStage || '',
-      paperNo: question.paperNo || '',
       questionNumber: question.questionNumber || '',
       questionText: question.questionText || '',
       answerText: question.answerText || '',
@@ -767,7 +748,6 @@ const AdminPanel = () => {
                           ...prev,
                           examStage: newExamStage,
                           subject: '',
-                          paperNo: ''
                         }));
                         validateField('examStage', newExamStage);
                       }}
@@ -793,14 +773,10 @@ const AdminPanel = () => {
                       <option value="">Select Subject</option>
                       {formData.examStage === 'Foundation' ? (
                         <>
-                          <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                          <option value="Business Law">Business Law</option>
-                          <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                          <option value="Business Mathematics">Business Mathematics</option>
-                          <option value="Logical Reasoning">Logical Reasoning</option>
-                          <option value="Statistics">Statistics</option>
+                          <option value="Accounting">Accounting</option>
+                          <option value="Business Laws">Business Laws</option>
+                          <option value="Quantitative Aptitude">Quantitative Aptitude</option>
                           <option value="Business Economics">Business Economics</option>
-                          <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                         </>
                       ) : formData.examStage === 'Intermediate' ? (
                         <>
@@ -891,25 +867,6 @@ const AdminPanel = () => {
                     </select>
                     {errors.month && <p className="error-message">{errors.month}</p>}
                   </div>
-                  {formData.examStage === 'Foundation' && (
-                    <div className="form-group">
-                      <label>Paper No.:</label>
-                      <select
-                        name="paperNo"
-                        value={formData.paperNo}
-                        onChange={handleChange}
-                        className="form-input"
-                        required
-                      >
-                        <option value="">Select Paper</option>
-                        <option value="Paper 1">Paper 1</option>
-                        <option value="Paper 2">Paper 2</option>
-                        <option value="Paper 3">Paper 3</option>
-                        <option value="Paper 4">Paper 4</option>
-                      </select>
-                      {errors.paperNo && <p className="error-message">{errors.paperNo}</p>}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1170,14 +1127,10 @@ const AdminPanel = () => {
                     <option value="">All Subjects</option>
                     {filters.examStage === 'Foundation' ? (
                       <>
-                        <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                        <option value="Business Law">Business Law</option>
-                        <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                        <option value="Business Mathematics">Business Mathematics</option>
-                        <option value="Logical Reasoning">Logical Reasoning</option>
-                        <option value="Statistics">Statistics</option>
+                        <option value="Accounting">Accounting</option>
+                        <option value="Business Laws">Business Laws</option>
+                        <option value="Quantitative Aptitude">Quantitative Aptitude</option>
                         <option value="Business Economics">Business Economics</option>
-                        <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                       </>
                     ) : filters.examStage === 'Intermediate' ? (
                       <>
@@ -1253,23 +1206,6 @@ const AdminPanel = () => {
                     <option value="December">December</option>
                   </select>
                 </div>
-                {filters.examStage === 'Foundation' && (
-                  <div className="form-group">
-                    <label>Paper No.:</label>
-                    <select
-                      name="paperNo"
-                      value={filters.paperNo}
-                      onChange={handleFilterChange}
-                      className="form-input"
-                    >
-                      <option value="">All</option>
-                      <option value="Paper 1">Paper 1</option>
-                      <option value="Paper 2">Paper 2</option>
-                      <option value="Paper 3">Paper 3</option>
-                      <option value="Paper 4">Paper 4</option>
-                    </select>
-                  </div>
-                )}
                 <div className="form-group">
                   <label>Question Number:</label>
                   <input
@@ -1311,7 +1247,6 @@ const AdminPanel = () => {
                       <p><strong>Year:</strong> {question.year || 'N/A'}</p>
                       <p><strong>Month:</strong> {question.month || 'N/A'}</p>
                       <p><strong>Exam Stage:</strong> {question.examStage || 'N/A'}</p>
-                      {question.paperNo && <p><strong>Paper No.:</strong> {question.paperNo || 'N/A'}</p>}
                       <p><strong>Question Number:</strong> {question.questionNumber || 'N/A'}</p>
                       <h3>Question Text:</h3>
                       <div

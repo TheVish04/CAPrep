@@ -26,7 +26,6 @@ const Resources = () => {
     year: '',
     month: '',
     examStage: '',
-    paperNo: '',
     search: '',
     bookmarked: false,
   });
@@ -119,7 +118,6 @@ const Resources = () => {
       const updatedFilters = { ...prevFilters, [name]: newValue };
       if (name === 'examStage') {
           updatedFilters.subject = '';
-          updatedFilters.paperNo = '';
       }
       setCurrentPage(1); // Reset page on filter change
       return updatedFilters;
@@ -255,14 +253,10 @@ const Resources = () => {
                 <option value="">All</option>
                 {filters.examStage === 'Foundation' ? (
                   <>
-                    <option value="Principles and Practices of Accounting">Principles and Practices of Accounting</option>
-                    <option value="Business Law">Business Law</option>
-                    <option value="Business Correspondence and Reporting">Business Correspondence and Reporting</option>
-                    <option value="Business Mathematics">Business Mathematics</option>
-                    <option value="Logical Reasoning">Logical Reasoning</option>
-                    <option value="Statistics">Statistics</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Business Laws">Business Laws</option>
+                    <option value="Quantitative Aptitude">Quantitative Aptitude</option>
                     <option value="Business Economics">Business Economics</option>
-                    <option value="Business and Commercial Knowledge">Business and Commercial Knowledge</option>
                   </>
                 ) : filters.examStage === 'Intermediate' ? (
                   <>
@@ -329,18 +323,6 @@ const Resources = () => {
                 <option value="December">December</option>
               </select>
             </div>
-            {filters.examStage === 'Foundation' && (
-              <div className="filter-group">
-                <label>Paper Number:</label>
-                <select name="paperNo" value={filters.paperNo} onChange={handleFilterChange} disabled={loading}>
-                  <option value="">All</option>
-                  <option value="1">Paper 1</option>
-                  <option value="2">Paper 2</option>
-                  <option value="3">Paper 3</option>
-                  <option value="4">Paper 4</option>
-                </select>
-              </div>
-            )}
             <div className="filter-group filter-group-bookmark">
               <label htmlFor="resourceBookmarkFilter" className="bookmark-filter-label">
                 <input
@@ -387,8 +369,7 @@ const Resources = () => {
                     <span>{r.subject}</span> | 
                     <span>{r.paperType}</span> | 
                     <span>{r.year} {r.month}</span> | 
-                    <span>{r.examStage}</span> 
-                    {r.paperNo && <span> | Paper {r.paperNo}</span>}
+                    <span>{r.examStage}</span>
                   </div>
                    <div className="resource-footer">
                       <span className="file-size">Size: {formatFileSize(r.fileSize)}</span>

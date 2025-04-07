@@ -12,14 +12,10 @@ const questionSchema = Joi.object({
     .when('examStage', {
       is: 'Foundation',
       then: Joi.string().valid(
-        'Principles and Practices of Accounting',
-        'Business Law',
-        'Business Correspondence and Reporting',
-        'Business Mathematics',
-        'Logical Reasoning',
-        'Statistics',
-        'Business Economics',
-        'Business and Commercial Knowledge'
+        'Accounting',
+        'Business Laws',
+        'Quantitative Aptitude',
+        'Business Economics'
       ),
       otherwise: Joi.string().when('examStage', {
         is: 'Intermediate',
@@ -48,12 +44,6 @@ const questionSchema = Joi.object({
     'July', 'August', 'September', 'October', 'November', 'December'
   ),
   examStage: Joi.string().required().valid('Foundation', 'Intermediate', 'Final'),
-  paperNo: Joi.string()
-    .when('examStage', {
-      is: 'Foundation',
-      then: Joi.string().required().valid('Paper 1', 'Paper 2', 'Paper 3', 'Paper 4'),
-      otherwise: Joi.string().optional().allow('')
-    }),
   questionNumber: Joi.string().required(),
   questionText: Joi.string().allow('').optional(),
   answerText: Joi.string().allow('').optional(),
@@ -85,7 +75,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       year,
       month,
       examStage,
-      paperNo,
       questionNumber,
       questionText,
       answerText,
@@ -98,7 +87,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       year,
       month,
       examStage,
-      paperNo,
       questionNumber,
       questionText,
       answerText: answerText || '',
@@ -119,7 +107,6 @@ router.post('/', [authMiddleware, adminMiddleware], async (req, res) => {
       year,
       month,
       examStage,
-      paperNo,
       questionNumber,
       questionText,
       answerText: answerText || '',
@@ -147,7 +134,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       year,
       month,
       examStage,
-      paperNo,
       questionNumber,
       questionText,
       answerText,
@@ -163,7 +149,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       year: year || question.year,
       month: month || question.month,
       examStage: examStage || question.examStage,
-      paperNo: paperNo || question.paperNo,
       questionNumber: questionNumber || question.questionNumber,
       questionText: questionText || question.questionText,
       answerText: answerText || question.answerText || '',
@@ -182,7 +167,6 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
       year: dataToValidate.year,
       month: dataToValidate.month,
       examStage: dataToValidate.examStage,
-      paperNo: dataToValidate.paperNo,
       questionNumber: dataToValidate.questionNumber,
       questionText: dataToValidate.questionText,
       answerText: dataToValidate.answerText,
@@ -201,7 +185,7 @@ router.put('/:id', [authMiddleware, adminMiddleware], async (req, res) => {
 
 router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
   try {
-    const { subject, year, questionNumber, paperType, month, examStage, paperNo, search, bookmarked } = req.query;
+    const { subject, year, questionNumber, paperType, month, examStage, search, bookmarked } = req.query;
     const filter = {};
     if (subject) filter.subject = subject;
     if (year) filter.year = year;
@@ -209,7 +193,6 @@ router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
     if (paperType) filter.paperType = paperType;
     if (month) filter.month = month;
     if (examStage) filter.examStage = examStage;
-    if (paperNo) filter.paperNo = paperNo;
     
     // Handle search keyword (case-insensitive)
     if (search) {

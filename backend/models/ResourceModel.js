@@ -32,9 +32,6 @@ const ResourceSchema = new Schema({
     required: true,
     enum: ['Foundation', 'Intermediate', 'Final']
   },
-  paperNo: {
-    type: String
-  },
   fileUrl: {
     type: String,
     required: true
@@ -68,8 +65,7 @@ ResourceSchema.index({
   subject: 1, 
   paperType: 1, 
   year: 1, 
-  month: 1, 
-  paperNo: 1 
+  month: 1
 });
 
 // Add text index for searching title only
