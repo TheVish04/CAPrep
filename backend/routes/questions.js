@@ -41,7 +41,7 @@ const questionSchema = Joi.object({
         )
       })
     }),
-  paperType: Joi.string().required().valid('MTP', 'RTP', 'PYQS'),
+  paperType: Joi.string().required().valid('MTP', 'RTP', 'PYQS', 'Model TP'),
   year: Joi.string().required().valid('2025', '2024', '2023'),
   month: Joi.string().required().valid(
     'January', 'February', 'March', 'April', 'May', 'June',

@@ -301,7 +301,7 @@ const Resources = () => {
                 <option value="MTP">MTP</option>
                 <option value="RTP">RTP</option>
                 <option value="PYQS">PYQS</option>
-                <option value="Other">Other</option>
+                <option value="Model TP">Model TP</option>
               </select>
             </div>
             <div className="filter-group">

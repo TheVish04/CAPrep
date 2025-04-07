@@ -33,7 +33,7 @@ const QuestionSchema = new Schema({
   paperType: {
     type: String,
     required: true,
-    enum: ['MTP', 'RTP', 'PYQS']
+    enum: ['MTP', 'RTP', 'PYQS', 'Model TP']
   },
   year: {
     type: String,
