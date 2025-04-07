@@ -300,7 +300,21 @@ const ResourceUploader = () => {
       }
       
       if (response.ok) {
-        resetForm();
+        if (isEditMode) {
+          // For edit mode, reset the form completely
+          resetForm();
+        } else {
+          // For upload mode, only reset file and title fields, keep other metadata
+          setFile(null);
+          setFormData(prev => ({
+            ...prev,
+            title: ''
+          }));
+          setErrors({});
+          setIsEditMode(false);
+          setEditingResourceId(null);
+        }
+        
         fetchResources(token);
         alert(isEditMode ? 'Resource updated successfully!' : 'PDF resource uploaded successfully!');
       } else {
