@@ -459,55 +459,40 @@ const Questions = () => {
                      <div className="subquestions-container">
                        <h3>Sub-Questions:</h3>
                        {q.subQuestions.map((subQ, index) => (
-                    
-                    <div className="question-content-container">
-                      <p className="question-label"><strong>Question:</strong></p>
-                      <div 
-                         className="question-text"
-                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.questionText || '') }}
-                      />
-                    </div>
+                         <div key={index} className="subquestion-item">
+                           <div className="question-content-container">
+                             <p className="question-label"><strong>Question:</strong></p>
+                             <div 
+                               className="question-text"
+                               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText || '') }}
+                             />
+                           </div>
 
-                    {q.answerText && (showAnswers || individualShowAnswers[q._id]) && (
-                      <div className="answer-section main-answer">
-                        <h3>Answer:</h3>
-                        <div 
-                          className="answer-text"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.answerText) }}
-                        />
-                      </div>
-                    )}
-                    
-                    {q.subQuestions && q.subQuestions.length > 0 && (
-                       <div className="subquestions-container">
-                         <h3>Sub-Questions:</h3>
-                         {q.subQuestions.map((subQ, index) => (
-                           <div key={index} className="subquestion-item">
-                              {subQ.subQuestionText && (
-                                 <p><strong>Sub-Question {subQ.subQuestionNumber || (index + 1)}:</strong></p>
-                              )}
-                              {subQ.subQuestionText && (
-                                 <div 
-                                   className="subquestion-text"
-                                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.subQuestionText) }}
-                                 />
-                              )}
-                              
-                              {subQ.subOptions && subQ.subOptions.length > 0 && (
-                                <ul className="subquestion-options">
-                              {subQ.subOptions.map((opt, optIndex) => (
-                                    <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
-                                      {opt.optionText}
-                                      {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
-                                </li>
-                              ))}
-                            </ul>
-                              )}
-                          </div>
-                        ))}
-                        </div>
-                    )}
-                    
+                           {subQ.answerText && (showAnswers || individualShowAnswers[q._id]) && (
+                             <div className="answer-section main-answer">
+                               <h3>Answer:</h3>
+                               <div 
+                                 className="answer-text"
+                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(subQ.answerText) }}
+                               />
+                             </div>
+                           )}
+
+                           {subQ.subOptions && subQ.subOptions.length > 0 && (
+                             <ul className="subquestion-options">
+                               {subQ.subOptions.map((opt, optIndex) => (
+                                 <li key={optIndex} className={opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) ? 'correct-option' : ''}>
+                                   {opt.optionText}
+                                   {opt.isCorrect && (showAnswers || individualShowAnswers[q._id]) && <span className="correct-indicator"> (Correct)</span>}
+                                 </li>
+                               ))}
+                             </ul>
+                           )}
+                         </div>
+                       ))}
+                     </div>
+                  )}
+                  
                    {q.pageNumber && (
                        <p className="page-number-ref"><strong>Reference Page:</strong> {q.pageNumber}</p>
                    )}
