@@ -339,7 +339,14 @@ const Register = () => {
     <div id="register-form" aria-labelledby="register-tab">
       {otpError && <p className="error">{otpError}</p>}
       
-      <form>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        if (!otpSent) {
+          handleSendOtp();
+        } else {
+          handleVerifyOtp();
+        }
+      }}>
         <div>
           <label>Gmail Address:</label>
           <input
@@ -349,21 +356,26 @@ const Register = () => {
             placeholder="Enter your Gmail address"
             disabled={otpSent && !otpVerified}
             required
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !otpSent) {
+                e.preventDefault();
+                handleSendOtp();
+              }
+            }}
           />
         </div>
         
         {!otpSent ? (
           <div className="otp-form-group">
             <button 
-              type="button" 
-              onClick={handleSendOtp}
+              type="submit" 
               disabled={sendingOtp || !email.trim()}
               className="otp-button"
             >
               {sendingOtp ? 'Sending...' : 'Send OTP'}
             </button>
           </div>
-        ) : !otpVerified ? (
+        ) : (
           <>
             <div className="otp-form-group">
               <label>Enter OTP:</label>
@@ -375,6 +387,12 @@ const Register = () => {
                   placeholder="Enter 6-digit OTP"
                   maxLength={6}
                   required
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleVerifyOtp();
+                    }
+                  }}
                 />
                 {countdown === 0 && (
                   <button 
@@ -394,8 +412,7 @@ const Register = () => {
             
             <div className="button-group">
               <button 
-                type="button" 
-                onClick={handleVerifyOtp}
+                type="submit" 
                 disabled={verifyingOtp || !otp.trim()}
                 className="otp-button verify-otp"
               >
@@ -403,10 +420,6 @@ const Register = () => {
               </button>
             </div>
           </>
-        ) : (
-          <div className="verification-success">
-            <p>Email verified successfully! You can now complete your registration.</p>
-          </div>
         )}
       </form>
       
