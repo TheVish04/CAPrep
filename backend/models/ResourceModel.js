@@ -6,9 +6,6 @@ const ResourceSchema = new Schema({
     type: String,
     required: true
   },
-  description: {
-    type: String
-  },
   subject: {
     type: String,
     required: true
@@ -16,7 +13,7 @@ const ResourceSchema = new Schema({
   paperType: {
     type: String,
     required: true,
-    enum: ['MTP', 'RTP', 'PYQS', 'Other']
+    enum: ['MTP', 'RTP', 'PYQS', 'Other', 'Model TP']
   },
   year: {
     type: String,
@@ -75,8 +72,8 @@ ResourceSchema.index({
   paperNo: 1 
 });
 
-// Add text index for searching title and description
-ResourceSchema.index({ title: 'text', description: 'text' });
+// Add text index for searching title only
+ResourceSchema.index({ title: 'text' });
 
 // Add index for sorting by creation date
 ResourceSchema.index({ createdAt: -1 });

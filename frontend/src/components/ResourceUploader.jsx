@@ -7,7 +7,6 @@ const ResourceUploader = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
     subject: '',
     paperType: '',
     year: '',
@@ -70,8 +69,7 @@ const ResourceUploader = () => {
           year, 
           month, 
           paperNo,
-          title,
-          description 
+          title
         } = JSON.parse(cachedSelections);
         setFilters(prev => ({
           ...prev,
@@ -85,7 +83,6 @@ const ResourceUploader = () => {
         setFormData(prev => ({
           ...prev,
           title: title || '',
-          description: description || '',
         }));
       } catch (error) {
         console.error('Error parsing cached selections:', error);
@@ -123,8 +120,7 @@ const ResourceUploader = () => {
       year: formData.year,
       month: formData.month,
       paperNo: formData.paperNo,
-      title: formData.title,
-      description: formData.description
+      title: formData.title
     };
     localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
   };
@@ -297,7 +293,6 @@ const ResourceUploader = () => {
   const handleEdit = (resource) => {
     setFormData({
       title: resource.title || '',
-      description: resource.description || '',
       subject: resource.subject || '',
       paperType: resource.paperType || '',
       year: resource.year || '',
@@ -342,7 +337,6 @@ const ResourceUploader = () => {
   const resetForm = () => {
     setFormData({
       title: '',
-      description: '',
       subject: '',
       paperType: '',
       year: '',
@@ -374,8 +368,7 @@ const ResourceUploader = () => {
       (!filters.examStage || r.examStage === filters.examStage) &&
       (!filters.paperNo || r.paperNo === filters.paperNo) &&
       (!filters.search || 
-        (r.title && r.title.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (r.description && r.description.toLowerCase().includes(filters.search.toLowerCase()))
+        (r.title && r.title.toLowerCase().includes(filters.search.toLowerCase()))
       )
     );
   });
@@ -435,17 +428,6 @@ const ResourceUploader = () => {
                 title={!isEditMode && file !== null ? "Title is automatically set from PDF filename" : ""}
               />
               {errors.title && <div className="error-message">{errors.title}</div>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows="3"
-              />
             </div>
             
             <div className="form-group">

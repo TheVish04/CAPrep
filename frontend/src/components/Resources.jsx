@@ -383,7 +383,6 @@ const Resources = () => {
                   <div className="resource-header">
                     <h3 className="resource-title">{r.title}</h3>
                   </div>
-                  <p className="resource-description">{r.description || 'No description available.'}</p>
                   <div className="resource-meta">
                     <span>{r.subject}</span> | 
                     <span>{r.paperType}</span> | 

@@ -59,8 +59,7 @@ router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
     // Text search
     if (search) {
       filters.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { title: { $regex: search, $options: 'i' } }
       ];
     }
     
@@ -118,7 +117,6 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     // Create new resource
     const resource = new Resource({
       title: req.body.title,
-      description: req.body.description,
       subject: req.body.subject,
       paperType: req.body.paperType,
       year: req.body.year,
@@ -148,7 +146,7 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
 router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const allowedUpdates = [
-      'title', 'description', 'subject', 'paperType', 
+      'title', 'subject', 'paperType', 
       'year', 'month', 'examStage', 'paperNo'
     ];
     
