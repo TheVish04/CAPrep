@@ -280,19 +280,8 @@ router.delete('/:discussionId/message/:messageId', authMiddleware, async (req, r
       return res.status(403).json({ error: 'You do not have permission to delete this message' });
     }
     
-    // If the message being deleted has replies, mark it as deleted rather than removing it
-    const hasReplies = discussion.messages.some(m => 
-      m.parentMessageId && m.parentMessageId.toString() === messageId
-    );
-    
-    if (hasReplies) {
-      message.content = "[This message was deleted]";
-      message.deleted = true;
-      message.deletedAt = Date.now();
-    } else {
-      // If there are no replies, remove the message completely
-      discussion.messages.pull(messageId);
-    }
+    // Remove the message completely from the database regardless of replies
+    discussion.messages.pull(messageId);
     
     await discussion.save();
     
