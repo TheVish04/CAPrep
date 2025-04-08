@@ -180,97 +180,19 @@ const Resources = () => {
       console.log('Starting download process for resource:', resource.title);
       setDownloadingResource(resource._id);
       
-      // Get a proper download URL from the backend
+      // First increment the download count
       try {
-        console.log('Fetching download URL from backend');
-        const response = await axios.get(`${API_BASE_URL}/api/resources/${resource._id}/download-url`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.data && response.data.downloadUrl) {
-          console.log('Received download URL:', response.data.downloadUrl);
-          
-          // Use fetch API to force download - this is more reliable than creating an anchor element
-          try {
-            const fileResponse = await fetch(response.data.downloadUrl);
-            
-            if (!fileResponse.ok) {
-              throw new Error(`Failed to fetch file: ${fileResponse.status} ${fileResponse.statusText}`);
-            }
-            
-            const blob = await fileResponse.blob();
-            const filename = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-            
-            // Create object URL from blob
-            const blobUrl = window.URL.createObjectURL(blob);
-            
-            // Create link and force download
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            
-            // Trigger download
-            link.click();
-            
-            // Clean up
-            setTimeout(() => {
-              window.URL.revokeObjectURL(blobUrl);
-              document.body.removeChild(link);
-            }, 100);
-            
-            return;
-          } catch (fetchError) {
-            console.error('Error fetching file for download:', fetchError);
-            
-            // Fallback: if we get an error with fetch, try direct download
-            const link = document.createElement('a');
-            link.href = response.data.downloadUrl;
-            link.setAttribute('download', response.data.filename);
-            link.setAttribute('target', '_blank');
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            return;
-          }
-        }
-      } catch (urlError) {
-        console.error('Error getting download URL:', urlError);
-      }
-      
-      // If all else fails, try the original approach with a direct download
-      console.log('Trying alternate download method');
-      
-      try {
-        // Increment download count
         await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } catch (countError) {
         console.error('Failed to increment download count:', countError);
+        // Continue even if count increment fails
       }
       
-      // Create a special URL with fl_attachment for CloudFront
-      let downloadUrl = resource.fileUrl;
-      if (downloadUrl.includes('cloudinary') && downloadUrl.includes('/upload/')) {
-        downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
-      }
-      
-      // Try iframe approach which sometimes bypasses browser PDF viewers
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      // For user feedback, also open in a new tab as last resort
-      window.open(downloadUrl, '_blank');
-      
-      // Clean up iframe after delay
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
+      // Simplest and most reliable method: just open the PDF in a new tab
+      // This allows the browser to handle the PDF natively
+      window.open(resource.fileUrl, '_blank');
       
     } catch (error) {
       console.error('Error in download process:', error);
@@ -468,8 +390,8 @@ const Resources = () => {
                         disabled={downloadingResource === r._id}
                       >
                         {downloadingResource === r._id 
-                          ? 'Downloading...' 
-                          : 'Download PDF'}
+                          ? 'Opening...' 
+                          : 'View PDF'}
                       </button>
                    </div>
                 </div>

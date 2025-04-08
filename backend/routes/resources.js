@@ -453,20 +453,15 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
             resource_type: 'image',
             format: 'pdf',
             secure: true,
-            transformation: [
-              { fetch_format: 'auto' },
-              { quality: 'auto' }
-            ]
+            // Don't use any transformations that might corrupt the PDF
           });
           
-          // Modify the URL to add fl_attachment flag
-          // This forces the browser to download rather than display the PDF
-          const downloadUrl = baseUrl.replace('/upload/', '/upload/fl_attachment/');
-          
-          console.log(`Generated download URL: ${downloadUrl}`);
+          // Return both the direct URL for viewing and a download URL with attachment flag
+          console.log(`Generated base URL: ${baseUrl}`);
           
           return res.status(200).json({ 
-            downloadUrl, 
+            downloadUrl: baseUrl, // Clean URL for downloading
+            viewUrl: baseUrl,    // URL for viewing in browser
             filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf` 
           });
         } catch (err) {
