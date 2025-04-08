@@ -397,12 +397,16 @@
   color: #ccc;
   resize: none;
   overflow-y: auto;
-  max-height: 100px;
+  max-height: 120px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
 .message-input:focus {
   outline: none;
   border-color: #03a9f4;
+  box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.15);
 }
 
 .send-button {
@@ -842,4 +846,46 @@
 .system-message .message-meta {
   color: #999;
   align-self: flex-start;
+}
+
+.admin-message {
+  align-self: flex-start;
+  background-color: #4a148c;
+  color: #fff;
+  border-radius: 15px 15px 15px 3px;
+  border-left: 3px solid #e91e63;
+}
+
+.admin-message .message-content {
+  color: #fff;
+}
+
+.admin-message .user-avatar {
+  background-color: #e91e63;
+}
+
+.admin-message .admin-badge {
+  background-color: #e91e63;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.admin-message .message-meta {
+  color: #e0e0e0;
+}
+
+/* Message typing indicator */
+.typing-indicator {
+  position: absolute;
+  bottom: 65px;
+  left: 20px;
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 } 

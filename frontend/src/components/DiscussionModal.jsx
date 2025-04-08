@@ -247,6 +247,22 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     setEditContent('');
   };
   
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Let the default behavior happen (add a new line)
+        return;
+      } else {
+        // Prevent the default Enter behavior (new line)
+        e.preventDefault();
+        // Submit the form if there's content
+        if (newMessage.trim()) {
+          handleSendMessage(e);
+        }
+      }
+    }
+  };
+  
   if (!isOpen) return null;
   
   const formatDate = (dateString) => {
@@ -269,32 +285,60 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     }).format(date);
   };
   
-  // Organize messages into threads (parent messages and their replies)
+  // Fix helper functions to check for admin role
+  const formatMessage = (content) => {
+    if (!content) return '';
+    
+    // Safely sanitize the content
+    const sanitized = DOMPurify.sanitize(content);
+    
+    // Link detection (basic example)
+    const withLinks = sanitized.replace(
+      /(https?:\/\/[^\s]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+    
+    // Handle @mentions
+    const withMentions = withLinks.replace(
+      /@(\w+)/g,
+      '<span class="mention">@$1</span>'
+    );
+    
+    return withMentions;
+  };
+
+  // Update the function to handle admin message styling
   const organizeMessages = () => {
     if (!messages || messages.length === 0) return [];
     
-    const parentMessages = messages.filter(m => !m.parentMessageId);
-    const replies = messages.filter(m => m.parentMessageId);
+    // First, separate parent messages and replies
+    const parentMessages = [];
+    const repliesMap = {};
     
-    // Add replies to their parent messages
-    const threads = parentMessages.map(parent => {
-      const messageReplies = replies.filter(reply => 
-        reply.parentMessageId && 
-        parent._id && 
-        reply.parentMessageId.toString() === parent._id.toString()
-      );
-      return {
-        ...parent,
-        replies: messageReplies
-      };
+    messages.forEach(msg => {
+      if (msg.parentMessageId) {
+        if (!repliesMap[msg.parentMessageId]) {
+          repliesMap[msg.parentMessageId] = [];
+        }
+        repliesMap[msg.parentMessageId].push(msg);
+      } else {
+        parentMessages.push(msg);
+      }
     });
     
-    return threads;
+    // Then, create thread objects
+    return parentMessages.map(message => ({
+      message,
+      replies: repliesMap[message._id] || []
+    })).sort((a, b) => new Date(a.message.timestamp) - new Date(b.message.timestamp));
   };
-  
-  const threads = organizeMessages();
-  const isUserAdmin = currentUser?.role === 'admin';
-  
+
+  // Helper function to correctly check for admin role
+  const isUserAdmin = (userId) => {
+    const user = messages.find(msg => msg.userId === userId);
+    return user && user.userRole === 'admin';
+  };
+
   // Helper function to get the display name from a user object
   const getUserDisplayName = (user) => {
     // Handle different possible user field structures
@@ -315,7 +359,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
   // Check if current user can edit/delete a message
   const canModifyMessage = (message) => {
     if (!currentUser || !message) return false;
-    return isUserAdmin || (message.userId && message.userId._id === currentUser._id);
+    return isUserAdmin(currentUser._id) || (message.userId && message.userId._id === currentUser._id);
   };
 
   // Render message content with edit form if needed
@@ -389,54 +433,120 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     );
   };
   
-  const renderMessageThread = (thread) => (
-    <div key={thread._id} className="message-thread">
-      <div className="message">
-        <div className="message-header">
-          <div className="message-author">
-            <span className="user-avatar">{getAvatarInitial(thread.userId)}</span>
-            <span>{getUserDisplayName(thread.userId)}</span>
-            {thread.userId?.role === 'admin' && (
-              <span className="admin-badge">Admin</span>
-            )}
-          </div>
-          <span className="message-time">
-            {formatDate(thread.timestamp)}
-          </span>
-        </div>
-        
-        {renderMessageContent(thread)}
-        
-        {renderMessageActions(thread)}
-        
-        {/* Replies */}
-        {thread.replies && thread.replies.length > 0 && (
+  const renderMessageThread = (thread) => {
+    const { message, replies } = thread;
+    return (
+      <div key={message._id} className="message-thread">
+        {renderMessage(message)}
+        {replies && replies.length > 0 && (
           <div className="replies-container">
-            {thread.replies.map(reply => (
-              <div key={reply._id} className="reply">
-                <div className="reply-header">
-                  <div className="reply-author">
-                    <span className="user-avatar">{getAvatarInitial(reply.userId)}</span>
-                    <span>{getUserDisplayName(reply.userId)}</span>
-                    {reply.userId?.role === 'admin' && (
-                      <span className="admin-badge">Admin</span>
-                    )}
-                  </div>
-                  <span className="reply-time">
-                    {formatDate(reply.timestamp)}
-                  </span>
-                </div>
-                
-                {renderMessageContent(reply)}
-                
-                {renderMessageActions(reply, true)}
-              </div>
-            ))}
+            {replies.map((reply) => renderMessage(reply))}
           </div>
         )}
       </div>
-    </div>
-  );
+    );
+  };
+  
+  const renderMessage = (message) => {
+    const isCurrentUser = currentUser && message.userId === currentUser._id;
+    const isAdmin = isUserAdmin(message.userId);
+    const isDeleted = message.isDeleted;
+    
+    // Choose message class based on user role
+    let messageClass = isCurrentUser ? 'user-message' : 'system-message';
+    if (isAdmin) {
+      messageClass = 'admin-message';
+    }
+
+    if (message._id === editingMessage?._id) {
+      return (
+        <div key={message._id} className={`message ${messageClass}`}>
+          <div className="message-header">
+            <div className="message-author">
+              <div className="user-avatar">{getAvatarInitial(message.userId)}</div>
+              <span>{getUserDisplayName(message.userId)}</span>
+              {isAdmin && <span className="admin-badge">Admin</span>}
+            </div>
+            <div className="message-time">{formatDate(message.timestamp)}</div>
+          </div>
+          <form onSubmit={handleEditMessage} className="edit-form">
+            <textarea
+              ref={editInputRef}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="edit-textarea"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleEditMessage(e);
+                }
+              }}
+            />
+            <div className="edit-actions">
+              <button type="button" onClick={cancelEdit} className="cancel-button">Cancel</button>
+              <button type="submit" className="save-button">Save</button>
+            </div>
+          </form>
+        </div>
+      );
+    }
+
+    return (
+      <div key={message._id} className={`message ${messageClass}`}>
+        <div className="message-header">
+          <div className="message-author">
+            <div className="user-avatar">{getAvatarInitial(message.userId)}</div>
+            <span>{getUserDisplayName(message.userId)}</span>
+            {isAdmin && <span className="admin-badge">Admin</span>}
+          </div>
+          <div className="message-time">{formatDate(message.timestamp)}</div>
+        </div>
+        {isDeleted ? (
+          <div className="deleted-message">This message has been deleted</div>
+        ) : (
+          <>
+            <div className="message-content" 
+                 dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
+            {message.edited && <span className="edited-indicator">(edited)</span>}
+          </>
+        )}
+        {!isDeleted && (
+          <div className="message-actions">
+            {!replyingTo && (
+              <button 
+                className={`like-button ${message.likes?.includes(currentUser?._id) ? 'liked' : ''}`}
+                onClick={() => handleLike(message._id)}
+              >
+                {message.likes?.length || 0} {message.likes?.length === 1 ? 'Like' : 'Likes'}
+              </button>
+            )}
+            {!replyingTo && (
+              <button className="reply-button" onClick={() => handleReply(message)}>
+                Reply
+              </button>
+            )}
+            {isCurrentUser && !isDeleted && (
+              <>
+                <button 
+                  className="edit-button" 
+                  onClick={() => handleStartEdit(message)}
+                  disabled={!!replyingTo}
+                >
+                  Edit
+                </button>
+                <button 
+                  className="delete-button" 
+                  onClick={() => handleDeleteMessage(message._id)}
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
   
   return (
     <div className="discussion-modal-overlay" onClick={onClose}>
@@ -477,6 +587,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 ref={editInputRef}
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Edit your message..."
                 required
               />
@@ -495,7 +606,8 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 ref={messageInputRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Write a message..."
+                onKeyDown={handleKeyDown}
+                placeholder="Write a message... (Enter to send, Shift+Enter for new line)"
                 required
               />
               <button type="submit" className="send-btn">
