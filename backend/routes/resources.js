@@ -447,19 +447,21 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
         
         // Generate Cloudinary URL using the full path as public ID
         try {
-          // First try as image type (most common for PDFs in Cloudinary)
-          // Note: We DON'T use fl_attachment flag here to avoid popup blockers
-          // Instead, we use a combination of settings that work better with browser downloads
-          const downloadUrl = cloudinary.url(cleanPath, {
+          // For PDFs, we need to force download with fl_attachment
+          // but apply it directly in the URL, not through the transformation
+          const baseUrl = cloudinary.url(cleanPath, {
             resource_type: 'image',
             format: 'pdf',
             secure: true,
-            // For downloads, use these transformations that won't trigger popup warnings
             transformation: [
               { fetch_format: 'auto' },
               { quality: 'auto' }
             ]
           });
+          
+          // Modify the URL to add fl_attachment flag
+          // This forces the browser to download rather than display the PDF
+          const downloadUrl = baseUrl.replace('/upload/', '/upload/fl_attachment/');
           
           console.log(`Generated download URL: ${downloadUrl}`);
           
@@ -472,12 +474,14 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
           
           // If that fails, try as raw type
           try {
-            const downloadUrl = cloudinary.url(cleanPath, {
+            const baseUrl = cloudinary.url(cleanPath, {
               resource_type: 'raw',
               format: 'pdf',
-              secure: true,
-              // Don't use fl_attachment for the same reason
+              secure: true
             });
+            
+            // Add fl_attachment flag to URL
+            const downloadUrl = baseUrl.replace('/upload/', '/upload/fl_attachment/');
             
             console.log(`Generated download URL (raw type): ${downloadUrl}`);
             

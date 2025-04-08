@@ -20,6 +20,7 @@ const Resources = () => {
   const [resources, setResources] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloadingResource, setDownloadingResource] = useState(null);
   const [filters, setFilters] = useState({
     subject: '',
     paperType: '',
@@ -177,6 +178,7 @@ const Resources = () => {
       if (!token) return navigate('/login');
       
       console.log('Starting download process for resource:', resource.title);
+      setDownloadingResource(resource._id);
       
       // Get a proper download URL from the backend
       try {
@@ -188,81 +190,94 @@ const Resources = () => {
         if (response.data && response.data.downloadUrl) {
           console.log('Received download URL:', response.data.downloadUrl);
           
-          // Create a hidden anchor element to trigger download without popup blocker
-          const downloadUrl = response.data.downloadUrl;
-          const filename = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-          
-          // Create a hidden anchor element
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = filename; // Suggest filename to browser
-          link.target = '_blank'; // Fallback to new tab if download doesn't work
-          link.rel = 'noopener noreferrer'; // Security best practice
-          
-          // Hide the element and add to DOM
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          
-          // Trigger the download
-          link.click();
-          
-          // Clean up
-          setTimeout(() => {
+          // Use fetch API to force download - this is more reliable than creating an anchor element
+          try {
+            const fileResponse = await fetch(response.data.downloadUrl);
+            
+            if (!fileResponse.ok) {
+              throw new Error(`Failed to fetch file: ${fileResponse.status} ${fileResponse.statusText}`);
+            }
+            
+            const blob = await fileResponse.blob();
+            const filename = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+            
+            // Create object URL from blob
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            // Create link and force download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            
+            // Trigger download
+            link.click();
+            
+            // Clean up
+            setTimeout(() => {
+              window.URL.revokeObjectURL(blobUrl);
+              document.body.removeChild(link);
+            }, 100);
+            
+            return;
+          } catch (fetchError) {
+            console.error('Error fetching file for download:', fetchError);
+            
+            // Fallback: if we get an error with fetch, try direct download
+            const link = document.createElement('a');
+            link.href = response.data.downloadUrl;
+            link.setAttribute('download', response.data.filename);
+            link.setAttribute('target', '_blank');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
             document.body.removeChild(link);
-          }, 100);
-          
-          return;
+            return;
+          }
         }
       } catch (urlError) {
         console.error('Error getting download URL:', urlError);
       }
       
-      // Fallback to direct URL if the backend endpoint fails
-      console.log('Falling back to direct file download');
+      // If all else fails, try the original approach with a direct download
+      console.log('Trying alternate download method');
       
-      // Try to increment the download count separately
       try {
+        // Increment download count
         await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } catch (countError) {
         console.error('Failed to increment download count:', countError);
       }
-
-      // Use built-in browser download with Fetch API (avoids popup blockers)
-      try {
-        const fileUrl = resource.fileUrl;
-        console.log('Fetching file directly:', fileUrl);
-        
-        // Use fetch to get the file as a blob
-        const response = await fetch(fileUrl);
-        const blob = await response.blob();
-        
-        // Create a blob URL and trigger download
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        
-        // Clean up
-        setTimeout(() => {
-          window.URL.revokeObjectURL(blobUrl);
-          document.body.removeChild(link);
-        }, 100);
-      } catch (fetchError) {
-        console.error('Error fetching file directly:', fetchError);
-        
-        // Last resort: open in new tab (may trigger popup blocker)
-        alert('Download may be blocked by your browser. If a popup blocker message appears, please allow it to download the file.');
-        window.open(resource.fileUrl, '_blank');
+      
+      // Create a special URL with fl_attachment for CloudFront
+      let downloadUrl = resource.fileUrl;
+      if (downloadUrl.includes('cloudinary') && downloadUrl.includes('/upload/')) {
+        downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
       }
+      
+      // Try iframe approach which sometimes bypasses browser PDF viewers
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      
+      // For user feedback, also open in a new tab as last resort
+      window.open(downloadUrl, '_blank');
+      
+      // Clean up iframe after delay
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+      
     } catch (error) {
       console.error('Error in download process:', error);
-      alert('Failed to download the resource. Please try again later.');
+      setError('Failed to download the resource. Please try again later.');
+      setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
+    } finally {
+      setDownloadingResource(null);
     }
   };
 
@@ -447,8 +462,14 @@ const Resources = () => {
                   </div>
                    <div className="resource-footer">
                       <span className="file-size">Size: {formatFileSize(r.fileSize)}</span>
-                      <button onClick={() => handleDownload(r)} className="download-btn">
-                        Download / View PDF
+                      <button 
+                        onClick={() => handleDownload(r)} 
+                        className="download-btn"
+                        disabled={downloadingResource === r._id}
+                      >
+                        {downloadingResource === r._id 
+                          ? 'Downloading...' 
+                          : 'Download PDF'}
                       </button>
                    </div>
                 </div>
