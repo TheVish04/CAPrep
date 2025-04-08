@@ -178,22 +178,55 @@ const Resources = () => {
       
       console.log('Starting download process for resource:', resource.title);
       
-      // Use our proxy endpoint with token as query parameter
-      const proxyUrl = `${API_BASE_URL}/api/resources/${resource._id}/download?token=${token}`;
-      console.log('Using proxy download URL (with token)');
+      // Get a proper download URL from the backend
+      try {
+        console.log('Fetching download URL from backend');
+        const response = await axios.get(`${API_BASE_URL}/api/resources/${resource._id}/download-url`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.data && response.data.downloadUrl) {
+          console.log('Received download URL:', response.data.downloadUrl);
+          
+          // Create a download link and trigger it
+          const link = document.createElement('a');
+          link.href = response.data.downloadUrl;
+          link.download = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          return;
+        }
+      } catch (urlError) {
+        console.error('Error getting download URL:', urlError);
+      }
       
-      // Open the proxy URL in a new tab
-      window.open(proxyUrl, '_blank');
+      // Fallback to direct URL if the backend endpoint fails
+      console.log('Falling back to direct URL download');
       
+      // Try to increment the download count separately if the download URL endpoint failed
+      await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(err => {
+        console.error('Failed to increment download count:', err);
+      });
+
+      // Try direct download with the file URL
+      const fileUrl = resource.fileUrl;
+      console.log('Using direct resource URL:', fileUrl);
+      
+      // For security-enabled Cloudinary URLs, try opening in new window
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.target = '_blank';
+      link.download = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error in download process:', error);
-      console.error('Error details:', JSON.stringify({
-        message: error.message,
-        stack: error.stack,
-        resourceId: resource._id,
-        resourceUrl: resource.fileUrl
-      }));
-      alert('Failed to download the resource. Please try again or check console for details.');
+      alert('Failed to download the resource. Please try again later.');
     }
   };
 

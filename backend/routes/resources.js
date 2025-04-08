@@ -108,13 +108,23 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
+    // Generate a clean filename (alphanumeric with hyphens)
+    const cleanFilename = req.file.originalname
+      .replace(/[^\w.-]/g, '-')
+      .replace(/\.pdf$/i, '');
+    
+    // Create a unique public_id
+    const uniqueId = `${uuidv4().substring(0, 8)}-${cleanFilename}`;
+    
     const uploadOptions = {
       resource_type: 'auto',
       folder: 'ca-exam-platform/resources',
-      public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
+      public_id: uniqueId,
       format: 'pdf',
       use_filename: true,
-      unique_filename: true
+      unique_filename: true,
+      overwrite: true,
+      access_mode: 'public'
     };
     
     console.log('Cloudinary upload options:', JSON.stringify(uploadOptions));
@@ -151,8 +161,12 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     clearCache('/api/resources');
     res.status(201).json(resource);
   } catch (error) {
-    logger.error(`Error creating resource: ${error.message}`);
-    res.status(500).json({ error: 'Failed to create resource' });
+    console.error(`Error creating resource: ${error.message}`);
+    console.error(`Error stack: ${error.stack}`);
+    res.status(500).json({ 
+      error: 'Failed to create resource',
+      details: error.message
+    });
   }
 });
 
@@ -228,8 +242,25 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 // POST - Increment download count
-router.post('/:id/download', authMiddleware, async (req, res) => {
+router.post('/:id/download', async (req, res) => {
   try {
+    console.log(`Incrementing download count for resource ID: ${req.params.id}`);
+    
+    // Check for authentication
+    let token = null;
+    
+    // Check for token in query parameter
+    if (req.query.token) {
+      token = req.query.token;
+    } 
+    // Check for token in Authorization header as fallback
+    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    
+    // No token validation required for download count
+    // This makes download tracking more reliable
+    
     const resource = await Resource.findByIdAndUpdate(
       req.params.id,
       { $inc: { downloadCount: 1 } },
@@ -237,18 +268,19 @@ router.post('/:id/download', authMiddleware, async (req, res) => {
     );
     
     if (!resource) {
+      console.log(`Resource not found: ${req.params.id}`);
       return res.status(404).json({ error: 'Resource not found' });
     }
     
+    console.log(`Download count incremented for resource ID: ${req.params.id}, new count: ${resource.downloadCount}`);
     res.status(200).json({ downloadCount: resource.downloadCount });
   } catch (error) {
-    // Use logger if available
-    if (typeof logger !== 'undefined' && logger.error) {
-      logger.error(`Error incrementing download count: ${error.message}`);
-    } else {
-      console.error(`Error incrementing download count: ${error.message}`);
-    }
-    res.status(500).json({ error: 'Failed to increment download count' });
+    console.error(`Error incrementing download count: ${error.message}`);
+    console.error(`Error stack: ${error.stack}`);
+    res.status(500).json({ 
+      error: 'Failed to increment download count',
+      details: error.message
+    });
   }
 });
 
@@ -309,26 +341,53 @@ router.get('/:id/download', async (req, res) => {
       console.log('Proxying Cloudinary PDF download');
       
       try {
+        console.log(`Attempting to fetch from Cloudinary URL: ${fileUrl}`);
+        
         // Get the file from Cloudinary
         const response = await axios({
           method: 'GET',
           url: fileUrl,
-          responseType: 'stream'
+          responseType: 'stream',
+          timeout: 30000 // 30 second timeout
         });
+        
+        console.log('Successfully fetched file from Cloudinary');
+        console.log(`Response status: ${response.status}`);
+        console.log(`Response headers: ${JSON.stringify(response.headers)}`);
         
         // Set appropriate headers for PDF download
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${resource.title.replace(/[^\w\s.-]/g, '')}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${resource.title.replace(/[^\s.-]/g, '')}.pdf"`);
         
         // Pipe the file to the response
         response.data.pipe(res);
       } catch (error) {
         console.error(`Error streaming PDF from Cloudinary: ${error.message}`);
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error stack: ${error.stack}`);
+        
         if (error.response) {
           console.error(`Cloudinary response status: ${error.response.status}`);
           console.error(`Cloudinary response headers: ${JSON.stringify(error.response.headers)}`);
+          console.error(`Cloudinary response data: ${JSON.stringify(error.response.data)}`);
+          
+          return res.status(error.response.status).json({ 
+            error: 'Failed to download file from storage',
+            details: `Cloudinary responded with status ${error.response.status}`
+          });
+        } else if (error.request) {
+          console.error('No response received from Cloudinary');
+          return res.status(504).json({ 
+            error: 'Failed to download file from storage',
+            details: 'No response received from storage provider'
+          });
+        } else {
+          console.error('Error setting up request to Cloudinary');
+          return res.status(500).json({ 
+            error: 'Failed to download file from storage',
+            details: error.message
+          });
         }
-        return res.status(500).json({ error: 'Failed to download file from storage' });
       }
     } else {
       // For non-Cloudinary URLs, redirect to the file
@@ -337,7 +396,80 @@ router.get('/:id/download', async (req, res) => {
     }
   } catch (error) {
     console.error(`Error in download proxy: ${error.message}`);
-    res.status(500).json({ error: 'Failed to download resource' });
+    console.error(`Error stack: ${error.stack}`);
+    res.status(500).json({ 
+      error: 'Failed to download resource',
+      details: error.message
+    });
+  }
+});
+
+// Add a new route to generate a proper download URL for a resource
+router.get('/:id/download-url', authMiddleware, async (req, res) => {
+  try {
+    console.log(`Download URL request for resource ID: ${req.params.id}`);
+    
+    // Find the resource
+    const resource = await Resource.findById(req.params.id);
+    
+    if (!resource) {
+      console.log(`Resource not found: ${req.params.id}`);
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+    
+    // Increment download count
+    resource.downloadCount = (resource.downloadCount || 0) + 1;
+    await resource.save();
+    
+    if (!resource.fileUrl) {
+      console.log(`No file URL found for resource: ${req.params.id}`);
+      return res.status(404).json({ error: 'Resource file not found' });
+    }
+    
+    // For Cloudinary URLs, generate a proper download URL
+    if (resource.fileUrl.includes('cloudinary')) {
+      const urlParts = resource.fileUrl.split('/upload/');
+      
+      if (urlParts.length === 2) {
+        const basePath = urlParts[1].split('.')[0]; // Get the base path (public ID)
+        
+        // Extract the folder and filename from the path
+        const pathParts = basePath.split('/');
+        const publicId = pathParts.join('/');
+        
+        console.log(`Generating download URL for public ID: ${publicId}`);
+        
+        // Use cloudinary.url() to generate proper download URL with fl_attachment
+        // This ensures the file will be downloaded rather than displayed
+        const downloadUrl = cloudinary.url(publicId, {
+          resource_type: 'raw',
+          format: 'pdf',
+          flags: 'attachment',
+          secure: true,
+          transformation: [{ flags: 'attachment' }]
+        });
+        
+        console.log(`Generated download URL: ${downloadUrl}`);
+        
+        return res.status(200).json({ 
+          downloadUrl, 
+          filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf` 
+        });
+      }
+    }
+    
+    // If it's not a Cloudinary URL or we couldn't parse it, return the original URL
+    return res.status(200).json({ 
+      downloadUrl: resource.fileUrl,
+      filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`
+    });
+  } catch (error) {
+    console.error(`Error generating download URL: ${error.message}`);
+    console.error(`Error stack: ${error.stack}`);
+    res.status(500).json({ 
+      error: 'Failed to generate download URL',
+      details: error.message
+    });
   }
 });
 
