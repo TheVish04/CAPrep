@@ -181,44 +181,40 @@ const Resources = () => {
           headers: { 'Authorization': `Bearer ${token}` }
       }).catch(err => console.error('Failed to increment download count:', err));
       
-      // Get the base resource URL
+      // Get the resource URL
       let resourceUrl = resource.fileUrl;
       
-      // Format Cloudinary URL for proper PDF downloading
+      // Format Cloudinary URL for proper PDF viewing and download
       if (resourceUrl.includes('cloudinary')) {
         try {
-          // Extract the public ID and version from the URL
+          // For Cloudinary URLs, extract the base URL and file path
           const urlParts = resourceUrl.split('/upload/');
           if (urlParts.length === 2) {
             const baseUrl = urlParts[0] + '/upload/';
             const filePathPart = urlParts[1];
             
-            // Add transformations for proper PDF download
-            // fl_attachment forces download
-            // fl_sanitize ensures proper PDF handling
-            // q_auto for optimization
-            resourceUrl = `${baseUrl}fl_attachment,fl_sanitize,q_auto/${filePathPart}`;
+            // Create a download URL with fl_attachment flag
+            // This forces the browser to download rather than try to render
+            resourceUrl = `${baseUrl}fl_attachment/${filePathPart}`;
+            
+            // Open in a new window which will trigger the download
+            window.open(resourceUrl, '_blank');
+            return; // Exit early after opening the window
           }
         } catch (err) {
           console.error('Error formatting Cloudinary URL:', err);
         }
       }
       
-      // Create a proper filename from the resource title
+      // For non-Cloudinary URLs or if Cloudinary URL processing fails
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-      
-      // For Cloudinary URLs, we'll use a direct window.open approach
-      if (resourceUrl.includes('cloudinary')) {
-        window.open(resourceUrl, '_blank');
-      } else {
-        // For non-Cloudinary URLs, use the download attribute
-        const link = document.createElement('a');
-        link.href = resourceUrl;
-        link.download = properFilename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      const link = document.createElement('a');
+      link.href = resourceUrl;
+      link.download = properFilename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error preparing resource download:', error);
       alert('Failed to download the resource. Please try again.');

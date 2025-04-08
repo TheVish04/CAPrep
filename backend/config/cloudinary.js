@@ -1,4 +1,4 @@
-const cloudinary = require('cloudinary').v2;
+const { v2: cloudinary } = require('cloudinary');
 
 // Configure Cloudinary with credentials
 cloudinary.config({

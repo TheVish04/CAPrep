@@ -104,16 +104,14 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
     const result = await cloudinary.uploader.upload(dataURI, {
-      resource_type: 'auto',
+      resource_type: 'raw',
       folder: 'ca-exam-platform/resources',
       public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
       format: 'pdf',
-      flags: 'attachment',
-      resource_type: 'raw',
-      type: 'private',
-      access_mode: 'authenticated',
       use_filename: true,
-      unique_filename: true
+      unique_filename: true,
+      overwrite: true,
+      type: 'upload'
     });
     
     // Create new resource with Cloudinary URL
@@ -184,9 +182,14 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
     if (resource.fileUrl && resource.fileUrl.includes('cloudinary')) {
       try {
         // Extract public_id from Cloudinary URL
-        const publicId = resource.fileUrl.split('/').slice(-1)[0].split('.')[0];
+        const urlParts = resource.fileUrl.split('/');
+        const publicIdWithExt = urlParts[urlParts.length - 1];
+        const publicId = publicIdWithExt.split('.')[0];
+        
         if (publicId) {
-          await cloudinary.uploader.destroy(`ca-exam-platform/resources/${publicId}`, { resource_type: 'raw' });
+          await cloudinary.uploader.destroy(`ca-exam-platform/resources/${publicId}`, { 
+            resource_type: 'raw'
+          });
         }
       } catch (cloudinaryError) {
         logger.error(`Error deleting file from Cloudinary: ${cloudinaryError.message}`);
