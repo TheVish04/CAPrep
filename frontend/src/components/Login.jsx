@@ -8,8 +8,10 @@ const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
 
   // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -38,28 +40,59 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setInfoMessage('');
+    setIsLoading(true);
 
     try {
-      const response = await axios.post('https://caprep.onrender.com/api/auth/login', credentials);
-      const { token } = response.data;
+      console.log(`Attempting login with API URL: ${API_BASE_URL}/api/auth/login`);
+      
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Login response received:', response.status);
+      
+      if (response.data && response.data.token) {
+        const { token } = response.data;
 
-      localStorage.setItem('token', token);
-      // Safely decode JWT token
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid token format');
-      }
-      const payload = JSON.parse(atob(parts[1]));
-      const role = payload.role;
+        localStorage.setItem('token', token);
+        // Safely decode JWT token
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid token format');
+        }
+        const payload = JSON.parse(atob(parts[1]));
+        const role = payload.role;
 
-      if (role === 'admin') {
-        navigate('/admin');
+        console.log('Login successful, navigating to appropriate dashboard');
+        if (role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/questions');
+        }
       } else {
-        navigate('/questions');
+        throw new Error('No token received in response');
       }
     } catch (err) {
-      setError('Invalid credentials or server error');
       console.error('Login error:', err);
+      
+      if (err.response) {
+        // Server responded with an error status
+        console.error('Error response:', err.response.status, err.response.data);
+        setError(err.response.data?.error || 'Invalid credentials or server error');
+      } else if (err.request) {
+        // Request was made but no response
+        console.error('No response received:', err.request);
+        setError('Network error: No response from server. Please check your connection.');
+      } else {
+        // Error in request setup
+        console.error('Request error:', err.message);
+        setError(`Error: ${err.message}`);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -80,6 +113,7 @@ const Login = () => {
                 value={credentials.email}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -91,6 +125,7 @@ const Login = () => {
                   value={credentials.password}
                   onChange={handleChange}
                   required
+                  disabled={isLoading}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSubmit(e);
@@ -99,7 +134,7 @@ const Login = () => {
                 />
                 <span 
                   className="toggle-password" 
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => !isLoading && setShowPassword(!showPassword)}
                 >
                   {showPassword ? 'Hide' : 'Show'}
                 </span>
@@ -108,7 +143,9 @@ const Login = () => {
             <div className="forgot-password-link">
               <Link to="/forgot-password">Forgot Password?</Link>
             </div>
-            <button type="submit">Login</button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
           <p className="auth-link">
             New user? <Link to="/register">Register here</Link>

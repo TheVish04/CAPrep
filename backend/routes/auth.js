@@ -195,6 +195,14 @@ router.post('/verify-otp', async (req, res) => {
 // In login route:
 router.post('/login', async (req, res) => {
   try {
+    console.log('Login attempt received:', {
+      origin: req.headers.origin,
+      method: req.method,
+      contentType: req.headers['content-type'],
+      hasBody: !!req.body,
+      emailProvided: !!req.body?.email
+    });
+
     const { email, password } = req.body;
 
     // Validate email format
@@ -230,6 +238,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       // Update failed attempts for this IP and email combination
       updateLoginAttempts(loginKey, false);
+      console.log(`Login failed: user not found for email ${email}`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -250,61 +259,43 @@ router.post('/login', async (req, res) => {
         });
       }
       
+      console.log(`Login failed: incorrect password for email ${email}`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Reset failed attempts on successful login
+    // Reset login attempts on successful login
     updateLoginAttempts(loginKey, true);
 
-    // Create JWT token with appropriate expiration
-    const expiresIn = process.env.JWT_EXPIRES_IN || '1d';
+    // Generate JWT
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        role: user.role, 
-        fullName: user.fullName,
-        email: user.email
-      },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { 
-        expiresIn,
-        algorithm: 'HS256' // Explicitly specify algorithm
-      }
+      { expiresIn: '24h' }
     );
 
-    // Log successful login for security auditing
-    console.log('Successful login:', {
-      userId: user.id,
-      email: user.email,
-      ip: clientIP,
-      timestamp: new Date().toISOString()
-    });
-
-    // Calculate expiry time for client
-    const expiry = new Date();
-    const expirySeconds = typeof expiresIn === 'string' && expiresIn.endsWith('d')
-      ? parseInt(expiresIn) * 24 * 60 * 60 // Convert days to seconds
-      : typeof expiresIn === 'string' && expiresIn.endsWith('h')
-      ? parseInt(expiresIn) * 60 * 60 // Convert hours to seconds
-      : 24 * 60 * 60; // Default 1 day in seconds
+    console.log(`Login successful for user: ${email}`);
     
-    expiry.setSeconds(expiry.getSeconds() + expirySeconds);
-
-    // Return sanitized user data with token
-    return res.json({
+    // Send response
+    res.status(200).json({
+      message: 'Login successful',
       token,
-      expires: expiry.toISOString(),
       user: {
-        id: user.id,
-        fullName: user.fullName,
+        id: user._id,
+        name: user.name,
         email: user.email,
-        role: user.role,
+        role: user.role
       }
     });
-    
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Login error:', {
+      message: error.message,
+      stack: error.stack
+    });
+    
+    res.status(500).json({ 
+      error: 'An error occurred during login',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

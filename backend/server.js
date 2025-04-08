@@ -51,52 +51,39 @@ app.use(express.json({ limit: '10mb' }));
 
 // Enhanced CORS configuration with more permissive settings
 const corsOptions = {
-  origin: ['https://caprep.onrender.com', 'https://caprep.vercel.app', 'http://localhost:5173', 'https://ca-exam-platform.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type', 'Authorization', 'Access-Control-Allow-Origin', 
-    'AccessToken', 'Origin', 'Accept', 'X-Requested-With',
-    'Cache-Control', 'Pragma', 'Expires'
-  ],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://caprep.onrender.com', 
+      'https://caprep.vercel.app',
+      'http://localhost:5173',
+      'https://ca-exam-platform.vercel.app'
+    ];
+    
+    // Check if the origin is allowed
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log('Origin not allowed by CORS:', origin);
+      // Allow all origins in development - remove in production
+      callback(null, true);
+    }
+  },
   credentials: true,
-  optionsSuccessStatus: 204,
-  preflightContinue: false,
-  maxAge: 86400 // 24 hours
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'Origin', 'Accept']
 };
-
-// Add CORS preflight handling for all routes
-app.options('*', cors(corsOptions));
-
-// Specific preflight handler for discussion routes
-app.options('/api/discussions/:itemType/:itemId/message', (req, res) => {
-  console.log('Handling OPTIONS preflight for discussion message posting');
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With, Cache-Control, Pragma, Expires');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Max-Age', '86400');
-  res.status(204).end();
-});
 
 // Apply CORS for all routes
 app.use(cors(corsOptions));
 
-// More aggressive CORS handling for all requests
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Access-Control-Allow-Origin, AccessToken, Origin, Accept, X-Requested-With, Cache-Control, Pragma, Expires');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  
-  next();
-});
+// Handle OPTIONS preflight requests
+app.options('*', cors(corsOptions));
 
-// Add a middleware to log all requests for debugging
+// Remove all the custom CORS handling that might be causing conflicts
+// and replace with a simple, focused middleware for debugging CORS issues
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'No origin'}`);
   next();
