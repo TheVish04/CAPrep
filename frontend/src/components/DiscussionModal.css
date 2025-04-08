@@ -244,40 +244,38 @@
 }
 
 .admin-badge {
-  background-color: #e74c3c;
+  background-color: #e91e63;
   color: white;
   font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
+  margin-left: 5px;
 }
 
-.message-time {
-  color: #6c757d;
-  font-size: 12px;
-  margin-left: 10px;
-  flex-shrink: 0;
+.message-time, .reply-time {
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .message-content {
-  font-size: 14px;
-  line-height: 1.5;
   color: #ccc;
-  word-break: break-word;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.message-actions {
+.message-actions, .reply-actions {
   display: flex;
   gap: 12px;
   margin-top: 5px;
 }
 
-.like-button, .reply-button {
+.like-button, .reply-button, .edit-button, .delete-button {
   background: none;
   border: none;
   font-size: 12px;
-  color: #6c757d;
+  color: #b0b0b0;
   cursor: pointer;
   padding: 3px 0;
   transition: color 0.2s;
@@ -286,22 +284,22 @@
   gap: 4px;
 }
 
-.like-button:hover {
-  color: #e74c3c;
+.like-button:hover, .reply-button:hover, .edit-button:hover {
+  color: #03a9f4;
 }
 
-.reply-button:hover {
-  color: #3498db;
+.delete-button:hover {
+  color: #e57373;
 }
 
 .like-button.liked {
-  color: #e74c3c;
+  color: #e57373;
 }
 
 .replies-container {
   margin-top: 10px;
   margin-left: 25px;
-  border-left: 2px solid #e9ecef;
+  border-left: 2px solid #444;
   padding-left: 15px;
   display: flex;
   flex-direction: column;
@@ -309,7 +307,7 @@
 }
 
 .reply {
-  background-color: #f8f9fa;
+  background-color: #2a2a2a;
   padding: 12px;
   border-radius: 8px;
   display: flex;
@@ -459,10 +457,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
-  color: #6c757d;
+  height: 150px;
+  color: #b0b0b0;
   text-align: center;
-  gap: 15px;
 }
 
 .empty-discussion i {
@@ -547,13 +544,13 @@
 
 .deleted-message {
   font-style: italic;
-  color: #999;
+  color: #777;
   font-size: 13px;
 }
 
 .edited-indicator {
   font-size: 11px;
-  color: #999;
+  color: #777;
   margin-left: 5px;
   font-style: italic;
 }
@@ -737,103 +734,35 @@
   font-weight: 600;
 }
 
-.admin-badge {
-  background-color: #e57373;
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-}
-
-.message-time, .reply-time {
-  font-size: 0.8rem;
-  color: #888;
-}
-
-.message-content {
+.admin-message {
+  align-self: flex-start;
+  background-color: #333;
   color: #ccc;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  border-radius: 15px 15px 15px 3px;
 }
 
-.message-actions, .reply-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 5px;
+.admin-message .message-content {
+  color: #ccc;
 }
 
-.like-button, .reply-button, .edit-button, .delete-button {
-  background: none;
-  border: none;
+.admin-message .user-avatar {
+  background-color: #03a9f4;
+}
+
+.admin-message .message-meta {
+  color: #999;
+}
+
+/* Message typing indicator */
+.typing-indicator {
+  position: absolute;
+  bottom: 65px;
+  left: 20px;
   font-size: 12px;
-  color: #b0b0b0;
-  cursor: pointer;
-  padding: 3px 0;
-  transition: color 0.2s;
+  color: #999;
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-
-.like-button:hover, .reply-button:hover, .edit-button:hover {
-  color: #03a9f4;
-}
-
-.delete-button:hover {
-  color: #e57373;
-}
-
-.like-button.liked {
-  color: #e57373;
-}
-
-.replies-container {
-  margin-top: 10px;
-  margin-left: 25px;
-  border-left: 2px solid #444;
-  padding-left: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reply {
-  background-color: #2a2a2a;
-  padding: 12px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.edited-indicator {
-  font-size: 11px;
-  color: #777;
-  margin-left: 5px;
-  font-style: italic;
-}
-
-.deleted-message {
-  font-style: italic;
-  color: #777;
-  font-size: 13px;
-}
-
-.empty-discussion {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 150px;
-  color: #b0b0b0;
-  text-align: center;
-}
-
-.no-messages {
-  text-align: center;
-  padding: 20px;
-  color: #888;
-  font-style: italic;
+  gap: 5px;
 }
 
 .message-meta {
@@ -852,80 +781,9 @@
   align-self: flex-start;
 }
 
-.admin-message {
-  align-self: flex-start !important;
-  background-color: #4a148c !important;
-  background-image: linear-gradient(135deg, #4a148c 0%, #7b1fa2 100%) !important;
-  color: #fff !important;
-  border-radius: 15px 15px 15px 3px !important;
-  border-left: 5px solid #e91e63 !important;
-  border-top: 1px solid #e91e63 !important;
-  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4) !important;
-  position: relative !important;
-  margin-bottom: 25px !important;
-  padding: 20px !important;
-}
-
-.admin-message::before {
-  content: '' !important;
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
-  border-width: 0 20px 20px 0 !important;
-  border-style: solid !important;
-  border-color: #e91e63 transparent !important;
-}
-
-.admin-message::after {
-  content: 'ADMIN' !important;
-  position: absolute !important;
-  top: -10px !important;
-  left: 15px !important;
-  background-color: #e91e63 !important;
-  color: white !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  padding: 3px 8px !important;
-  border-radius: 10px !important;
-  letter-spacing: 1px !important;
-}
-
-.admin-message .message-content {
-  color: #fff !important;
-  font-weight: 500 !important;
-}
-
-.admin-message .user-avatar {
-  background-color: #e91e63 !important;
-  font-weight: 700 !important;
-  font-size: 16px !important;
-}
-
-.admin-message .admin-badge {
-  background-color: #e91e63 !important;
-  color: white !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  padding: 3px 8px !important;
-  border-radius: 4px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
-  margin-left: 5px !important;
-}
-
-.admin-message .message-meta {
-  color: #e0e0e0 !important;
-}
-
-/* Message typing indicator */
-.typing-indicator {
-  position: absolute;
-  bottom: 65px;
-  left: 20px;
-  font-size: 12px;
-  color: #999;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.no-messages {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-style: italic;
 } 

@@ -463,8 +463,6 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
   };
   
   const renderMessage = (message) => {
-    console.log('Message data:', message);
-    
     // Direct check for admin role
     let isAdmin = false;
     if (message.userId && typeof message.userId === 'object' && message.userId.role === 'admin') {
@@ -476,15 +474,12 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     const isCurrentUser = currentUser && message.userId && 
       (message.userId._id === currentUser._id || message.userId === currentUser._id);
     
-    console.log('Is admin:', isAdmin, 'User data:', message.userId);
-    
     const isDeleted = message.isDeleted;
     
     // Choose message class based on user role
     let messageClass = isCurrentUser ? 'user-message' : 'system-message';
     if (isAdmin) {
       messageClass = 'admin-message';
-      console.log('Applied admin-message class for:', getUserDisplayName(message.userId));
     }
 
     if (message._id === editingMessage?._id) {
@@ -494,7 +489,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
             <div className="message-author">
               <div className="user-avatar">{getAvatarInitial(message.userId)}</div>
               <span>{getUserDisplayName(message.userId)}</span>
-              {isAdmin && <span className="admin-badge">Admin</span>}
+              {isAdmin && <span className="admin-badge">ADMIN</span>}
             </div>
             <div className="message-time">{formatDate(message.timestamp)}</div>
           </div>
@@ -526,7 +521,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
           <div className="message-author">
             <div className="user-avatar">{getAvatarInitial(message.userId)}</div>
             <span>{getUserDisplayName(message.userId)}</span>
-            {isAdmin && <span className="admin-badge">Admin</span>}
+            {isAdmin && <span className="admin-badge">ADMIN</span>}
           </div>
           <div className="message-time">{formatDate(message.timestamp)}</div>
         </div>
@@ -554,6 +549,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 Reply
               </button>
             )}
+            {/* Only allow users to edit their own messages */}
             {isCurrentUser && !isDeleted && (
               <>
                 <button 
@@ -571,6 +567,7 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 </button>
               </>
             )}
+            {/* Allow admins to delete any message, but not edit others' messages */}
             {isAdmin && !isCurrentUser && !isDeleted && (
               <button 
                 className="delete-button" 
