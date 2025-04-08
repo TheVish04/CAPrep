@@ -38,49 +38,27 @@ app.use(helmet()); // Set security headers
 app.use(xss()); // Sanitize user input
 app.use(mongoSanitize()); // Prevent MongoDB operator injection
 
-// Global rate limiter - max 100 requests per IP per 15 minutes
+// Global rate limiter - max 200 requests per IP per 15 minutes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later'
+  max: 200, // limit each IP to 200 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
-// Enhanced CORS configuration with more permissive settings
-const corsOptions = {
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'https://caprep.onrender.com', 
-      'https://caprep.vercel.app',
-      'http://localhost:5173',
-      'https://ca-exam-platform.vercel.app'
-    ];
-    
-    // Check if the origin is allowed
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      console.log('Origin not allowed by CORS:', origin);
-      // Allow all origins in development - remove in production
-      callback(null, true);
-    }
-  },
-  credentials: true,
+// CORS middleware configuration
+app.use(cors({
+  origin: ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'Origin', 'Accept']
-};
-
-// Apply CORS for all routes
-app.use(cors(corsOptions));
-
-// Handle OPTIONS preflight requests
-app.options('*', cors(corsOptions));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 
 // Remove all the custom CORS handling that might be causing conflicts
 // and replace with a simple, focused middleware for debugging CORS issues
