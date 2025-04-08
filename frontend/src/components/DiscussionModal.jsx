@@ -389,110 +389,121 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     );
   };
   
+  const renderMessageThread = (thread) => (
+    <div key={thread._id} className="message-thread">
+      <div className="message">
+        <div className="message-header">
+          <div className="message-author">
+            <span className="user-avatar">{getAvatarInitial(thread.userId)}</span>
+            <span>{getUserDisplayName(thread.userId)}</span>
+            {thread.userId?.role === 'admin' && (
+              <span className="admin-badge">Admin</span>
+            )}
+          </div>
+          <span className="message-time">
+            {formatDate(thread.timestamp)}
+          </span>
+        </div>
+        
+        {renderMessageContent(thread)}
+        
+        {renderMessageActions(thread)}
+        
+        {/* Replies */}
+        {thread.replies && thread.replies.length > 0 && (
+          <div className="replies-container">
+            {thread.replies.map(reply => (
+              <div key={reply._id} className="reply">
+                <div className="reply-header">
+                  <div className="reply-author">
+                    <span className="user-avatar">{getAvatarInitial(reply.userId)}</span>
+                    <span>{getUserDisplayName(reply.userId)}</span>
+                    {reply.userId?.role === 'admin' && (
+                      <span className="admin-badge">Admin</span>
+                    )}
+                  </div>
+                  <span className="reply-time">
+                    {formatDate(reply.timestamp)}
+                  </span>
+                </div>
+                
+                {renderMessageContent(reply)}
+                
+                {renderMessageActions(reply, true)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+  
   return (
     <div className="discussion-modal-overlay" onClick={onClose}>
       <div className="discussion-modal" onClick={(e) => e.stopPropagation()}>
         <div className="discussion-modal-header">
-          <h3>
-            <i className="fas fa-comments"></i> 
-            Discussion: {itemTitle}
-          </h3>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <h2>Discussion: {itemTitle}</h2>
+          <button className="discussion-close-btn" onClick={onClose}>×</button>
         </div>
         
-        <div className="discussion-modal-body">
+        <div className="discussion-content">
+          {error && <div className="error-message">{error}</div>}
+          
           {loading ? (
-            <div className="loading-spinner">
-              <div className="spinner"></div> Loading discussions...
-            </div>
-          ) : error ? (
-            <div className="error-message">
-              <i className="fas fa-exclamation-circle"></i> {error}
-            </div>
+            <div className="loading-placeholder">Loading discussion...</div>
           ) : messages.length === 0 ? (
             <div className="empty-discussion">
-              <i className="fas fa-comments"></i>
               <p>No messages yet. Be the first to start the discussion!</p>
             </div>
           ) : (
-            <div className="messages-container">
-              {threads.map((thread) => (
-                <div key={thread._id} className="message-thread">
-                  <div className="message">
-                    <div className="message-header">
-                      <div className="message-author">
-                        <span className="user-avatar">{getAvatarInitial(thread.userId)}</span>
-                        <span>{getUserDisplayName(thread.userId)}</span>
-                        {thread.userId?.role === 'admin' && (
-                          <span className="admin-badge">Admin</span>
-                        )}
-                      </div>
-                      <span className="message-time">
-                        {formatDate(thread.timestamp)}
-                      </span>
-                    </div>
-                    
-                    {renderMessageContent(thread)}
-                    
-                    {renderMessageActions(thread)}
-                    
-                    {/* Replies */}
-                    {thread.replies && thread.replies.length > 0 && (
-                      <div className="replies-container">
-                        {thread.replies.map(reply => (
-                          <div key={reply._id} className="reply">
-                            <div className="reply-header">
-                              <div className="reply-author">
-                                <span className="user-avatar">{getAvatarInitial(reply.userId)}</span>
-                                <span>{getUserDisplayName(reply.userId)}</span>
-                                {reply.userId?.role === 'admin' && (
-                                  <span className="admin-badge">Admin</span>
-                                )}
-                              </div>
-                              <span className="reply-time">
-                                {formatDate(reply.timestamp)}
-                              </span>
-                            </div>
-                            
-                            {renderMessageContent(reply)}
-                            
-                            {renderMessageActions(reply, true)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="discussion-messages">
+              {organizeMessages().map(renderMessageThread)}
               <div ref={messagesEndRef} />
             </div>
           )}
         </div>
         
-        {replyingTo && (
-          <div className="replying-to-bar">
-            <span>Replying to: <strong>{getUserDisplayName(replyingTo.userId)}</strong></span>
-            <button className="cancel-reply-btn" onClick={cancelReply}>×</button>
-          </div>
-        )}
-        
-        <form className="discussion-modal-footer" onSubmit={handleSendMessage}>
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={replyingTo ? `Reply to ${getUserDisplayName(replyingTo.userId)}...` : "Type your message..."}
-            className="message-input"
-            ref={messageInputRef}
-          />
-          <button 
-            type="submit" 
-            className="send-button"
-            disabled={!newMessage.trim()}
-          >
-            Send
-          </button>
-        </form>
+        <div className="message-input-container">
+          {replyingTo && (
+            <div className="replying-to">
+              <span>Replying to {getUserDisplayName(replyingTo.userId)}</span>
+              <button onClick={cancelReply} className="cancel-reply">×</button>
+            </div>
+          )}
+          
+          {editingMessage ? (
+            <form onSubmit={handleEditMessage} className="message-form">
+              <textarea
+                ref={editInputRef}
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="Edit your message..."
+                required
+              />
+              <div className="form-actions">
+                <button type="button" onClick={cancelEdit} className="cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="send-btn">
+                  Save
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSendMessage} className="message-form">
+              <textarea
+                ref={messageInputRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write a message..."
+                required
+              />
+              <button type="submit" className="send-btn">
+                Send
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
