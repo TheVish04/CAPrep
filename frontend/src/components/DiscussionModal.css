@@ -71,24 +71,26 @@
 .message {
   display: flex;
   flex-direction: column;
-  padding: 10px 15px;
+  padding: 12px 15px;
   border-radius: 6px;
   max-width: 85%;
   position: relative;
+  align-self: flex-start;
+  margin-bottom: 10px;
 }
 
 .user-message {
-  align-self: flex-end;
   background-color: #0d47a1;
   color: #fff;
-  border-radius: 15px 15px 3px 15px;
+  border-radius: 15px 15px 15px 3px;
+  align-self: flex-start;
 }
 
 .system-message {
-  align-self: flex-start;
   background-color: #2d2d2d;
   color: #ccc;
   border-radius: 15px 15px 15px 3px;
+  align-self: flex-start;
 }
 
 .discussion-modal-overlay {
@@ -194,19 +196,8 @@
 }
 
 .message-thread {
-  display: flex;
-  flex-direction: column;
-}
-
-.message {
-  padding: 16px;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .message-header {
@@ -297,13 +288,13 @@
 }
 
 .replies-container {
-  margin-top: 10px;
-  margin-left: 25px;
+  margin-top: 8px;
+  margin-left: 30px;
   border-left: 2px solid #444;
   padding-left: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .reply {
@@ -313,6 +304,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 90%;
 }
 
 .reply-header {
