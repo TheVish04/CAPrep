@@ -181,8 +181,8 @@ const Resources = () => {
           headers: { 'Authorization': `Bearer ${token}` }
       }).catch(err => console.error('Failed to increment download count:', err)); // Log error if count fails
       
-      // Construct the full URL correctly for download
-      const resourceUrl = `${API_BASE_URL}${resource.fileUrl}`;
+      // Check if the URL is already a complete URL (starts with http/https)
+      const resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `${API_BASE_URL}${resource.fileUrl}`;
       
       // Create a proper filename from the resource title
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
@@ -424,4 +424,4 @@ const Resources = () => {
   );
 };
 
-export default Resources; 
+export default Resources;

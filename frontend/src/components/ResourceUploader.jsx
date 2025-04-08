@@ -441,8 +441,8 @@ const ResourceUploader = () => {
       // Create a proper filename from the resource title
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
       
-      // Construct the full URL 
-      const resourceUrl = `https://caprep.onrender.com${resource.fileUrl}`;
+      // Check if the URL is already a complete URL (starts with http/https)
+      const resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `https://caprep.onrender.com${resource.fileUrl}`;
       
       // Create a temporary anchor element to trigger the download with the proper filename
       const link = document.createElement('a');
@@ -762,4 +762,4 @@ const ResourceUploader = () => {
   );
 };
 
-export default ResourceUploader; 
+export default ResourceUploader;
