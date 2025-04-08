@@ -38,7 +38,7 @@ router.get('/:itemType/:itemId', authMiddleware, async (req, res) => {
         itemId,
         itemModel,
         messages: [],
-        participants: [req.user._id]
+        participants: [req.user.id]
       });
       
       // Immediately populate the user info for the new discussion
@@ -64,7 +64,7 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
     console.log('Received message POST request:', {
       params: req.params,
       body: req.body,
-      user: req.user ? { _id: req.user._id, role: req.user.role } : 'No user'
+      user: req.user ? { id: req.user.id, role: req.user.role } : 'No user'
     });
     
     const { itemType, itemId } = req.params;
@@ -99,13 +99,13 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
         itemId,
         itemModel,
         messages: [],
-        participants: [req.user._id]
+        participants: [req.user.id]
       });
     }
     
     // Add message to discussion
     const newMessage = {
-      userId: req.user._id,
+      userId: req.user.id,
       content: content.trim(),
       parentMessageId: parentMessageId || null,
       likes: []
@@ -114,8 +114,8 @@ router.post('/:itemType/:itemId/message', authMiddleware, async (req, res) => {
     discussion.messages.push(newMessage);
     
     // Add user to participants if not already there
-    if (!discussion.participants.includes(req.user._id)) {
-      discussion.participants.push(req.user._id);
+    if (!discussion.participants.includes(req.user.id)) {
+      discussion.participants.push(req.user.id);
     }
     
     await discussion.save();
@@ -163,11 +163,11 @@ router.post('/:discussionId/message/:messageId/like', authMiddleware, async (req
     }
     
     // Check if user already liked the message
-    const userIndex = message.likes.indexOf(req.user._id);
+    const userIndex = message.likes.indexOf(req.user.id);
     
     if (userIndex === -1) {
       // User hasn't liked the message yet, add the like
-      message.likes.push(req.user._id);
+      message.likes.push(req.user.id);
     } else {
       // User already liked the message, remove the like
       message.likes.splice(userIndex, 1);
@@ -219,7 +219,7 @@ router.put('/:discussionId/message/:messageId', authMiddleware, async (req, res)
     
     // Check permissions: only allow users to edit their own messages or admins to edit any message
     const isAdmin = req.user.role === 'admin';
-    const isAuthor = message.userId.toString() === req.user._id.toString();
+    const isAuthor = message.userId.toString() === req.user.id.toString();
     
     if (!isAdmin && !isAuthor) {
       return res.status(403).json({ error: 'You do not have permission to edit this message' });
@@ -274,7 +274,7 @@ router.delete('/:discussionId/message/:messageId', authMiddleware, async (req, r
     
     // Check permissions: only allow users to delete their own messages or admins to delete any message
     const isAdmin = req.user.role === 'admin';
-    const isAuthor = message.userId.toString() === req.user._id.toString();
+    const isAuthor = message.userId.toString() === req.user.id.toString();
     
     if (!isAdmin && !isAuthor) {
       return res.status(403).json({ error: 'You do not have permission to delete this message' });
@@ -317,7 +317,7 @@ router.delete('/:discussionId/message/:messageId', authMiddleware, async (req, r
 router.get('/user/me', authMiddleware, async (req, res) => {
   try {
     const discussions = await Discussion.find({
-      participants: req.user._id
+      participants: req.user.id
     })
     .select('itemType itemId updatedAt messages')
     .sort('-updatedAt')
