@@ -181,19 +181,42 @@ const Resources = () => {
           headers: { 'Authorization': `Bearer ${token}` }
       }).catch(err => console.error('Failed to increment download count:', err)); // Log error if count fails
       
-      // Check if the URL is already a complete URL (starts with http/https)
-      const resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `${API_BASE_URL}${resource.fileUrl}`;
+      // Get the base resource URL
+      let resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `${API_BASE_URL}${resource.fileUrl}`;
+      
+      // Format Cloudinary URL for proper PDF viewing if it's a Cloudinary URL
+      if (resourceUrl.includes('cloudinary')) {
+        // For Cloudinary URLs, modify for better PDF viewing
+        if (resourceUrl.includes('/upload/')) {
+          // Extract the public ID and version from the URL
+          const urlParts = resourceUrl.split('/upload/');
+          const baseUrl = urlParts[0] + '/upload/';
+          const filePathPart = urlParts[1];
+          
+          // Add PDF specific transformations for better viewing
+          // fl_attachment ensures the file is treated as a downloadable attachment
+          // fl_sanitize ensures proper PDF rendering
+          resourceUrl = `${baseUrl}fl_any_format,fl_sanitize/${filePathPart}`;
+        }
+      }
       
       // Create a proper filename from the resource title
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
       
-      // Create a temporary anchor element to trigger the download with the proper filename
+      // Create a temporary anchor element to trigger the download or view
       const link = document.createElement('a');
       link.href = resourceUrl;
-      link.download = properFilename;
+      
+      // Always set target to _blank to open in a new tab
       link.target = '_blank';
       
-      // Append to body, click and remove (to trigger download with filename)
+      // For Cloudinary PDFs, we want to view in browser rather than force download
+      if (!resourceUrl.includes('cloudinary')) {
+        // For non-Cloudinary URLs, use download attribute to force download
+        link.download = properFilename;
+      }
+      
+      // Append to body, click and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
