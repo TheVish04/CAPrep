@@ -103,9 +103,10 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
         return;
       }
       
-      console.log(`Sending message to: ${API_URL}/api/discussions/${itemType}/${itemId}/message`);
-      console.log('Message data:', { 
+      // Log more detailed information about the reply
+      console.log('Sending message with details:', { 
         content: newMessage,
+        replyingTo: replyingTo,
         parentMessageId: replyingTo ? replyingTo._id : null
       });
       
@@ -158,6 +159,9 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
   };
   
   const handleReply = (message) => {
+    console.log('Replying to message:', message);
+    
+    // Store the entire message object as the replyingTo state
     setReplyingTo(message);
     
     // Get the name in a safe way using our helper function
@@ -165,6 +169,13 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     const firstName = displayName.split(' ')[0];
     
     setNewMessage(`@${firstName} `);
+    
+    // Set focus to the message input field
+    setTimeout(() => {
+      if (messageInputRef.current) {
+        messageInputRef.current.focus();
+      }
+    }, 100);
   };
   
   const cancelReply = () => {
@@ -307,9 +318,12 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     return withMentions;
   };
 
-  // Update the function to handle admin message styling
+  // Update the function to handle admin message styling and better debug replies
   const organizeMessages = () => {
     if (!messages || messages.length === 0) return [];
+    
+    // Debug: Log all messages to check structure
+    console.log('All messages:', messages);
     
     // First, separate parent messages and replies
     const parentMessages = [];
@@ -317,20 +331,32 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     
     messages.forEach(msg => {
       if (msg.parentMessageId) {
+        console.log('Found reply:', msg._id, 'to parent:', msg.parentMessageId);
+        
+        // Ensure we have an array for this parent
         if (!repliesMap[msg.parentMessageId]) {
           repliesMap[msg.parentMessageId] = [];
         }
+        
+        // Add this message to its parent's replies
         repliesMap[msg.parentMessageId].push(msg);
       } else {
         parentMessages.push(msg);
       }
     });
     
+    // Debug: Log the organized structure
+    console.log('Parent messages:', parentMessages.length);
+    console.log('Reply map:', repliesMap);
+    
     // Then, create thread objects
-    return parentMessages.map(message => ({
+    const threads = parentMessages.map(message => ({
       message,
       replies: repliesMap[message._id] || []
     })).sort((a, b) => new Date(a.message.timestamp) - new Date(b.message.timestamp));
+    
+    console.log('Final thread structure:', threads);
+    return threads;
   };
 
   // Helper function to correctly check for admin role
@@ -614,7 +640,12 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
         <div className="message-input-container">
           {replyingTo && (
             <div className="replying-to">
-              <span>Replying to {getUserDisplayName(replyingTo.userId)}</span>
+              <span>
+                Replying to: <strong>{getUserDisplayName(replyingTo.userId)}</strong>
+                {replyingTo.userId && replyingTo.userId.role === 'admin' && 
+                  <span className="admin-badge-small">ADMIN</span>
+                }
+              </span>
               <button onClick={cancelReply} className="cancel-reply">×</button>
             </div>
           )}
