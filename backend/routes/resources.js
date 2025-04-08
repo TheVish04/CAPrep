@@ -10,6 +10,7 @@ const { authMiddleware, adminMiddleware } = require('../middleware/authMiddlewar
 const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware');
 const User = require('../models/UserModel');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 
 // Configure multer to use memory storage for Cloudinary uploads
 const storage = multer.memoryStorage();
@@ -252,9 +253,36 @@ router.post('/:id/download', authMiddleware, async (req, res) => {
 });
 
 // GET - Stream a PDF file from Cloudinary
-router.get('/:id/download', authMiddleware, async (req, res) => {
+router.get('/:id/download', async (req, res) => {
   try {
     console.log(`PDF download request for resource ID: ${req.params.id}`);
+    
+    // Get token from query parameter or authorization header
+    let token = null;
+    
+    // Check for token in query parameter
+    if (req.query.token) {
+      token = req.query.token;
+      console.log('Using token from query parameter');
+    } 
+    // Check for token in Authorization header as fallback
+    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+      console.log('Using token from Authorization header');
+    }
+    
+    // If no token is provided, return unauthorized
+    if (!token) {
+      console.log('No token provided for download');
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.id) {
+      console.log('Invalid token provided');
+      return res.status(401).json({ error: 'Invalid authentication token' });
+    }
     
     // Find the resource
     const resource = await Resource.findById(req.params.id);

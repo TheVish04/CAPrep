@@ -178,12 +178,11 @@ const Resources = () => {
       
       console.log('Starting download process for resource:', resource.title);
       
-      // Use our proxy endpoint instead of direct Cloudinary URLs
-      const proxyUrl = `${API_BASE_URL}/api/resources/${resource._id}/download`;
-      console.log('Using proxy download URL:', proxyUrl);
+      // Use our proxy endpoint with token as query parameter
+      const proxyUrl = `${API_BASE_URL}/api/resources/${resource._id}/download?token=${token}`;
+      console.log('Using proxy download URL (with token)');
       
       // Open the proxy URL in a new tab
-      // This will handle both the download count increment and proper file delivery
       window.open(proxyUrl, '_blank');
       
     } catch (error) {
