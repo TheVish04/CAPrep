@@ -104,14 +104,12 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
     const result = await cloudinary.uploader.upload(dataURI, {
-      resource_type: 'raw',
+      resource_type: 'auto',
       folder: 'ca-exam-platform/resources',
       public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
       format: 'pdf',
       use_filename: true,
-      unique_filename: true,
-      overwrite: true,
-      type: 'upload'
+      unique_filename: true
     });
     
     // Create new resource with Cloudinary URL
@@ -188,7 +186,7 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
         
         if (publicId) {
           await cloudinary.uploader.destroy(`ca-exam-platform/resources/${publicId}`, { 
-            resource_type: 'raw'
+            resource_type: 'auto'
           });
         }
       } catch (cloudinaryError) {

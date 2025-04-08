@@ -184,29 +184,26 @@ const Resources = () => {
       // Get the resource URL
       let resourceUrl = resource.fileUrl;
       
-      // Format Cloudinary URL for proper PDF viewing and download
+      // For Cloudinary URLs
       if (resourceUrl.includes('cloudinary')) {
         try {
-          // For Cloudinary URLs, extract the base URL and file path
+          // Get direct PDF download URL by modifying the URL
           const urlParts = resourceUrl.split('/upload/');
           if (urlParts.length === 2) {
             const baseUrl = urlParts[0] + '/upload/';
             const filePathPart = urlParts[1];
             
-            // Create a download URL with fl_attachment flag
-            // This forces the browser to download rather than try to render
-            resourceUrl = `${baseUrl}fl_attachment/${filePathPart}`;
-            
-            // Open in a new window which will trigger the download
+            // Use simple PDF delivery without transformation parameters
+            // which might be causing the errors
             window.open(resourceUrl, '_blank');
-            return; // Exit early after opening the window
+            return;
           }
         } catch (err) {
-          console.error('Error formatting Cloudinary URL:', err);
+          console.error('Error opening resource URL:', err);
         }
       }
       
-      // For non-Cloudinary URLs or if Cloudinary URL processing fails
+      // For non-Cloudinary URLs
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
       const link = document.createElement('a');
       link.href = resourceUrl;
