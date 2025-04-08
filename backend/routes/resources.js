@@ -10,22 +10,8 @@ const { authMiddleware, adminMiddleware } = require('../middleware/authMiddlewar
 const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware');
 const User = require('../models/UserModel');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    const uploadDir = path.join(__dirname, '../uploads/resources');
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)){
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function(req, file, cb) {
-    // Generate unique filename to prevent conflicts
-    const uniqueFilename = `${uuidv4()}-${file.originalname.replace(/\s+/g, '-')}`;
-    cb(null, uniqueFilename);
-  }
-});
+// Configure multer to use memory storage for Cloudinary uploads
+const storage = multer.memoryStorage();
 
 // File filter to ensure only PDF files are uploaded
 const fileFilter = (req, file, cb) => {
@@ -41,6 +27,9 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: { fileSize: 15 * 1024 * 1024 } // Limit to 15MB
 });
+
+// Import cloudinary configuration
+const cloudinary = require('../config/cloudinary');
 
 // GET all resources with optional filtering
 router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
@@ -110,10 +99,18 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
     
-    // Create file URL (relative path)
-    const fileUrl = `/uploads/resources/${req.file.filename}`;
+    // Upload file to Cloudinary
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
-    // Create new resource
+    const result = await cloudinary.uploader.upload(dataURI, {
+      resource_type: 'auto',
+      folder: 'ca-exam-platform/resources',
+      public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
+      format: 'pdf'
+    });
+    
+    // Create new resource with Cloudinary URL
     const resource = new Resource({
       title: req.body.title,
       subject: req.body.subject,
@@ -121,7 +118,7 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       year: req.body.year,
       month: req.body.month,
       examStage: req.body.examStage,
-      fileUrl: fileUrl,
+      fileUrl: result.secure_url,
       fileType: 'pdf',
       fileSize: req.file.size
     });
@@ -130,11 +127,6 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     clearCache('/api/resources');
     res.status(201).json(resource);
   } catch (error) {
-    // Delete uploaded file if there was an error
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
-    
     logger.error(`Error creating resource: ${error.message}`);
     res.status(500).json({ error: 'Failed to create resource' });
   }
@@ -182,10 +174,18 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Resource not found' });
     }
     
-    // Delete the file from storage
-    const filePath = path.join(__dirname, '..', resource.fileUrl);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // Delete the file from Cloudinary if it's a Cloudinary URL
+    if (resource.fileUrl && resource.fileUrl.includes('cloudinary')) {
+      try {
+        // Extract public_id from Cloudinary URL
+        const publicId = resource.fileUrl.split('/').slice(-1)[0].split('.')[0];
+        if (publicId) {
+          await cloudinary.uploader.destroy(`ca-exam-platform/resources/${publicId}`, { resource_type: 'raw' });
+        }
+      } catch (cloudinaryError) {
+        logger.error(`Error deleting file from Cloudinary: ${cloudinaryError.message}`);
+        // Continue with deletion even if Cloudinary delete fails
+      }
     }
     
     // Delete the resource from database
