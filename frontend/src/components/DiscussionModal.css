@@ -213,6 +213,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
+  gap: 15px;
 }
 
 .message-author {
@@ -254,6 +256,8 @@
 .message-time {
   color: #6c757d;
   font-size: 12px;
+  margin-left: 10px;
+  flex-shrink: 0;
 }
 
 .message-content {
