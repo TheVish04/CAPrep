@@ -318,45 +318,47 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     return withMentions;
   };
 
-  // Update the function to handle admin message styling and better debug replies
+  // Update the function to handle nested replies
   const organizeMessages = () => {
     if (!messages || messages.length === 0) return [];
     
     // Debug: Log all messages to check structure
     console.log('All messages:', messages);
     
-    // First, separate parent messages and replies
-    const parentMessages = [];
-    const repliesMap = {};
-    
+    // Create a map of all messages by ID for easy lookup
+    const messageMap = {};
     messages.forEach(msg => {
+      messageMap[msg._id] = { ...msg, replies: [] };
+    });
+    
+    // Identify top-level parent messages and organize replies
+    const parentMessages = [];
+    
+    // First pass: organize messages into their correct parent
+    messages.forEach(msg => {
+      // If this message has a parent
       if (msg.parentMessageId) {
         console.log('Found reply:', msg._id, 'to parent:', msg.parentMessageId);
         
-        // Ensure we have an array for this parent
-        if (!repliesMap[msg.parentMessageId]) {
-          repliesMap[msg.parentMessageId] = [];
+        // If the parent exists in our map, add this as a reply to it
+        if (messageMap[msg.parentMessageId]) {
+          messageMap[msg.parentMessageId].replies.push(messageMap[msg._id]);
+        } else {
+          // If we can't find the parent, treat it as a top-level message
+          console.warn('Could not find parent message:', msg.parentMessageId);
+          parentMessages.push(messageMap[msg._id]);
         }
-        
-        // Add this message to its parent's replies
-        repliesMap[msg.parentMessageId].push(msg);
       } else {
-        parentMessages.push(msg);
+        // This is a top-level message
+        parentMessages.push(messageMap[msg._id]);
       }
     });
     
-    // Debug: Log the organized structure
-    console.log('Parent messages:', parentMessages.length);
-    console.log('Reply map:', repliesMap);
+    // Sort all the parent messages by timestamp
+    const sortedParents = parentMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
-    // Then, create thread objects
-    const threads = parentMessages.map(message => ({
-      message,
-      replies: repliesMap[message._id] || []
-    })).sort((a, b) => new Date(a.message.timestamp) - new Date(b.message.timestamp));
-    
-    console.log('Final thread structure:', threads);
-    return threads;
+    console.log('Organized messages with nested replies:', sortedParents);
+    return sortedParents;
   };
 
   // Helper function to correctly check for admin role
@@ -474,14 +476,27 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
     );
   };
   
-  const renderMessageThread = (thread) => {
-    const { message, replies } = thread;
+  const renderMessageThread = (message) => {
     return (
       <div key={message._id} className="message-thread">
         {renderMessage(message)}
-        {replies && replies.length > 0 && (
+        {message.replies && message.replies.length > 0 && (
           <div className="replies-container">
-            {replies.map((reply) => renderMessage(reply))}
+            {message.replies.map(renderNestedMessage)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Function to recursively render nested messages
+  const renderNestedMessage = (message) => {
+    return (
+      <div key={message._id} className="nested-reply">
+        {renderMessage(message)}
+        {message.replies && message.replies.length > 0 && (
+          <div className="nested-replies-container">
+            {message.replies.map(renderNestedMessage)}
           </div>
         )}
       </div>
