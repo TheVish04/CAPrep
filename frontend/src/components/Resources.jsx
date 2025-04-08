@@ -186,17 +186,25 @@ const Resources = () => {
       
       // Format Cloudinary URL for proper PDF viewing if it's a Cloudinary URL
       if (resourceUrl.includes('cloudinary')) {
-        // For Cloudinary URLs, modify for better PDF viewing
-        if (resourceUrl.includes('/upload/')) {
-          // Extract the public ID and version from the URL
-          const urlParts = resourceUrl.split('/upload/');
-          const baseUrl = urlParts[0] + '/upload/';
-          const filePathPart = urlParts[1];
-          
-          // Add PDF specific transformations for better viewing
-          // fl_attachment ensures the file is treated as a downloadable attachment
-          // fl_sanitize ensures proper PDF rendering
-          resourceUrl = `${baseUrl}fl_any_format,fl_sanitize/${filePathPart}`;
+        try {
+          // For Cloudinary URLs, modify for better PDF viewing
+          if (resourceUrl.includes('/upload/')) {
+            // Extract the public ID and version from the URL
+            const urlParts = resourceUrl.split('/upload/');
+            const baseUrl = urlParts[0] + '/upload/';
+            const filePathPart = urlParts[1];
+            
+            // Add PDF specific transformations for better viewing
+            // fl_attachment ensures the file is treated as a downloadable attachment
+            // fl_sanitize ensures proper PDF rendering
+            // fl_any_format ensures proper content-type headers
+            // q_auto applies automatic quality optimization
+            // pg_1 ensures first page loads quickly for preview
+            resourceUrl = `${baseUrl}fl_any_format,fl_sanitize,q_auto,pg_1/${filePathPart}`;
+          }
+        } catch (err) {
+          console.error('Error formatting Cloudinary URL:', err);
+          // If URL transformation fails, use the original URL
         }
       }
       
