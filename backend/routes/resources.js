@@ -107,7 +107,13 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       resource_type: 'auto',
       folder: 'ca-exam-platform/resources',
       public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
-      format: 'pdf'
+      format: 'pdf',
+      flags: 'attachment',
+      resource_type: 'raw',
+      type: 'private',
+      access_mode: 'authenticated',
+      use_filename: true,
+      unique_filename: true
     });
     
     // Create new resource with Cloudinary URL

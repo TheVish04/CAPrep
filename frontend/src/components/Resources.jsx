@@ -174,63 +174,54 @@ const Resources = () => {
   const handleDownload = async (resource) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return navigate('/login'); // Redirect if not logged in
+      if (!token) return navigate('/login');
       
-      // Increment download count (fire and forget, or handle response if needed)
-      axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
+      // Increment download count
+      await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
-      }).catch(err => console.error('Failed to increment download count:', err)); // Log error if count fails
+      }).catch(err => console.error('Failed to increment download count:', err));
       
       // Get the base resource URL
-      let resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `${API_BASE_URL}${resource.fileUrl}`;
+      let resourceUrl = resource.fileUrl;
       
-      // Format Cloudinary URL for proper PDF viewing if it's a Cloudinary URL
+      // Format Cloudinary URL for proper PDF downloading
       if (resourceUrl.includes('cloudinary')) {
         try {
-          // For Cloudinary URLs, modify for better PDF viewing
-          if (resourceUrl.includes('/upload/')) {
-            // Extract the public ID and version from the URL
-            const urlParts = resourceUrl.split('/upload/');
+          // Extract the public ID and version from the URL
+          const urlParts = resourceUrl.split('/upload/');
+          if (urlParts.length === 2) {
             const baseUrl = urlParts[0] + '/upload/';
             const filePathPart = urlParts[1];
             
-            // Add PDF specific transformations for better viewing
-            // fl_attachment ensures the file is treated as a downloadable attachment
-            // fl_sanitize ensures proper PDF rendering
-            // fl_any_format ensures proper content-type headers
-            // q_auto applies automatic quality optimization
-            // pg_1 ensures first page loads quickly for preview
-            resourceUrl = `${baseUrl}fl_any_format,fl_sanitize,q_auto,pg_1/${filePathPart}`;
+            // Add transformations for proper PDF download
+            // fl_attachment forces download
+            // fl_sanitize ensures proper PDF handling
+            // q_auto for optimization
+            resourceUrl = `${baseUrl}fl_attachment,fl_sanitize,q_auto/${filePathPart}`;
           }
         } catch (err) {
           console.error('Error formatting Cloudinary URL:', err);
-          // If URL transformation fails, use the original URL
         }
       }
       
       // Create a proper filename from the resource title
       const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
       
-      // Create a temporary anchor element to trigger the download or view
-      const link = document.createElement('a');
-      link.href = resourceUrl;
-      
-      // Always set target to _blank to open in a new tab
-      link.target = '_blank';
-      
-      // For Cloudinary PDFs, we want to view in browser rather than force download
-      if (!resourceUrl.includes('cloudinary')) {
-        // For non-Cloudinary URLs, use download attribute to force download
+      // For Cloudinary URLs, we'll use a direct window.open approach
+      if (resourceUrl.includes('cloudinary')) {
+        window.open(resourceUrl, '_blank');
+      } else {
+        // For non-Cloudinary URLs, use the download attribute
+        const link = document.createElement('a');
+        link.href = resourceUrl;
         link.download = properFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
-      
-      // Append to body, click and remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     } catch (error) {
       console.error('Error preparing resource download:', error);
-      alert('Failed to download the resource. Please check pop-up blockers or try again.');
+      alert('Failed to download the resource. Please try again.');
     }
   };
 
