@@ -549,26 +549,30 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 Reply
               </button>
             )}
-            {/* Only allow users to edit their own messages */}
+            
+            {/* Edit button - users can only edit their own messages */}
             {isCurrentUser && !isDeleted && (
-              <>
-                <button 
-                  className="edit-button" 
-                  onClick={() => handleStartEdit(message)}
-                  disabled={!!replyingTo}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="delete-button" 
-                  onClick={() => handleDeleteMessage(message._id)}
-                >
-                  Delete
-                </button>
-              </>
+              <button 
+                className="edit-button" 
+                onClick={() => handleStartEdit(message)}
+                disabled={!!replyingTo}
+              >
+                Edit
+              </button>
             )}
-            {/* Allow admins to delete any message, but not edit others' messages */}
-            {isAdmin && !isCurrentUser && !isDeleted && (
+
+            {/* Delete button - users can only delete their own messages */}
+            {isCurrentUser && !isDeleted && (
+              <button 
+                className="delete-button" 
+                onClick={() => handleDeleteMessage(message._id)}
+              >
+                Delete
+              </button>
+            )}
+            
+            {/* Admin can delete ANY message (but not edit others' messages) */}
+            {currentUser && currentUser.role === 'admin' && !isCurrentUser && !isDeleted && (
               <button 
                 className="delete-button" 
                 onClick={() => handleDeleteMessage(message._id)}
