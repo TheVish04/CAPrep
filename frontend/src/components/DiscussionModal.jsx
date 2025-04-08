@@ -335,8 +335,23 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
 
   // Helper function to correctly check for admin role
   const isUserAdmin = (userId) => {
-    const user = messages.find(msg => msg.userId === userId);
-    return user && user.userRole === 'admin';
+    // Check multiple ways a user might be identified as admin
+    if (!userId) return false;
+    
+    // If userId is an object with role property
+    if (userId && typeof userId === 'object' && userId.role === 'admin') {
+      return true;
+    }
+    
+    // If it's a string ID, look through messages
+    const userMsg = messages.find(msg => 
+      msg.userId && 
+      (msg.userId._id === userId || msg.userId === userId)
+    );
+    
+    return userMsg && 
+      ((userMsg.userId && userMsg.userId.role === 'admin') || 
+       userMsg.userRole === 'admin');
   };
 
   // Helper function to get the display name from a user object
@@ -448,14 +463,28 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
   };
   
   const renderMessage = (message) => {
-    const isCurrentUser = currentUser && message.userId === currentUser._id;
-    const isAdmin = isUserAdmin(message.userId);
+    console.log('Message data:', message);
+    
+    // Direct check for admin role
+    let isAdmin = false;
+    if (message.userId && typeof message.userId === 'object' && message.userId.role === 'admin') {
+      isAdmin = true;
+    } else if (message.userRole === 'admin') {
+      isAdmin = true;
+    }
+    
+    const isCurrentUser = currentUser && message.userId && 
+      (message.userId._id === currentUser._id || message.userId === currentUser._id);
+    
+    console.log('Is admin:', isAdmin, 'User data:', message.userId);
+    
     const isDeleted = message.isDeleted;
     
     // Choose message class based on user role
     let messageClass = isCurrentUser ? 'user-message' : 'system-message';
     if (isAdmin) {
       messageClass = 'admin-message';
+      console.log('Applied admin-message class for:', getUserDisplayName(message.userId));
     }
 
     if (message._id === editingMessage?._id) {
