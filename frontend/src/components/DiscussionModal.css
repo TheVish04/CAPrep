@@ -220,11 +220,11 @@
   align-items: center;
   gap: 8px;
   font-weight: 500;
-  color: #000000;
+  color: #ffffff;
 }
 
 .message-author span:not(.user-avatar) {
-  color: #000000;
+  color: #ffffff;
   background: none;
 }
 
@@ -259,7 +259,7 @@
 .message-content {
   font-size: 14px;
   line-height: 1.5;
-  color: #000000;
+  color: #ccc;
   word-break: break-word;
 }
 
@@ -325,11 +325,11 @@
   gap: 6px;
   font-weight: 500;
   font-size: 13px;
-  color: #000000;
+  color: #ffffff;
 }
 
 .reply-author span:not(.user-avatar) {
-  color: #000000;
+  color: #ffffff;
   background: none;
 }
 
@@ -341,7 +341,7 @@
 .reply-content {
   font-size: 13px;
   line-height: 1.4;
-  color: #000000;
+  color: #ccc;
 }
 
 .reply-actions {
