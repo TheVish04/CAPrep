@@ -9,6 +9,7 @@ const Resource = require('../models/ResourceModel');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware');
 const User = require('../models/UserModel');
+const axios = require('axios');
 
 // Configure multer to use memory storage for Cloudinary uploads
 const storage = multer.memoryStorage();
@@ -99,18 +100,38 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
     
+    // Log upload attempt
+    console.log(`Attempting to upload file: ${req.file.originalname}, size: ${req.file.size}, mimetype: ${req.file.mimetype}`);
+    
     // Upload file to Cloudinary
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
-    const result = await cloudinary.uploader.upload(dataURI, {
+    const uploadOptions = {
       resource_type: 'auto',
       folder: 'ca-exam-platform/resources',
       public_id: `${uuidv4()}-${req.file.originalname.replace(/\s+/g, '-')}`.replace(/\.pdf$/i, ''),
       format: 'pdf',
       use_filename: true,
       unique_filename: true
-    });
+    };
+    
+    console.log('Cloudinary upload options:', JSON.stringify(uploadOptions));
+    
+    const result = await cloudinary.uploader.upload(dataURI, uploadOptions)
+      .catch(err => {
+        console.error('Cloudinary upload error details:', JSON.stringify(err));
+        throw err;
+      });
+    
+    console.log('Cloudinary upload successful. Result:', JSON.stringify({
+      public_id: result.public_id,
+      format: result.format,
+      resource_type: result.resource_type,
+      secure_url: result.secure_url,
+      bytes: result.bytes,
+      type: result.type
+    }));
     
     // Create new resource with Cloudinary URL
     const resource = new Resource({
@@ -227,6 +248,68 @@ router.post('/:id/download', authMiddleware, async (req, res) => {
       console.error(`Error incrementing download count: ${error.message}`);
     }
     res.status(500).json({ error: 'Failed to increment download count' });
+  }
+});
+
+// GET - Stream a PDF file from Cloudinary
+router.get('/:id/download', authMiddleware, async (req, res) => {
+  try {
+    console.log(`PDF download request for resource ID: ${req.params.id}`);
+    
+    // Find the resource
+    const resource = await Resource.findById(req.params.id);
+    
+    if (!resource) {
+      console.log(`Resource not found: ${req.params.id}`);
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+    
+    // Increment download count
+    resource.downloadCount = (resource.downloadCount || 0) + 1;
+    await resource.save();
+    
+    const fileUrl = resource.fileUrl;
+    console.log(`Resource URL: ${fileUrl}`);
+    
+    if (!fileUrl) {
+      console.log(`No file URL found for resource: ${req.params.id}`);
+      return res.status(404).json({ error: 'Resource file not found' });
+    }
+    
+    // For Cloudinary URLs, proxy the PDF to avoid CORS issues
+    if (fileUrl.includes('cloudinary')) {
+      console.log('Proxying Cloudinary PDF download');
+      
+      try {
+        // Get the file from Cloudinary
+        const response = await axios({
+          method: 'GET',
+          url: fileUrl,
+          responseType: 'stream'
+        });
+        
+        // Set appropriate headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${resource.title.replace(/[^\w\s.-]/g, '')}.pdf"`);
+        
+        // Pipe the file to the response
+        response.data.pipe(res);
+      } catch (error) {
+        console.error(`Error streaming PDF from Cloudinary: ${error.message}`);
+        if (error.response) {
+          console.error(`Cloudinary response status: ${error.response.status}`);
+          console.error(`Cloudinary response headers: ${JSON.stringify(error.response.headers)}`);
+        }
+        return res.status(500).json({ error: 'Failed to download file from storage' });
+      }
+    } else {
+      // For non-Cloudinary URLs, redirect to the file
+      console.log('Redirecting to direct file URL');
+      return res.redirect(fileUrl);
+    }
+  } catch (error) {
+    console.error(`Error in download proxy: ${error.message}`);
+    res.status(500).json({ error: 'Failed to download resource' });
   }
 });
 

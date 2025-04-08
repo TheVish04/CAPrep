@@ -176,45 +176,25 @@ const Resources = () => {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
       
-      // Increment download count
-      await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
-          headers: { 'Authorization': `Bearer ${token}` }
-      }).catch(err => console.error('Failed to increment download count:', err));
+      console.log('Starting download process for resource:', resource.title);
       
-      // Get the resource URL
-      let resourceUrl = resource.fileUrl;
+      // Use our proxy endpoint instead of direct Cloudinary URLs
+      const proxyUrl = `${API_BASE_URL}/api/resources/${resource._id}/download`;
+      console.log('Using proxy download URL:', proxyUrl);
       
-      // For Cloudinary URLs
-      if (resourceUrl.includes('cloudinary')) {
-        try {
-          // Get direct PDF download URL by modifying the URL
-          const urlParts = resourceUrl.split('/upload/');
-          if (urlParts.length === 2) {
-            const baseUrl = urlParts[0] + '/upload/';
-            const filePathPart = urlParts[1];
-            
-            // Use simple PDF delivery without transformation parameters
-            // which might be causing the errors
-            window.open(resourceUrl, '_blank');
-            return;
-          }
-        } catch (err) {
-          console.error('Error opening resource URL:', err);
-        }
-      }
+      // Open the proxy URL in a new tab
+      // This will handle both the download count increment and proper file delivery
+      window.open(proxyUrl, '_blank');
       
-      // For non-Cloudinary URLs
-      const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-      const link = document.createElement('a');
-      link.href = resourceUrl;
-      link.download = properFilename;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     } catch (error) {
-      console.error('Error preparing resource download:', error);
-      alert('Failed to download the resource. Please try again.');
+      console.error('Error in download process:', error);
+      console.error('Error details:', JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        resourceId: resource._id,
+        resourceUrl: resource.fileUrl
+      }));
+      alert('Failed to download the resource. Please try again or check console for details.');
     }
   };
 
