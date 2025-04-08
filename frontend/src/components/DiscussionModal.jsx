@@ -542,6 +542,14 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
                 </button>
               </>
             )}
+            {isAdmin && !isCurrentUser && !isDeleted && (
+              <button 
+                className="delete-button" 
+                onClick={() => handleDeleteMessage(message._id)}
+              >
+                Delete
+              </button>
+            )}
           </div>
         )}
       </div>
