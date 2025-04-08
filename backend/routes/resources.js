@@ -123,6 +123,11 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       format: 'pdf',
       type: 'upload',
       access_mode: 'public',
+      // Optimize PDF for viewing and downloading
+      transformation: [
+        { fetch_format: 'auto' },
+        { quality: 'auto' }
+      ],
       invalidate: true,  // Invalidate any cached versions
       use_filename: true,
       unique_filename: true,
@@ -443,12 +448,17 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
         // Generate Cloudinary URL using the full path as public ID
         try {
           // First try as image type (most common for PDFs in Cloudinary)
+          // Note: We DON'T use fl_attachment flag here to avoid popup blockers
+          // Instead, we use a combination of settings that work better with browser downloads
           const downloadUrl = cloudinary.url(cleanPath, {
             resource_type: 'image',
             format: 'pdf',
-            flags: 'attachment',
             secure: true,
-            // Don't use transform array to avoid duplicate flags
+            // For downloads, use these transformations that won't trigger popup warnings
+            transformation: [
+              { fetch_format: 'auto' },
+              { quality: 'auto' }
+            ]
           });
           
           console.log(`Generated download URL: ${downloadUrl}`);
@@ -465,8 +475,8 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
             const downloadUrl = cloudinary.url(cleanPath, {
               resource_type: 'raw',
               format: 'pdf',
-              flags: 'attachment',
               secure: true,
+              // Don't use fl_attachment for the same reason
             });
             
             console.log(`Generated download URL (raw type): ${downloadUrl}`);

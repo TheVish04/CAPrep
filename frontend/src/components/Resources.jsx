@@ -178,9 +178,6 @@ const Resources = () => {
       
       console.log('Starting download process for resource:', resource.title);
       
-      // Show user feedback
-      alert('Starting download process. Please wait...');
-      
       // Get a proper download URL from the backend
       try {
         console.log('Fetching download URL from backend');
@@ -191,8 +188,29 @@ const Resources = () => {
         if (response.data && response.data.downloadUrl) {
           console.log('Received download URL:', response.data.downloadUrl);
           
-          // For Cloudinary URLs, a direct approach seems to work better
-          window.open(response.data.downloadUrl, '_blank');
+          // Create a hidden anchor element to trigger download without popup blocker
+          const downloadUrl = response.data.downloadUrl;
+          const filename = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+          
+          // Create a hidden anchor element
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = filename; // Suggest filename to browser
+          link.target = '_blank'; // Fallback to new tab if download doesn't work
+          link.rel = 'noopener noreferrer'; // Security best practice
+          
+          // Hide the element and add to DOM
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          
+          // Trigger the download
+          link.click();
+          
+          // Clean up
+          setTimeout(() => {
+            document.body.removeChild(link);
+          }, 100);
+          
           return;
         }
       } catch (urlError) {
@@ -200,9 +218,9 @@ const Resources = () => {
       }
       
       // Fallback to direct URL if the backend endpoint fails
-      console.log('Falling back to direct URL download');
+      console.log('Falling back to direct file download');
       
-      // Try to increment the download count separately if the download URL endpoint failed
+      // Try to increment the download count separately
       try {
         await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -211,12 +229,37 @@ const Resources = () => {
         console.error('Failed to increment download count:', countError);
       }
 
-      // Try direct download with the file URL
-      const fileUrl = resource.fileUrl;
-      console.log('Using direct resource URL:', fileUrl);
-      
-      // For Cloudinary URLs, just open in a new tab
-      window.open(fileUrl, '_blank');
+      // Use built-in browser download with Fetch API (avoids popup blockers)
+      try {
+        const fileUrl = resource.fileUrl;
+        console.log('Fetching file directly:', fileUrl);
+        
+        // Use fetch to get the file as a blob
+        const response = await fetch(fileUrl);
+        const blob = await response.blob();
+        
+        // Create a blob URL and trigger download
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl);
+          document.body.removeChild(link);
+        }, 100);
+      } catch (fetchError) {
+        console.error('Error fetching file directly:', fetchError);
+        
+        // Last resort: open in new tab (may trigger popup blocker)
+        alert('Download may be blocked by your browser. If a popup blocker message appears, please allow it to download the file.');
+        window.open(resource.fileUrl, '_blank');
+      }
     } catch (error) {
       console.error('Error in download process:', error);
       alert('Failed to download the resource. Please try again later.');
