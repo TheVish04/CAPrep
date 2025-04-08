@@ -178,6 +178,9 @@ const Resources = () => {
       
       console.log('Starting download process for resource:', resource.title);
       
+      // Show user feedback
+      alert('Starting download process. Please wait...');
+      
       // Get a proper download URL from the backend
       try {
         console.log('Fetching download URL from backend');
@@ -188,14 +191,8 @@ const Resources = () => {
         if (response.data && response.data.downloadUrl) {
           console.log('Received download URL:', response.data.downloadUrl);
           
-          // Create a download link and trigger it
-          const link = document.createElement('a');
-          link.href = response.data.downloadUrl;
-          link.download = response.data.filename || `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          // For Cloudinary URLs, a direct approach seems to work better
+          window.open(response.data.downloadUrl, '_blank');
           return;
         }
       } catch (urlError) {
@@ -206,24 +203,20 @@ const Resources = () => {
       console.log('Falling back to direct URL download');
       
       // Try to increment the download count separately if the download URL endpoint failed
-      await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      }).catch(err => {
-        console.error('Failed to increment download count:', err);
-      });
+      try {
+        await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (countError) {
+        console.error('Failed to increment download count:', countError);
+      }
 
       // Try direct download with the file URL
       const fileUrl = resource.fileUrl;
       console.log('Using direct resource URL:', fileUrl);
       
-      // For security-enabled Cloudinary URLs, try opening in new window
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.target = '_blank';
-      link.download = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // For Cloudinary URLs, just open in a new tab
+      window.open(fileUrl, '_blank');
     } catch (error) {
       console.error('Error in download process:', error);
       alert('Failed to download the resource. Please try again later.');

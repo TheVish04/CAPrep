@@ -117,14 +117,16 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     const uniqueId = `${uuidv4().substring(0, 8)}-${cleanFilename}`;
     
     const uploadOptions = {
-      resource_type: 'auto',
+      resource_type: 'image',  // 'image' handles PDFs better than 'raw' or 'auto'
       folder: 'ca-exam-platform/resources',
       public_id: uniqueId,
       format: 'pdf',
+      type: 'upload',
+      access_mode: 'public',
+      invalidate: true,  // Invalidate any cached versions
       use_filename: true,
       unique_filename: true,
-      overwrite: true,
-      access_mode: 'public'
+      overwrite: true
     };
     
     console.log('Cloudinary upload options:', JSON.stringify(uploadOptions));
@@ -431,34 +433,58 @@ router.get('/:id/download-url', authMiddleware, async (req, res) => {
       const urlParts = resource.fileUrl.split('/upload/');
       
       if (urlParts.length === 2) {
-        const basePath = urlParts[1].split('.')[0]; // Get the base path (public ID)
+        // Extract the public ID including the folder path
+        const fullPath = urlParts[1];
+        // Remove any existing flags or version info from the path
+        const cleanPath = fullPath.replace(/^v\d+\//, '').replace(/\.[^/.]+$/, '');
         
-        // Extract the folder and filename from the path
-        const pathParts = basePath.split('/');
-        const publicId = pathParts.join('/');
+        console.log(`Extracted path: ${cleanPath}`);
         
-        console.log(`Generating download URL for public ID: ${publicId}`);
-        
-        // Use cloudinary.url() to generate proper download URL with fl_attachment
-        // This ensures the file will be downloaded rather than displayed
-        const downloadUrl = cloudinary.url(publicId, {
-          resource_type: 'raw',
-          format: 'pdf',
-          flags: 'attachment',
-          secure: true,
-          transformation: [{ flags: 'attachment' }]
-        });
-        
-        console.log(`Generated download URL: ${downloadUrl}`);
-        
-        return res.status(200).json({ 
-          downloadUrl, 
-          filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf` 
-        });
+        // Generate Cloudinary URL using the full path as public ID
+        try {
+          // First try as image type (most common for PDFs in Cloudinary)
+          const downloadUrl = cloudinary.url(cleanPath, {
+            resource_type: 'image',
+            format: 'pdf',
+            flags: 'attachment',
+            secure: true,
+            // Don't use transform array to avoid duplicate flags
+          });
+          
+          console.log(`Generated download URL: ${downloadUrl}`);
+          
+          return res.status(200).json({ 
+            downloadUrl, 
+            filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf` 
+          });
+        } catch (err) {
+          console.error('Error generating URL as image type:', err);
+          
+          // If that fails, try as raw type
+          try {
+            const downloadUrl = cloudinary.url(cleanPath, {
+              resource_type: 'raw',
+              format: 'pdf',
+              flags: 'attachment',
+              secure: true,
+            });
+            
+            console.log(`Generated download URL (raw type): ${downloadUrl}`);
+            
+            return res.status(200).json({ 
+              downloadUrl, 
+              filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf` 
+            });
+          } catch (err2) {
+            console.error('Error generating URL as raw type:', err2);
+            // Fall through to the direct URL approach
+          }
+        }
       }
     }
     
-    // If it's not a Cloudinary URL or we couldn't parse it, return the original URL
+    // If we couldn't generate a Cloudinary URL, return the original URL
+    console.log('Using original file URL:', resource.fileUrl);
     return res.status(200).json({ 
       downloadUrl: resource.fileUrl,
       filename: `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`
