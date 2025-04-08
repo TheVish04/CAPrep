@@ -225,11 +225,18 @@ const initializeDatabase = async () => {
     app.use('/api/ai-quiz', aiQuizRoutes);
     app.use('/api/discussions', discussionRoutes);
     
-    // Create uploads directory if it doesn't exist
+    // Create uploads directory and resources subdirectory if they don't exist
     const uploadsDir = path.join(__dirname, 'uploads');
+    const resourcesDir = path.join(__dirname, 'uploads', 'resources');
+    
     if (!fs.existsSync(uploadsDir)) {
       console.log('Creating uploads folder:', uploadsDir);
       fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    if (!fs.existsSync(resourcesDir)) {
+      console.log('Creating resources folder:', resourcesDir);
+      fs.mkdirSync(resourcesDir, { recursive: true });
     }
     
     // Replace static file serving with a custom route for downloads
