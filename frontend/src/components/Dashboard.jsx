@@ -681,6 +681,9 @@ const Dashboard = () => {
             <div className="dashboard-card pomodoro">
               <h2>Pomodoro Study Timer</h2>
               <div className="pomodoro-container">
+                <div className="pomodoro-description">
+                  <p>The Pomodoro Technique is a time management method that breaks study sessions into focused 25-minute intervals, separated by short 5-minute breaks. This method enhances concentration, reduces mental fatigue, and improves productivity.</p>
+                </div>
                 <div className="pomodoro-timer">{formatTime(pomodoroTime)}</div>
                 <div className="pomodoro-controls">
                   {!pomodoroActive ? (
@@ -717,7 +720,7 @@ const Dashboard = () => {
                   </select>
                 </div>
                 <div className="pomodoro-info">
-                  <p>25 minute focus sessions. Take a 5 minute break after each session.</p>
+                  <p>Complete a session to automatically log 25 minutes of study time.</p>
                 </div>
               </div>
             </div>
