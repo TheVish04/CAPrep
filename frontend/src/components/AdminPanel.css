@@ -13,7 +13,7 @@
 .admin-container {
   max-width: 1200px;
   width: 90%;
-  padding: 20px 20px 40px; /* Reduced top padding since we added margin to tabs */
+  padding: 20px 20px 40px; /* Keep reduced top padding */
   margin: 0 auto;
 }
 
@@ -22,7 +22,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
-  margin-top: 80px; /* Added margin-top to avoid navbar overlap */
+  margin-top: 80px; /* Keep margin-top to avoid navbar overlap */
   background-color: #1e1e1e;
   border-radius: 10px;
   padding: 10px;
@@ -86,7 +86,7 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  padding: 20px 20px 40px; /* Reduced top padding */
+  padding: 20px 20px 40px; /* Keep reduced top padding */
   box-sizing: border-box;
 }
 
