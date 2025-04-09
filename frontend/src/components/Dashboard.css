@@ -2,23 +2,37 @@
 .dashboard-container {
   width: 100%;
   min-height: 100vh;
-  background-color: #f5f7fa;
-  color: #333;
+  background-color: #121212;
+  color: #ccc;
   font-family: 'Roboto', sans-serif;
 }
 
 .dashboard-wrapper {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 100px 20px 40px; /* Increased top padding to prevent navbar overlap */
 }
 
 .dashboard-title {
   font-size: 2.2rem;
   margin-bottom: 30px;
-  color: #2c3e50;
+  color: #ffffff;
   text-align: center;
   font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.dashboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #03a9f4, #239ecf);
+  border-radius: 4px;
 }
 
 /* Dashboard Grid Layout */
@@ -30,27 +44,29 @@
 
 /* Dashboard Cards */
 .dashboard-card {
-  background-color: #fff;
+  background-color: #1e1e1e;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
   min-height: 300px;
+  border: 1px solid #333;
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: #03a9f4;
 }
 
 .dashboard-card h2 {
   font-size: 1.4rem;
-  color: #2c3e50;
+  color: #03a9f4;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f2f5;
+  border-bottom: 2px solid #333;
   font-weight: 600;
 }
 
@@ -67,8 +83,8 @@
 .spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid #f0f2f5;
-  border-top: 5px solid #3498db;
+  border: 5px solid #333;
+  border-top: 5px solid #03a9f4;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -87,7 +103,7 @@
 .dashboard-error button {
   margin-top: 20px;
   padding: 10px 20px;
-  background-color: #3498db;
+  background-color: #03a9f4;
   color: white;
   border: none;
   border-radius: 5px;
@@ -100,6 +116,10 @@
   width: 100%;
   height: 250px;
   margin-top: 15px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #333;
 }
 
 /* Lists Styling */
@@ -114,17 +134,19 @@
 .recent-list li, .bookmark-list li, .new-resources-list li {
   padding: 12px 15px;
   margin-bottom: 10px;
-  background-color: #f9fafb;
+  background-color: #1F2833;
   border-radius: 8px;
   transition: background-color 0.2s ease;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid #333;
 }
 
 .recent-list li:hover, .bookmark-list li:hover, .new-resources-list li:hover {
-  background-color: #eef2f7;
+  background-color: #2c3e50;
+  border-color: #03a9f4;
 }
 
 .recent-item-content, .bookmark-item-content, .resource-item-content {
@@ -135,7 +157,7 @@
   margin: 0 0 5px;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .item-meta, .resource-meta {
@@ -143,12 +165,12 @@
   flex-wrap: wrap;
   gap: 8px;
   font-size: 0.8rem;
-  color: #7f8c8d;
+  color: #9B9C9D;
 }
 
 .recent-item-arrow, .bookmark-item-arrow, .resource-arrow {
   font-size: 1.5rem;
-  color: #3498db;
+  color: #03a9f4;
   margin-left: 10px;
 }
 
@@ -156,9 +178,9 @@
 .discussion-list li {
   padding: 15px;
   margin-bottom: 12px;
-  background-color: #f9fafb;
+  background-color: #1F2833;
   border-radius: 8px;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #03a9f4;
 }
 
 .discussion-item-header {
@@ -172,17 +194,17 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .discussion-date, .announcement-date, .resource-date {
   font-size: 0.75rem;
-  color: #95a5a6;
+  color: #9B9C9D;
 }
 
 .discussion-author {
   font-size: 0.85rem;
-  color: #7f8c8d;
+  color: #9B9C9D;
   margin-bottom: 8px;
 }
 
@@ -190,9 +212,9 @@
 .announcement-list li {
   padding: 15px;
   margin-bottom: 12px;
-  background-color: #f9fafb;
+  background-color: #1F2833;
   border-radius: 8px;
-  border-left: 4px solid #95a5a6;
+  border-left: 4px solid #555;
 }
 
 .announcement-list li.priority-high {
@@ -205,7 +227,7 @@
 
 .announcement-list li.priority-urgent {
   border-left-color: #c0392b;
-  background-color: #fde9e7;
+  background-color: rgba(192, 57, 43, 0.2);
 }
 
 .announcement-header {
@@ -222,12 +244,12 @@
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  background-color: #95a5a6;
+  background-color: #555;
   color: white;
 }
 
 .announcement-type.system {
-  background-color: #3498db;
+  background-color: #03a9f4;
 }
 
 .announcement-type.syllabus {
@@ -246,7 +268,7 @@
   margin: 0 0 8px;
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .announcement-list p {
@@ -287,24 +309,25 @@
 /* Tabs */
 .tabs {
   display: flex;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
 }
 
 .tab {
-  padding: 8px 15px;
+  padding: 10px 15px;
+  background: transparent;
   border: none;
-  background: none;
-  font-size: 0.95rem;
-  color: #7f8c8d;
+  color: #9B9C9D;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   position: relative;
+  transition: color 0.3s ease;
 }
 
 .tab.active {
-  color: #3498db;
-  font-weight: 500;
+  color: #03a9f4;
+  font-weight: 600;
 }
 
 .tab.active::after {
@@ -313,39 +336,45 @@
   bottom: -1px;
   left: 0;
   width: 100%;
-  height: 2px;
-  background-color: #3498db;
+  height: 3px;
+  background-color: #03a9f4;
+  border-radius: 3px 3px 0 0;
 }
 
 /* Continue Session Card */
 .continue-card {
+  background-color: #1F2833;
+  padding: 15px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  padding: 20px;
-  background-color: #f0f7fc;
-  border-radius: 8px;
+  margin-bottom: 15px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #333;
 }
 
 .continue-card:hover {
-  background-color: #e1f0fa;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-color: #03a9f4;
 }
 
 .continue-icon {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background-color: #3498db;
+  background-color: #142535;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 15px;
+  color: #03a9f4;
+  font-size: 1.5rem;
 }
 
 .continue-icon .material-icons {
-  color: white;
-  font-size: 1.5rem;
+  font-size: 24px;
 }
 
 .continue-details {
@@ -353,40 +382,46 @@
 }
 
 .continue-type {
-  margin: 0 0 5px;
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #2c3e50;
+  font-size: 0.85rem;
+  color: #9B9C9D;
+  margin-bottom: 5px;
 }
 
 .continue-time {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #7f8c8d;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 5px;
 }
 
 .continue-arrow {
-  background-color: #2980b9;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: #03a9f4;
+  font-size: 1.5rem;
+  margin-left: 10px;
+  transition: transform 0.2s;
+}
+
+.continue-card:hover .continue-arrow {
+  transform: translateX(5px);
 }
 
 /* No Data Display */
 .no-data {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 200px;
   text-align: center;
   padding: 20px;
-  color: #95a5a6;
-  font-size: 0.95rem;
-  background-color: #f9fafb;
+  color: #9B9C9D;
+  background-color: #1F2833;
   border-radius: 8px;
-  border: 1px dashed #e0e0e0;
+  border: 1px dashed #333;
+}
+
+.no-data p {
+  font-style: italic;
+  margin-bottom: 15px;
 }
 
 /* Pomodoro Timer */
@@ -394,30 +429,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 15px;
+  margin-top: 15px;
 }
 
 .pomodoro-timer {
   font-size: 3rem;
   font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 20px;
+  margin: 20px 0;
+  color: #ffffff;
 }
 
 .pomodoro-controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 15px;
+  margin: 15px 0;
 }
 
 .pomodoro-controls button {
   padding: 10px 20px;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 50px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .pomodoro-start {
@@ -439,32 +474,34 @@
 }
 
 .pomodoro-reset {
-  background-color: #95a5a6;
+  background-color: #3498db;
   color: white;
 }
 
 .pomodoro-reset:hover {
-  background-color: #7f8c8d;
+  background-color: #2980b9;
 }
 
 .pomodoro-subject {
+  margin: 15px 0;
   width: 100%;
-  margin-bottom: 15px;
 }
 
 .pomodoro-subject select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #e0e0e0;
+  background-color: #1F2833;
+  border: 1px solid #333;
   border-radius: 5px;
-  font-size: 0.95rem;
-  color: #2c3e50;
+  color: #ccc;
+  font-size: 0.9rem;
 }
 
 .pomodoro-info {
-  text-align: center;
-  color: #7f8c8d;
   font-size: 0.85rem;
+  color: #9B9C9D;
+  text-align: center;
+  margin-top: 10px;
 }
 
 /* Resource Stats */
