@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [pomodoroTime, setPomodoroTime] = useState(25 * 60); // 25 minutes in seconds
   const [pomodoroSubject, setPomodoroSubject] = useState('');
   const [pomodoroExamStage, setPomodoroExamStage] = useState('');
+  const [activeBookmarkTab, setActiveBookmarkTab] = useState('questions'); // Add state for active bookmark tab
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
@@ -520,29 +521,62 @@ const Dashboard = () => {
             <div className="dashboard-card bookmarks">
               <h2>Bookmarked Content</h2>
               <div className="tabs">
-                <button className="tab active">Questions</button>
-                <button className="tab">Resources</button>
+                <button 
+                  className={`tab ${activeBookmarkTab === 'questions' ? 'active' : ''}`}
+                  onClick={() => setActiveBookmarkTab('questions')}
+                >
+                  Questions
+                </button>
+                <button 
+                  className={`tab ${activeBookmarkTab === 'resources' ? 'active' : ''}`}
+                  onClick={() => setActiveBookmarkTab('resources')}
+                >
+                  Resources
+                </button>
               </div>
               <div className="tab-content">
-                {dashboardData && dashboardData.bookmarkedContent && dashboardData.bookmarkedContent.questions.length > 0 ? (
-                  <ul className="bookmark-list">
-                    {dashboardData.bookmarkedContent.questions.slice(0, 5).map((question) => (
-                      <li key={question._id} onClick={() => trackQuestionView(question._id)}>
-                        <div className="bookmark-item-content">
-                          <p className="item-title">{question.text.substring(0, 80)}...</p>
-                          <p className="item-meta">
-                            <span className="subject-tag">{question.subject}</span>
-                            <span className="difficulty-tag">{question.difficulty}</span>
-                          </p>
-                        </div>
-                        <div className="bookmark-item-arrow">›</div>
-                      </li>
-                    ))}
-                  </ul>
+                {activeBookmarkTab === 'questions' ? (
+                  dashboardData && dashboardData.bookmarkedContent && dashboardData.bookmarkedContent.questions.length > 0 ? (
+                    <ul className="bookmark-list">
+                      {dashboardData.bookmarkedContent.questions.slice(0, 5).map((question) => (
+                        <li key={question._id} onClick={() => trackQuestionView(question._id)}>
+                          <div className="bookmark-item-content">
+                            <p className="item-title">{question.text.substring(0, 80)}...</p>
+                            <p className="item-meta">
+                              <span className="subject-tag">{question.subject}</span>
+                              <span className="difficulty-tag">{question.difficulty}</span>
+                            </p>
+                          </div>
+                          <div className="bookmark-item-arrow">›</div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="no-data">
+                      <p>No bookmarked questions. Bookmark important questions to access them quickly.</p>
+                    </div>
+                  )
                 ) : (
-                  <div className="no-data">
-                    <p>No bookmarked questions. Bookmark important questions to access them quickly.</p>
-                  </div>
+                  dashboardData && dashboardData.bookmarkedContent && dashboardData.bookmarkedContent.resources.length > 0 ? (
+                    <ul className="bookmark-list">
+                      {dashboardData.bookmarkedContent.resources.slice(0, 5).map((resource) => (
+                        <li key={resource._id} onClick={() => trackResourceView(resource._id)}>
+                          <div className="bookmark-item-content">
+                            <p className="item-title">{resource.title}</p>
+                            <p className="item-meta">
+                              <span className="subject-tag">{resource.subject}</span>
+                              <span className="type-tag">{resource.resourceType || 'PDF'}</span>
+                            </p>
+                          </div>
+                          <div className="bookmark-item-arrow">›</div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="no-data">
+                      <p>No bookmarked resources. Bookmark useful resources to access them quickly.</p>
+                    </div>
+                  )
                 )}
               </div>
             </div>
