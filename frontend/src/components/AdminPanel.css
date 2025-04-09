@@ -1,3 +1,71 @@
+/* Admin Page */
+.admin-page {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  background: #121212;
+}
+
+.admin-container {
+  max-width: 1200px;
+  width: 90%;
+  padding: 90px 20px 40px; /* Adjusted for navbar */
+  margin: 0 auto;
+}
+
+/* Admin Tabs */
+.admin-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 10;
+}
+
+.admin-tabs button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  margin: 0 5px;
+  font-size: 1rem;
+  color: #b0b0b0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tabs button:hover {
+  color: #03a9f4;
+  background-color: rgba(3, 169, 244, 0.1);
+}
+
+.admin-tabs button.active-tab {
+  color: #03a9f4;
+  font-weight: 600;
+  background-color: rgba(3, 169, 244, 0.15);
+}
+
+.admin-tabs button.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background-color: #03a9f4;
+  border-radius: 3px;
+}
+
 /* Page Wrapper */
 .page-wrapper {
   min-height: 100vh;

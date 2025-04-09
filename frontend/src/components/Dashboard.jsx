@@ -151,6 +151,14 @@ const Dashboard = () => {
       case 'discussion':
         navigate('/discussions', { state: { discussionId: id } });
         break;
+      case 'announcement':
+        // Simply display the announcement in an alert for now
+        // In a full implementation, you might navigate to a dedicated announcements page
+        const announcement = dashboardData.announcements.find(a => a._id === id);
+        if (announcement) {
+          alert(`${announcement.title}\n\n${announcement.content}`);
+        }
+        break;
       default:
         break;
     }
@@ -644,7 +652,7 @@ const Dashboard = () => {
               {dashboardData && dashboardData.recentDiscussions && dashboardData.recentDiscussions.length > 0 ? (
                 <ul className="discussion-list">
                   {dashboardData.recentDiscussions.map((discussion) => (
-                    <li key={discussion._id}>
+                    <li key={discussion._id} onClick={() => navigateToItem('discussion', discussion._id)} style={{ cursor: 'pointer' }}>
                       <div className="discussion-item-header">
                         <h3>{discussion.title}</h3>
                         <span className="discussion-date">{formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true })}</span>
@@ -667,7 +675,11 @@ const Dashboard = () => {
               {dashboardData && dashboardData.announcements && dashboardData.announcements.length > 0 ? (
                 <ul className="announcement-list">
                   {dashboardData.announcements.map((announcement) => (
-                    <li key={announcement._id} className={`priority-${announcement.priority}`}>
+                    <li key={announcement._id} 
+                      className={`priority-${announcement.priority}`} 
+                      onClick={() => navigateToItem('announcement', announcement._id)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="announcement-header">
                         <span className={`announcement-type ${announcement.type}`}>{announcement.type}</span>
                         <span className="announcement-date">{formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true })}</span>

@@ -15,6 +15,7 @@ const AdminPanel = () => {
   const getActiveTab = () => {
     if (location.pathname.includes('/resources')) return 'resources';
     if (location.pathname.includes('/analytics')) return 'analytics';
+    if (location.pathname.includes('/announcements')) return 'announcements';
     return 'questions';
   };
   const [activeTab, setActiveTab] = useState(getActiveTab());
@@ -689,10 +690,12 @@ const AdminPanel = () => {
 
   const renderActiveTab = () => {
     switch (activeTab) {
-      case 'analytics':
-        return <AdminAnalytics />;
       case 'resources':
         return <ResourceUploader />;
+      case 'analytics':
+        return <AdminAnalytics />;
+      case 'announcements':
+        return null; // This tab is handled by a separate route
       case 'questions':
       default:
         return (
@@ -1308,40 +1311,50 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="admin-page">
       <Navbar />
-      <section className="admin-section">
-        <div className="admin-container">
-          <h1>Admin Panel</h1>
-          
-          <div className="admin-navigation">
-            <Link 
-              to="/admin" 
-              className={`admin-nav-link ${activeTab === 'questions' ? 'active' : ''}`}
-              onClick={() => setActiveTab('questions')} 
-            >
-              Manage Questions
-            </Link>
-            <Link 
-              to="/admin/resources" 
-              className={`admin-nav-link ${activeTab === 'resources' ? 'active' : ''}`}
-              onClick={() => setActiveTab('resources')} 
-            >
-              Manage PDF Resources
-            </Link>
-            <Link 
-              to="/admin/analytics" 
-              className={`admin-nav-link ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('analytics')} 
-            >
-              View Analytics
-            </Link>
-          </div>
-          
-          {renderActiveTab()}
-          
+      <div className="admin-container">
+        <div className="admin-tabs">
+          <button 
+            className={activeTab === 'questions' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('questions');
+              navigate('/admin');
+            }}
+          >
+            Manage Questions
+          </button>
+          <button 
+            className={activeTab === 'resources' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('resources');
+              navigate('/admin/resources');
+            }}
+          >
+            Manage Resources
+          </button>
+          <button 
+            className={activeTab === 'announcements' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('announcements');
+              navigate('/admin/announcements');
+            }}
+          >
+            Manage Announcements
+          </button>
+          <button 
+            className={activeTab === 'analytics' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('analytics');
+              navigate('/admin/analytics');
+            }}
+          >
+            Analytics
+          </button>
         </div>
-      </section>
+        
+        {renderActiveTab()}
+      </div>
     </div>
   );
 };
