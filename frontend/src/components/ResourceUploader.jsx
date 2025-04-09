@@ -88,19 +88,51 @@ const ResourceUploader = () => {
       }
     }
 
+    // Load cached filters
+    const cachedFilters = localStorage.getItem('resourceFilterSelections');
+    if (cachedFilters) {
+      try {
+        const parsedFilters = JSON.parse(cachedFilters);
+        setFilters(prev => ({
+          ...prev,
+          examStage: parsedFilters.examStage || '',
+          subject: parsedFilters.subject || '',
+          paperType: parsedFilters.paperType || '',
+          year: parsedFilters.year || '',
+          month: parsedFilters.month || '',
+          search: parsedFilters.search || '',
+        }));
+      } catch (error) {
+        console.error('Error parsing cached filters:', error);
+      }
+    }
+
     // Fetch resources
     fetchResources(token);
   }, [navigate]);
 
   const fetchResources = async (token, query = '') => {
     try {
-      const response = await fetch(`https://caprep.onrender.com/api/resources${query ? `?${query}` : ''}`, {
+      // Set a loading state
+      console.log(`Fetching resources with query: ${query}`);
+      
+      // Add a cache-busting parameter to ensure we get fresh data
+      const timestamp = new Date().getTime();
+      const cacheParam = `cacheBust=${timestamp}`;
+      const url = `https://caprep.onrender.com/api/resources${query ? `?${query}&${cacheParam}` : `?${cacheParam}`}`;
+      
+      console.log(`Fetching from URL: ${url}`);
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'x-skip-cache': 'true' // Skip the cache for this request
         },
       });
+      
       if (response.ok) {
         const data = await response.json();
+        console.log(`Fetched ${Array.isArray(data) ? data.length : 0} resources`);
         setResources(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to fetch resources:', response.statusText);
@@ -274,7 +306,7 @@ const ResourceUploader = () => {
         });
         
         if (response.ok) {
-          // Refresh resources after update
+          // Fetch fresh resources after update
           await fetchResources(token);
           resetForm();
           setIsEditMode(false);
@@ -304,11 +336,22 @@ const ResourceUploader = () => {
         });
         
         if (response.ok) {
-          const newResource = await response.json();
-          // Update resources state immediately with the new resource
-          setResources(prevResources => [newResource, ...prevResources]);
+          // Clear server cache via admin endpoint
+          try {
+            await fetch('https://caprep.onrender.com/api/admin/clear-cache', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            console.log('Cache cleared after resource upload');
+          } catch (cacheError) {
+            console.error('Failed to clear cache:', cacheError);
+          }
+          
+          // Fetch fresh resources after adding new one
           resetForm();
-          // Also fetch resources to ensure we have the latest data
           await fetchResources(token);
           alert('Resource uploaded successfully!');
         } else {
@@ -435,18 +478,31 @@ const ResourceUploader = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const query = new URLSearchParams(filters).toString();
+    let queryParams = new URLSearchParams();
+    
+    // Add each non-empty filter to query params
+    if (filters.subject) queryParams.append('subject', filters.subject);
+    if (filters.paperType) queryParams.append('paperType', filters.paperType);
+    if (filters.year) queryParams.append('year', filters.year);
+    if (filters.month) queryParams.append('month', filters.month);
+    if (filters.examStage) queryParams.append('examStage', filters.examStage);
+    if (filters.search) queryParams.append('search', filters.search);
+
+    const query = queryParams.toString();
+    console.log(`Applying filters: ${query}`);
+    
     fetchResources(token, query);
     
-    // Cache the filter selections
+    // Cache the filter selections including the search term
     const selectionsToCache = {
-      examStage: filters.examStage,
-      subject: filters.subject,
-      paperType: filters.paperType,
-      year: filters.year,
-      month: filters.month,
+      examStage: filters.examStage || '',
+      subject: filters.subject || '',
+      paperType: filters.paperType || '',
+      year: filters.year || '',
+      month: filters.month || '',
+      search: filters.search || ''
     };
-    localStorage.setItem('resourceUploaderSelections', JSON.stringify(selectionsToCache));
+    localStorage.setItem('resourceFilterSelections', JSON.stringify(selectionsToCache));
   };
 
   // Add a new function to handle viewing resources with proper filename
@@ -675,13 +731,135 @@ const ResourceUploader = () => {
             <h3>Manage Resources</h3>
             
             <div className="filter-toolbar">
-              <div className="search-box">
-                <input
-                  type="text"
-                  placeholder="Search resources..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                />
+              <div className="filter-row">
+                <select
+                  name="examStage"
+                  value={filters.examStage}
+                  onChange={handleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="">All Exam Stages</option>
+                  <option value="Foundation">Foundation</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Final">Final</option>
+                </select>
+                
+                <select
+                  name="subject"
+                  value={filters.subject}
+                  onChange={handleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="">All Subjects</option>
+                  {filters.examStage === 'Foundation' ? (
+                    // Foundation subjects
+                    <>
+                      <option value="Accounting">Accounting</option>
+                      <option value="Business Laws">Business Laws</option>
+                      <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                      <option value="Business Economics">Business Economics</option>
+                    </>
+                  ) : filters.examStage === 'Intermediate' ? (
+                    // Intermediate subjects
+                    <>
+                      <option value="Advanced Accounting">Advanced Accounting</option>
+                      <option value="Corporate Laws">Corporate Laws</option>
+                      <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                      <option value="Taxation">Taxation</option>
+                      <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                      <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                    </>
+                  ) : filters.examStage === 'Final' ? (
+                    // Final subjects
+                    <>
+                      <option value="Financial Reporting">Financial Reporting</option>
+                      <option value="Advanced Financial Management">Advanced Financial Management</option>
+                      <option value="Advanced Auditing">Advanced Auditing</option>
+                      <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                      <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                      <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                    </>
+                  ) : (
+                    // Show all subjects when All Exam Stages is selected
+                    <>
+                      <option value="Accounting">Accounting</option>
+                      <option value="Business Laws">Business Laws</option>
+                      <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                      <option value="Business Economics">Business Economics</option>
+                      <option value="Advanced Accounting">Advanced Accounting</option>
+                      <option value="Corporate Laws">Corporate Laws</option>
+                      <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                      <option value="Taxation">Taxation</option>
+                      <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                      <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                      <option value="Financial Reporting">Financial Reporting</option>
+                      <option value="Advanced Financial Management">Advanced Financial Management</option>
+                      <option value="Advanced Auditing">Advanced Auditing</option>
+                      <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                      <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                      <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                    </>
+                  )}
+                </select>
+                
+                <select
+                  name="paperType"
+                  value={filters.paperType}
+                  onChange={handleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="">All Paper Types</option>
+                  <option value="MTP">MTP</option>
+                  <option value="RTP">RTP</option>
+                  <option value="PYQS">PYQS</option>
+                  <option value="Model TP">Model TP</option>
+                </select>
+              </div>
+              
+              <div className="filter-row">
+                <select
+                  name="year"
+                  value={filters.year}
+                  onChange={handleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="">All Years</option>
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                    <option key={year} value={year.toString()}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  name="month"
+                  value={filters.month}
+                  onChange={handleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="">All Months</option>
+                  <option value="January">January</option>
+                  <option value="February">February</option>
+                  <option value="March">March</option>
+                  <option value="April">April</option>
+                  <option value="May">May</option>
+                  <option value="June">June</option>
+                  <option value="July">July</option>
+                  <option value="August">August</option>
+                  <option value="September">September</option>
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+                
+                <div className="search-box">
+                  <input
+                    type="text"
+                    placeholder="Search resources..."
+                    value={filters.search}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  />
+                </div>
               </div>
               
               <button 
@@ -689,6 +867,24 @@ const ResourceUploader = () => {
                 onClick={applyFilters}
               >
                 Apply Filters
+              </button>
+              
+              <button 
+                className="reset-filter-btn"
+                onClick={() => {
+                  setFilters({
+                    subject: '',
+                    paperType: '',
+                    year: '',
+                    month: '',
+                    examStage: '',
+                    search: '',
+                  });
+                  localStorage.removeItem('resourceFilterSelections');
+                  fetchResources(localStorage.getItem('token'));
+                }}
+              >
+                Reset Filters
               </button>
             </div>
             
