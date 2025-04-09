@@ -8,12 +8,13 @@
   align-items: center;
   box-sizing: border-box;
   background: #121212;
+  padding-top: 60px; /* Add top padding for navbar */
 }
 
 .admin-container {
   max-width: 1200px;
   width: 90%;
-  padding: 20px 20px 40px; /* Keep reduced top padding */
+  padding: 80px 20px 40px; /* Increase top padding to avoid navbar overlap */
   margin: 0 auto;
 }
 
@@ -22,7 +23,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
-  margin-top: 0; /* Remove margin-top to avoid navbar overlap */
+  margin-top: 0;
   background-color: #1e1e1e;
   border-radius: 10px;
   padding: 10px;

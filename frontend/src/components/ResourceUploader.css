@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  padding: 20px 20px 40px; /* Reduced padding to avoid navbar overlap */
+  padding: 80px 20px 40px; /* Increased top padding to avoid navbar overlap */
   box-sizing: border-box;
 }
 
@@ -52,13 +52,12 @@
 }
 
 .resource-uploader-container h2 {
-  color: #2c3e50;
+  color: #03a9f4;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #333;
   text-align: center;
   font-size: 1.8rem;
-  color: white;
 }
 
 /* Admin Tabs */
@@ -456,9 +455,9 @@
 
 .reset-btn {
   padding: 8px 16px;
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
+  background-color: #1F2833;
+  color: #ccc;
+  border: 1px solid #333;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
@@ -466,5 +465,5 @@
 }
 
 .reset-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #2c3e50;
 } 
