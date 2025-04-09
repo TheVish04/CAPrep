@@ -267,3 +267,83 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.7;
   margin-bottom: 20px;
 }
+
+/* Report Section Styles */
+.report-section {
+  margin: 40px 0;
+  padding: 30px;
+  background-color: #0B0C10;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid #03a9f4;
+}
+
+.report-form {
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #b0b0b0;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #ccc;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #03a9f4;
+  box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.1);
+}
+
+.submit-button {
+  background-color: #03a9f4;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #0288d1;
+}
+
+.status-message {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.status-message.success {
+  background-color: rgba(46, 125, 50, 0.1);
+  color: #4caf50;
+  border-left: 4px solid #4caf50;
+}
+
+.status-message.error {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #f44336;
+  border-left: 4px solid #f44336;
+}
