@@ -62,8 +62,8 @@ const RedirectIfLoggedIn = ({ element }) => {
       // Validate token format
       const parts = token.split('.');
       if (parts.length === 3) {
-        // Token seems valid, redirect to questions page
-        return <Navigate to="/questions" />;
+        // Token seems valid, redirect to dashboard
+        return <Navigate to="/dashboard" />;
       }
     } catch (error) {
       console.error('Error checking token:', error);

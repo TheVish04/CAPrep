@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './LandingPage.css';
@@ -11,6 +11,7 @@ const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -30,7 +31,21 @@ const LandingPage = () => {
     
     // Check if user is logged in
     const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    if (token) {
+      try {
+        // Validate token format
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          setIsLoggedIn(true);
+          setShouldRedirect(true); // Redirect logged-in users to dashboard
+        } else {
+          localStorage.removeItem('token'); // Clear invalid token
+        }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        localStorage.removeItem('token'); // Clear invalid token
+      }
+    }
     
     // Fetch question count from the backend
     const fetchQuestionCount = async () => {
@@ -51,6 +66,10 @@ const LandingPage = () => {
     fetchQuestionCount();
     AOS.refresh();
   }, []);
+
+  if (shouldRedirect) {
+    return <Navigate to="/dashboard" />;
+  }
 
   return (
     <div className={`landing-page ${isVisible ? 'visible' : ''}`}>

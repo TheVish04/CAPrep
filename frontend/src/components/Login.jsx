@@ -70,7 +70,7 @@ const Login = () => {
         if (role === 'admin') {
           navigate('/admin');
         } else {
-          navigate('/questions');
+          navigate('/dashboard');
         }
       } else {
         throw new Error('No token received in response');
