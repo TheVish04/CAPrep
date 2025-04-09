@@ -118,51 +118,6 @@ The application follows a client-server architecture with clear separation of co
 - **Discussion Collection**: Forum posts and replies
 - **Announcement Collection**: System-wide notifications
 
-## Environment Configuration
-
-### Backend Environment Variables (.env)
-```
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# MongoDB Connection
-MONGODB_URI=mongodb://localhost:27017/ca-exam-platform
-MONGODB_URI_PROD=mongodb+srv://...
-
-# JWT Authentication
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRES_IN=7d
-JWT_REFRESH_SECRET=your_refresh_token_secret
-JWT_REFRESH_EXPIRES_IN=30d
-
-# Email Configuration
-EMAIL_SERVICE=smtp
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@example.com
-EMAIL_PASSWORD=your_email_password
-EMAIL_FROM=support@caexamplatform.com
-
-# Razorpay Configuration
-RAZORPAY_KEY_ID=your_razorpay_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Google AI Configuration
-GOOGLE_AI_API_KEY=your_google_ai_api_key
-```
-
-### Frontend Environment Variables (.env)
-```
-VITE_API_URL=http://localhost:5000/api
-VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
-```
-
 ## API Endpoints
 
 ### Authentication
@@ -280,7 +235,7 @@ VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 ### Getting Started
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ca-exam-platform.git
+   git clone https://github.com/TheVish04/CAPrep.git
    cd ca-exam-platform
    ```
 
