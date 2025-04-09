@@ -1,11 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import './AdminAnnouncements.css';
 import { format } from 'date-fns';
 
 const AdminAnnouncements = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    if (location.pathname.includes('/resources')) return 'resources';
+    if (location.pathname.includes('/analytics')) return 'analytics';
+    if (location.pathname.includes('/announcements')) return 'announcements';
+    return 'questions';
+  };
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+  
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location.pathname]);
+  
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,8 +35,6 @@ const AdminAnnouncements = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-  
-  const navigate = useNavigate();
 
   // Fetch announcements on component mount
   useEffect(() => {
@@ -226,7 +239,48 @@ const AdminAnnouncements = () => {
     <div className="admin-announcements-container">
       <Navbar />
       <div className="admin-announcements-wrapper">
-        <h1 className="admin-announcements-title">Manage Announcements</h1>
+        <h1 className="admin-announcements-title">Admin Panel</h1>
+        
+        <div className="admin-tabs">
+          <button 
+            className={activeTab === 'questions' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('questions');
+              navigate('/admin');
+            }}
+          >
+            Manage Questions
+          </button>
+          <button 
+            className={activeTab === 'resources' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('resources');
+              navigate('/admin/resources');
+            }}
+          >
+            Manage Resources
+          </button>
+          <button 
+            className={activeTab === 'announcements' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('announcements');
+              navigate('/admin/announcements');
+            }}
+          >
+            Manage Announcements
+          </button>
+          <button 
+            className={activeTab === 'analytics' ? 'active-tab' : ''} 
+            onClick={() => {
+              setActiveTab('analytics');
+              navigate('/admin/analytics');
+            }}
+          >
+            Analytics
+          </button>
+        </div>
+        
+        <h2>Manage Announcements</h2>
         
         {error && <div className="error-message">{error}</div>}
         

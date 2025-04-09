@@ -374,4 +374,54 @@
     padding: 8px 10px;
     font-size: 0.9rem;
   }
+}
+
+/* Admin Tabs */
+.admin-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  margin-top: 10px;
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 10;
+}
+
+.admin-tabs button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  margin: 0 5px;
+  font-size: 1rem;
+  color: #b0b0b0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tabs button:hover {
+  color: #03a9f4;
+  background-color: rgba(3, 169, 244, 0.1);
+}
+
+.admin-tabs button.active-tab {
+  color: #03a9f4;
+  font-weight: 600;
+  background-color: rgba(3, 169, 244, 0.15);
+}
+
+.admin-tabs button.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background-color: #03a9f4;
+  border-radius: 3px;
 } 

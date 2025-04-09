@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import './ResourceUploader.css';
 
 const ResourceUploader = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    if (location.pathname.includes('/resources')) return 'resources';
+    if (location.pathname.includes('/analytics')) return 'analytics';
+    if (location.pathname.includes('/announcements')) return 'announcements';
+    return 'questions';
+  };
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+  
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location.pathname]);
   
   // Initialize form state with empty values
   const [formData, setFormData] = useState({
@@ -526,9 +539,43 @@ const ResourceUploader = () => {
         <div className="resource-uploader-container">
           <h1>Admin Panel</h1>
           
-          <div className="admin-navigation">
-            <Link to="/admin" className="admin-nav-link">Manage Questions</Link>
-            <Link to="/admin/resources" className="admin-nav-link active">Manage PDF Resources</Link>
+          <div className="admin-tabs">
+            <button 
+              className={activeTab === 'questions' ? 'active-tab' : ''} 
+              onClick={() => {
+                setActiveTab('questions');
+                navigate('/admin');
+              }}
+            >
+              Manage Questions
+            </button>
+            <button 
+              className={activeTab === 'resources' ? 'active-tab' : ''} 
+              onClick={() => {
+                setActiveTab('resources');
+                navigate('/admin/resources');
+              }}
+            >
+              Manage Resources
+            </button>
+            <button 
+              className={activeTab === 'announcements' ? 'active-tab' : ''} 
+              onClick={() => {
+                setActiveTab('announcements');
+                navigate('/admin/announcements');
+              }}
+            >
+              Manage Announcements
+            </button>
+            <button 
+              className={activeTab === 'analytics' ? 'active-tab' : ''} 
+              onClick={() => {
+                setActiveTab('analytics');
+                navigate('/admin/analytics');
+              }}
+            >
+              Analytics
+            </button>
           </div>
           
           <h2>{isEditMode ? 'Edit Resource' : 'Upload PDF Resource'}</h2>

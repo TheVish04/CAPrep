@@ -61,34 +61,71 @@
   color: white;
 }
 
-.admin-navigation {
+/* Admin Tabs */
+.admin-tabs {
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
-  gap: 15px;
+  margin-top: 10px;
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 10;
+}
+
+.admin-tabs button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  margin: 0 5px;
+  font-size: 1rem;
+  color: #b0b0b0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tabs button:hover {
+  color: #03a9f4;
+  background-color: rgba(3, 169, 244, 0.1);
+}
+
+.admin-tabs button.active-tab {
+  color: #03a9f4;
+  font-weight: 600;
+  background-color: rgba(3, 169, 244, 0.15);
+}
+
+.admin-tabs button.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background-color: #03a9f4;
+  border-radius: 3px;
+}
+
+/* Remove the old admin-navigation styles */
+.admin-navigation {
+  display: none;
 }
 
 .admin-nav-link {
-  padding: 10px 20px;
-  background-color: #1F2833;
-  color: #9B9C9D;
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  border: 2px solid transparent;
+  display: none;
 }
 
 .admin-nav-link:hover {
-  background-color: #0288d1;
-  color: #ffffff;
-  transform: translateY(-2px);
+  display: none;
 }
 
 .admin-nav-link.active {
-  background-color: #03a9f4;
-  color: #ffffff;
-  border-color: #0288d1;
+  display: none;
 }
 
 .resource-form {
