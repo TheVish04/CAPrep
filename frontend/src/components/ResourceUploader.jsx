@@ -537,8 +537,6 @@ const ResourceUploader = () => {
       <Navbar />
       <div className="resource-uploader-section">
         <div className="resource-uploader-container">
-          <h1>Admin Panel</h1>
-          
           <div className="admin-tabs">
             <button 
               className={activeTab === 'questions' ? 'active-tab' : ''} 

@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  padding: 90px 20px 40px; /* Adjusted for navbar */
+  padding: 20px 20px 40px; /* Reduced padding to avoid navbar overlap */
   box-sizing: border-box;
 }
 
@@ -270,9 +270,10 @@
 .filter-toolbar {
   margin-bottom: 20px;
   padding: 15px;
-  background-color: #f9f9f9;
+  background-color: #121212;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border: 1px solid #333;
 }
 
 .filter-row {
@@ -286,9 +287,10 @@
   flex: 1;
   min-width: 150px;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #333;
   border-radius: 4px;
-  background-color: white;
+  background-color: #1F2833;
+  color: #ccc;
   font-size: 14px;
 }
 
@@ -300,8 +302,10 @@
 .search-box input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #333;
   border-radius: 4px;
+  background-color: #1F2833;
+  color: #ccc;
   font-size: 14px;
 }
 
@@ -316,21 +320,22 @@
 }
 
 .filter-btn {
-  background-color: #4a90e2;
+  background-color: #03a9f4;
   color: white;
 }
 
 .filter-btn:hover {
-  background-color: #357ab8;
+  background-color: #0288d1;
 }
 
 .reset-filter-btn {
-  background-color: #f2f2f2;
-  color: #555;
+  background-color: #1F2833;
+  color: #ccc;
+  border: 1px solid #333;
 }
 
 .reset-filter-btn:hover {
-  background-color: #e5e5e5;
+  background-color: #2c3e50;
 }
 
 .resources-table-container {

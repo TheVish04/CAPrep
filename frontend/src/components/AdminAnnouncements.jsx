@@ -239,8 +239,6 @@ const AdminAnnouncements = () => {
     <div className="admin-announcements-container">
       <Navbar />
       <div className="admin-announcements-wrapper">
-        <h1 className="admin-announcements-title">Admin Panel</h1>
-        
         <div className="admin-tabs">
           <button 
             className={activeTab === 'questions' ? 'active-tab' : ''} 
@@ -280,9 +278,9 @@ const AdminAnnouncements = () => {
           </button>
         </div>
         
-        <h2>Manage Announcements</h2>
-        
         {error && <div className="error-message">{error}</div>}
+        
+        <h2 className="section-title">Manage Announcements</h2>
         
         <div className="announcement-actions">
           <button 

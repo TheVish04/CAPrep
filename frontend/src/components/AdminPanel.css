@@ -22,7 +22,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
-  margin-top: 80px; /* Keep margin-top to avoid navbar overlap */
+  margin-top: 0; /* Remove margin-top to avoid navbar overlap */
   background-color: #1e1e1e;
   border-radius: 10px;
   padding: 10px;
