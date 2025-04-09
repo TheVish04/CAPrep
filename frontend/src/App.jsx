@@ -19,6 +19,7 @@ import ResourceUploader from './components/ResourceUploader';
 import QuizHistory from './components/QuizHistory';
 import UserProfile from './components/UserProfile';
 import QuizReview from './pages/QuizReview';
+import Dashboard from './components/Dashboard';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -114,6 +115,10 @@ const App = () => {
             <Route
               path="/resources"
               element={<ProtectedRoute element={<Resources />} />}
+            />
+            <Route
+              path="/dashboard"
+              element={<ProtectedRoute element={<Dashboard />} />}
             />
             
             {/* Admin Routes */}

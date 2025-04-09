@@ -21,6 +21,7 @@ const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const aiQuizRoutes = require('./routes/aiQuiz');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 
@@ -180,6 +181,7 @@ const initializeDatabase = async () => {
     app.use('/api/admin', adminRoutes);
     app.use('/api/ai-quiz', aiQuizRoutes);
     app.use('/api/discussions', discussionRoutes);
+    app.use('/api/dashboard', dashboardRoutes);
     
     // Uploads are now handled directly through Cloudinary
     // No need to create local upload directories
@@ -207,6 +209,7 @@ const initializeDatabase = async () => {
       app.use('/api/admin', adminRoutes);
       app.use('/api/ai-quiz', aiQuizRoutes);
       app.use('/api/discussions', discussionRoutes);
+      app.use('/api/dashboard', dashboardRoutes);
       return true;
     }
     

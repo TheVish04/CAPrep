@@ -137,6 +137,15 @@ const Navbar = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
+                <Link to="/dashboard" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Dashboard
+                </Link>
+              </motion.li>
+              
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Link to="/profile" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                   Profile
                 </Link>

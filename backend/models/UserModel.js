@@ -83,7 +83,37 @@ const UserSchema = new Schema({
     type: Number,
     default: 0,
     min: 0
-  }
+  },
+  // New fields for dashboard functionality
+  studyHours: [{
+    date: { type: Date, required: true },
+    hours: { type: Number, required: true, min: 0 },
+    subject: { type: String, required: false }
+  }],
+  recentlyViewedQuestions: [{
+    questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
+    viewedAt: { type: Date, default: Date.now }
+  }],
+  recentlyViewedResources: [{
+    resourceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Resource' },
+    viewedAt: { type: Date, default: Date.now }
+  }],
+  lastActiveSession: {
+    type: { type: String, enum: ['quiz', 'resource', 'discussion', 'question'] },
+    itemId: { type: mongoose.Schema.Types.ObjectId },
+    timestamp: { type: Date, default: Date.now }
+  },
+  subjectStrengths: [{
+    subject: { type: String, required: true },
+    strengthScore: { type: Number, required: true, min: 0, max: 100 },
+    lastUpdated: { type: Date, default: Date.now }
+  }],
+  resourceEngagement: [{
+    resourceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Resource' },
+    timeSpent: { type: Number, default: 0 }, // In seconds
+    lastAccessed: { type: Date, default: Date.now },
+    accessCount: { type: Number, default: 1 }
+  }]
 }, {
   timestamps: true
 });
