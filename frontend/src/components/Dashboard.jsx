@@ -43,18 +43,43 @@ const Dashboard = () => {
 
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/dashboard`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+            'Cache-Control': 'no-cache', // Prevent caching issues
+            'Pragma': 'no-cache'
+          },
+          timeout: 10000 // 10 seconds timeout
         });
 
         if (response.data.success) {
-          setDashboardData(response.data.data);
+          const data = response.data.data;
+          // Ensure announcements exists even if it's missing in the response
+          if (!data.announcements) {
+            data.announcements = [];
+          }
+          // Ensure recentDiscussions exists
+          if (!data.recentDiscussions) {
+            data.recentDiscussions = [];
+          }
+          setDashboardData(data);
         } else {
           setError('Failed to fetch dashboard data');
         }
       } catch (err) {
         console.error('Dashboard data error:', err);
-        setError(err.message || 'An error occurred while fetching dashboard data');
+        // More detailed error message
+        let errorMessage = 'An error occurred while fetching dashboard data';
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          errorMessage = `Server error: ${err.response.status} - ${err.response.data?.message || err.message}`;
+        } else if (err.request) {
+          // The request was made but no response was received
+          errorMessage = 'Network error: Unable to connect to server. Please check your internet connection.';
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          errorMessage = `Request error: ${err.message}`;
+        }
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

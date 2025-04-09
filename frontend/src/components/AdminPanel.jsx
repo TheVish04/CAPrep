@@ -24,6 +24,38 @@ const AdminPanel = () => {
     setActiveTab(getActiveTab());
   }, [location.pathname]);
 
+  // Tab navigation render function
+  const renderTabs = () => {
+    return (
+      <div className="admin-tabs">
+        <button 
+          className={activeTab === 'questions' ? 'active-tab' : ''} 
+          onClick={() => { setActiveTab('questions'); navigate('/admin'); }}
+        >
+          Manage Questions
+        </button>
+        <button 
+          className={activeTab === 'resources' ? 'active-tab' : ''} 
+          onClick={() => { setActiveTab('resources'); navigate('/admin/resources'); }}
+        >
+          Manage Resources
+        </button>
+        <button 
+          className={activeTab === 'announcements' ? 'active-tab' : ''} 
+          onClick={() => { setActiveTab('announcements'); navigate('/admin/announcements'); }}
+        >
+          Manage Announcements
+        </button>
+        <button 
+          className={activeTab === 'analytics' ? 'active-tab' : ''} 
+          onClick={() => { setActiveTab('analytics'); navigate('/admin/analytics'); }}
+        >
+          Analytics
+        </button>
+      </div>
+    );
+  };
+
   // Add question type state
   const [questionType, setQuestionType] = useState('objective-subjective');
 
@@ -1311,48 +1343,10 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="admin-page">
+    <div className="page-wrapper">
       <Navbar />
-      <div className="admin-container">
-        <div className="admin-tabs">
-          <button 
-            className={activeTab === 'questions' ? 'active-tab' : ''} 
-            onClick={() => {
-              setActiveTab('questions');
-              navigate('/admin');
-            }}
-          >
-            Manage Questions
-          </button>
-          <button 
-            className={activeTab === 'resources' ? 'active-tab' : ''} 
-            onClick={() => {
-              setActiveTab('resources');
-              navigate('/admin/resources');
-            }}
-          >
-            Manage Resources
-          </button>
-          <button 
-            className={activeTab === 'announcements' ? 'active-tab' : ''} 
-            onClick={() => {
-              setActiveTab('announcements');
-              navigate('/admin/announcements');
-            }}
-          >
-            Manage Announcements
-          </button>
-          <button 
-            className={activeTab === 'analytics' ? 'active-tab' : ''} 
-            onClick={() => {
-              setActiveTab('analytics');
-              navigate('/admin/analytics');
-            }}
-          >
-            Analytics
-          </button>
-        </div>
-        
+      {renderTabs()}
+      <div className="admin-section">
         {renderActiveTab()}
       </div>
     </div>

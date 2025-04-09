@@ -48,10 +48,15 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cors({
   origin: ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires'],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  maxAge: 86400 // Cache preflight requests for 24 hours
 }));
+
+// Handle OPTIONS requests explicitly
+app.options('*', cors());
 
 // Remove all the custom CORS handling that might be causing conflicts
 // and replace with a simple, focused middleware for debugging CORS issues
@@ -183,6 +188,27 @@ const initializeDatabase = async () => {
     app.use('/api/ai-quiz', aiQuizRoutes);
     app.use('/api/discussions', discussionRoutes);
     app.use('/api/dashboard', dashboardRoutes);
+    
+    // Add announcements routes
+    app.use('/api/announcements', authMiddleware, async (req, res) => {
+      try {
+        const Announcement = require('./models/AnnouncementModel');
+        const announcements = await Announcement.find({
+          validUntil: { $gte: new Date() }
+        })
+        .sort({ priority: -1, createdAt: -1 })
+        .limit(req.query.limit ? parseInt(req.query.limit) : 10)
+        .populate('createdBy', 'fullName');
+        
+        res.status(200).json({
+          success: true,
+          data: announcements
+        });
+      } catch (error) {
+        console.error('Announcements retrieval error:', error);
+        res.status(500).json({ success: false, message: 'Error retrieving announcements', error: error.message });
+      }
+    });
     
     // Uploads are now handled directly through Cloudinary
     // No need to create local upload directories
