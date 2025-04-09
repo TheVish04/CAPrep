@@ -319,6 +319,9 @@ const ResourceUploader = () => {
         });
         
         if (response.ok) {
+          // Cache form selections before resetting
+          cacheFormSelections();
+          
           // Fetch fresh resources after update
           await fetchResources(token);
           resetForm();
@@ -339,6 +342,9 @@ const ResourceUploader = () => {
         formDataObj.append('month', formData.month);
         formDataObj.append('examStage', formData.examStage);
         formDataObj.append('file', file);
+        
+        // Cache form selections before submission
+        cacheFormSelections();
         
         const response = await fetch('https://caprep.onrender.com/api/resources', {
           method: 'POST',
@@ -424,6 +430,16 @@ const ResourceUploader = () => {
   };
 
   const resetForm = () => {
+    // Save current form data before clearing it
+    const currentForm = {
+      examStage: formData.examStage,
+      subject: formData.subject,
+      paperType: formData.paperType,
+      year: formData.year, 
+      month: formData.month
+    };
+    
+    // Clear the form
     setFormData({
       title: '',
       subject: '',
@@ -437,7 +453,17 @@ const ResourceUploader = () => {
     setIsEditMode(false);
     setEditingResourceId(null);
     
-    // Don't clear cached selections when resetting the form
+    // Restore the cached values from the current form
+    setTimeout(() => {
+      setFormData(prev => ({
+        ...prev,
+        examStage: currentForm.examStage,
+        subject: currentForm.subject,
+        paperType: currentForm.paperType,
+        year: currentForm.year,
+        month: currentForm.month,
+      }));
+    }, 100);
   };
 
   // Add method to completely reset form and clear cache
