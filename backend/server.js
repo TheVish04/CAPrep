@@ -22,6 +22,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const aiQuizRoutes = require('./routes/aiQuiz');
 const dashboardRoutes = require('./routes/dashboard');
+const { clearAllCache } = require('./middleware/cacheMiddleware');
 
 const app = express();
 
@@ -363,6 +364,17 @@ app.get('/health', (req, res) => {
     memoryUsage: process.memoryUsage(),
   };
   res.status(200).json(health);
+});
+
+// Add an endpoint to clear all caches (admin only)
+app.post('/api/admin/clear-cache', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    clearAllCache();
+    res.status(200).json({ success: true, message: 'All caches cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ success: false, error: 'Failed to clear cache' });
+  }
 });
 
 // Global error handling middleware

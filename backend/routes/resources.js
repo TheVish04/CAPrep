@@ -161,12 +161,19 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       examStage: req.body.examStage,
       fileUrl: result.secure_url,
       fileType: 'pdf',
-      fileSize: req.file.size
+      fileSize: req.file.size,
+      resourceType: 'pdf'  // Explicitly set the type
     });
     
-    await resource.save();
+    const savedResource = await resource.save();
+    
+    // Clear all resource-related caches
     clearCache('/api/resources');
-    res.status(201).json(resource);
+    
+    // Return the complete resource object with all fields
+    console.log('Resource saved successfully:', savedResource._id);
+    
+    res.status(201).json(savedResource);
   } catch (error) {
     console.error(`Error creating resource: ${error.message}`);
     console.error(`Error stack: ${error.stack}`);

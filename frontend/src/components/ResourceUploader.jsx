@@ -248,6 +248,8 @@ const ResourceUploader = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form
     const validationErrors = validateForm();
     
     if (Object.keys(validationErrors).length > 0) {
@@ -259,71 +261,64 @@ const ResourceUploader = () => {
     
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/');
-        return;
-      }
-      
-      // Create FormData object
-      const data = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (formData[key]) {
-          data.append(key, formData[key]);
-        }
-      });
-      
-      if (file) {
-        data.append('file', file);
-      }
-      
-      let response;
       
       if (isEditMode) {
-        // Update resource (without file)
-        response = await fetch(`https://caprep.onrender.com/api/resources/${editingResourceId}`, {
+        // Update existing resource (PUT request)
+        const response = await fetch(`https://caprep.onrender.com/api/resources/${editingResourceId}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
         });
+        
+        if (response.ok) {
+          // Refresh resources after update
+          await fetchResources(token);
+          resetForm();
+          setIsEditMode(false);
+          setEditingResourceId(null);
+          alert('Resource updated successfully!');
+        } else {
+          const errorData = await response.json();
+          alert(`Failed to update resource: ${errorData.error || 'Unknown error'}`);
+        }
       } else {
-        // Create new resource
-        response = await fetch('https://caprep.onrender.com/api/resources', {
+        // Create new resource (POST request with FormData for file upload)
+        const formDataObj = new FormData();
+        formDataObj.append('title', formData.title);
+        formDataObj.append('subject', formData.subject);
+        formDataObj.append('paperType', formData.paperType);
+        formDataObj.append('year', formData.year);
+        formDataObj.append('month', formData.month);
+        formDataObj.append('examStage', formData.examStage);
+        formDataObj.append('file', file);
+        
+        const response = await fetch('https://caprep.onrender.com/api/resources', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
           },
-          body: data,
+          body: formDataObj,
         });
-      }
-      
-      if (response.ok) {
-        if (isEditMode) {
-          // For edit mode, reset the form completely
-          resetForm();
-        } else {
-          // For upload mode, only reset file and title fields, keep other metadata
-          setFile(null);
-          setFormData(prev => ({
-            ...prev,
-            title: ''
-          }));
-          setErrors({});
-          setIsEditMode(false);
-          setEditingResourceId(null);
-        }
         
-        fetchResources(token);
-        alert(isEditMode ? 'Resource updated successfully!' : 'PDF resource uploaded successfully!');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed: ${errorData.error || 'Unknown error'}`);
+        if (response.ok) {
+          const newResource = await response.json();
+          // Update resources state immediately with the new resource
+          setResources(prevResources => [newResource, ...prevResources]);
+          resetForm();
+          // Also fetch resources to ensure we have the latest data
+          await fetchResources(token);
+          alert('Resource uploaded successfully!');
+        } else {
+          const errorData = await response.json();
+          alert(`Failed to upload resource: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      console.error('Error submitting resource:', error);
-      alert(`Error: ${error.message}`);
+      console.error('Error handling form submission:', error);
+      alert(`Error: ${error.message || 'Something went wrong'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -393,6 +388,25 @@ const ResourceUploader = () => {
   const resetFormAndCache = () => {
     resetForm();
     clearCachedSelections();
+    
+    // Re-initialize form with empty values
+    setFormData({
+      title: '',
+      subject: '',
+      paperType: '',
+      year: '',
+      month: '',
+      examStage: '',
+    });
+    
+    setFile(null);
+    setErrors({});
+    
+    // Clear input file element
+    const fileInput = document.getElementById('file-upload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   // Filtered resources for display
@@ -437,27 +451,16 @@ const ResourceUploader = () => {
 
   // Add a new function to handle viewing resources with proper filename
   const handleViewResource = (resource) => {
-    try {
-      // Create a proper filename from the resource title
-      const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-      
-      // Check if the URL is already a complete URL (starts with http/https)
-      const resourceUrl = resource.fileUrl.startsWith('http') ? resource.fileUrl : `https://caprep.onrender.com${resource.fileUrl}`;
-      
-      // Create a temporary anchor element to trigger the download with the proper filename
-      const link = document.createElement('a');
-      link.href = resourceUrl;
-      link.download = properFilename;
-      link.target = '_blank';
-      
-      // Append to body, click and remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error viewing resource:', error);
-      alert('Failed to open the resource. Please try again.');
-    }
+    // Open resource in new tab
+    window.open(resource.fileUrl, '_blank');
+    
+    // Trigger cache update for this resource
+    setTimeout(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        fetchResources(token);
+      }
+    }, 1000);
   };
 
   return (
