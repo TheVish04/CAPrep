@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [pomodoroActive, setPomodoroActive] = useState(false);
   const [pomodoroTime, setPomodoroTime] = useState(25 * 60); // 25 minutes in seconds
   const [pomodoroSubject, setPomodoroSubject] = useState('');
+  const [pomodoroExamStage, setPomodoroExamStage] = useState('');
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
@@ -120,7 +121,8 @@ const Dashboard = () => {
       // Record study session (25 min = 0.42 hours)
       await axios.post(`${import.meta.env.VITE_API_URL}/api/dashboard/study-session`, {
         hours: 0.42, // 25 minutes in hours
-        subject: pomodoroSubject || null
+        subject: pomodoroSubject || null,
+        examStage: pomodoroExamStage || null
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -196,6 +198,47 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error tracking question view:', err);
     }
+  };
+
+  // Get subjects based on exam stage
+  const getSubjectsForExamStage = (stage) => {
+    switch (stage) {
+      case 'Foundation':
+        return [
+          'Accounting',
+          'Business Laws',
+          'Quantitative Aptitude',
+          'Business Economics'
+        ];
+      case 'Intermediate':
+        return [
+          'Advanced Accounting',
+          'Corporate Laws',
+          'Cost and Management Accounting',
+          'Taxation',
+          'Auditing and Code of Ethics',
+          'Financial and Strategic Management'
+        ];
+      case 'Final':
+        return [
+          'Financial Reporting',
+          'Advanced Financial Management',
+          'Advanced Auditing',
+          'Direct and International Tax Laws',
+          'Indirect Tax Laws',
+          'Integrated Business Solutions'
+        ];
+      default:
+        return [];
+    }
+  };
+
+  // Handle exam stage change
+  const handleExamStageChange = (e) => {
+    const newStage = e.target.value;
+    setPomodoroExamStage(newStage);
+    // Reset subject when exam stage changes
+    setPomodoroSubject('');
   };
 
   if (loading) {
@@ -649,17 +692,28 @@ const Dashboard = () => {
                 </div>
                 <div className="pomodoro-subject">
                   <select 
+                    value={pomodoroExamStage} 
+                    onChange={handleExamStageChange}
+                    disabled={pomodoroActive}
+                    className="pomodoro-select"
+                  >
+                    <option value="">Select Exam Stage</option>
+                    <option value="Foundation">Foundation</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Final">Final</option>
+                  </select>
+                </div>
+                <div className="pomodoro-subject">
+                  <select 
                     value={pomodoroSubject} 
                     onChange={(e) => setPomodoroSubject(e.target.value)}
-                    disabled={pomodoroActive}
+                    disabled={pomodoroActive || !pomodoroExamStage}
+                    className="pomodoro-select"
                   >
-                    <option value="">Select Subject (Optional)</option>
-                    <option value="Accounts">Accounts</option>
-                    <option value="Tax">Tax</option>
-                    <option value="Audit">Audit</option>
-                    <option value="Law">Law</option>
-                    <option value="Cost Accounting">Cost Accounting</option>
-                    <option value="Financial Management">Financial Management</option>
+                    <option value="">Select Subject</option>
+                    {getSubjectsForExamStage(pomodoroExamStage).map(subject => (
+                      <option key={subject} value={subject}>{subject}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="pomodoro-info">
