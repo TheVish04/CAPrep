@@ -220,7 +220,17 @@ const DiscussionModal = ({ isOpen, onClose, itemType, itemId, itemTitle }) => {
   };
   
   const handleDeleteMessage = async (messageId) => {
-    if (!window.confirm('Are you sure you want to delete this message?')) {
+    // Check if this message has any replies
+    const hasReplies = messages.some(msg => 
+      msg.parentMessageId && msg.parentMessageId === messageId
+    );
+    
+    // Create a confirmation message that includes a warning about replies
+    const confirmMessage = hasReplies 
+      ? 'This message has replies. Deleting it will also delete all replies to this message. Are you sure you want to continue?'
+      : 'Are you sure you want to delete this message?';
+    
+    if (!window.confirm(confirmMessage)) {
       return;
     }
     

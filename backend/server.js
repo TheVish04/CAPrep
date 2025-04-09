@@ -13,8 +13,6 @@ const adminRoutes = require('./routes/admin');
 const discussionRoutes = require('./routes/discussions');
 const { authMiddleware, adminMiddleware } = require('./middleware/authMiddleware');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
@@ -26,16 +24,9 @@ const aiQuizRoutes = require('./routes/aiQuiz');
 
 const app = express();
 
-// Create database folder if it doesn't exist
-const dbFolder = path.join(__dirname, 'database');
-if (!fs.existsSync(dbFolder)) {
-  console.log('Creating database folder:', dbFolder);
-  fs.mkdirSync(dbFolder, { recursive: true });
-}
-
 // Security middleware
-app.use(helmet()); // Set security headers
-app.use(xss()); // Sanitize user input
+app.use(helmet());
+app.use(xss());
 app.use(mongoSanitize()); // Prevent MongoDB operator injection
 
 // Global rate limiter - max 200 requests per IP per 15 minutes
@@ -190,60 +181,11 @@ const initializeDatabase = async () => {
     app.use('/api/ai-quiz', aiQuizRoutes);
     app.use('/api/discussions', discussionRoutes);
     
-    // Create uploads directory and resources subdirectory if they don't exist
-    const uploadsDir = path.join(__dirname, 'uploads');
-    const resourcesDir = path.join(__dirname, 'uploads', 'resources');
+    // Uploads are now handled directly through Cloudinary
+    // No need to create local upload directories
     
-    if (!fs.existsSync(uploadsDir)) {
-      console.log('Creating uploads folder:', uploadsDir);
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-    
-    if (!fs.existsSync(resourcesDir)) {
-      console.log('Creating resources folder:', resourcesDir);
-      fs.mkdirSync(resourcesDir, { recursive: true });
-    }
-    
-    // Replace static file serving with a custom route for downloads
-    app.get('/uploads/resources/:filename', async (req, res) => {
-      try {
-        const filename = req.params.filename;
-        
-        // Find the resource in database by the filename
-        const resource = await Resource.findOne({ 
-          fileUrl: { $regex: filename, $options: 'i' } 
-        });
-        
-        if (!resource) {
-          return res.status(404).send('File not found');
-        }
-        
-        // Construct file path
-        const filePath = path.join(__dirname, 'uploads', 'resources', filename);
-        
-        // Check if file exists
-        if (!fs.existsSync(filePath)) {
-          return res.status(404).send('File not found on server');
-        }
-        
-        // Get proper filename based on resource title
-        const properFilename = `${resource.title.replace(/[^\w\s.-]/g, '')}.pdf`;
-        
-        // Set headers for file download
-        res.setHeader('Content-Disposition', `attachment; filename="${properFilename}"`);
-        res.setHeader('Content-Type', 'application/pdf');
-        
-        // Stream the file
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-      } catch (error) {
-        console.error('Error serving PDF file:', error);
-        res.status(500).send('Server error while serving file');
-      }
-    });
-    
-    // Serve uploads directory for other files that don't need custom handling
-    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+    // All file downloads are now handled via Cloudinary URLs
+    // No need for custom download routes
     
     console.log('API routes initialized successfully');
 

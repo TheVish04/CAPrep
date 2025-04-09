@@ -280,8 +280,35 @@ router.delete('/:discussionId/message/:messageId', authMiddleware, async (req, r
       return res.status(403).json({ error: 'You do not have permission to delete this message' });
     }
     
-    // Remove the message completely from the database regardless of replies
-    discussion.messages.pull(messageId);
+    // Find all message IDs to be deleted (the message itself and all its replies recursively)
+    const messageIdsToDelete = [];
+    
+    // Recursive function to collect message IDs to delete
+    const collectReplies = (parentId) => {
+      // Find direct replies to this parent
+      const replies = discussion.messages.filter(msg => 
+        msg.parentMessageId && msg.parentMessageId.toString() === parentId.toString()
+      );
+      
+      // For each reply, add it to the delete list and check for its own replies
+      replies.forEach(reply => {
+        messageIdsToDelete.push(reply._id.toString());
+        // Recursively collect replies to this reply
+        collectReplies(reply._id);
+      });
+    };
+    
+    // Start with the target message
+    messageIdsToDelete.push(messageId);
+    // Collect all replies to the target message
+    collectReplies(messageId);
+    
+    console.log(`Deleting message ${messageId} and ${messageIdsToDelete.length - 1} related replies`);
+    
+    // Remove all collected messages from the discussion
+    messageIdsToDelete.forEach(id => {
+      discussion.messages.pull(id);
+    });
     
     await discussion.save();
     
