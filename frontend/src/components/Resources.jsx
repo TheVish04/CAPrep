@@ -255,6 +255,9 @@ const Resources = () => {
         <div className="resources-container">
           <h1>Study Resources</h1>
           
+          {/* Add CABot here */}
+          <CABot />
+          
           {loading && <div className="loading-indicator">Loading resources...</div>}
           {error && <div className="error"><p>Error: {error}</p></div>}
 
@@ -441,9 +444,6 @@ const Resources = () => {
           itemTitle={currentDiscussionResource.title}
         />
       )}
-
-      {/* Add CABot component */}
-      <CABot />
     </div>
   );
 };

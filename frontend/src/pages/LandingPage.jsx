@@ -107,6 +107,8 @@ const LandingPage = () => {
               <span className="stat-label">ACCESS</span>
             </div>
           </div>
+          
+          <CABot />
         </div>
       </section>
 
@@ -337,8 +339,6 @@ const LandingPage = () => {
           <p>&copy; {new Date().getFullYear()} CAprep. All rights reserved.</p>
         </div>
       </footer>
-
-      <CABot />
     </div>
   );
 };
