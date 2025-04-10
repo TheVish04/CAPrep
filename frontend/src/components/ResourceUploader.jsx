@@ -132,23 +132,37 @@ const ResourceUploader = () => {
       // Add a cache-busting parameter to ensure we get fresh data
       const timestamp = new Date().getTime();
       const cacheParam = `cacheBust=${timestamp}`;
-      const url = `https://caprep.onrender.com/api/resources${query ? `?${query}&${cacheParam}` : `?${cacheParam}`}`;
+      
+      // Use the API URL from environment variables instead of hardcoded URL
+      const API_URL = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
+      const url = `${API_URL}/api/resources${query ? `?${query}&${cacheParam}` : `?${cacheParam}`}`;
       
       console.log(`Fetching from URL: ${url}`);
       
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'x-skip-cache': 'true' // Skip the cache for this request
+          'x-skip-cache': 'true', // Skip the cache for this request
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         console.log(`Fetched ${Array.isArray(data) ? data.length : 0} resources`);
-        setResources(Array.isArray(data) ? data : []);
+        
+        // Ensure we're handling the response data correctly
+        if (Array.isArray(data)) {
+          setResources(data);
+        } else {
+          console.error('API did not return an array:', data);
+          setResources([]);
+        }
       } else {
         console.error('Failed to fetch resources:', response.statusText);
+        // Try to get more details from the error response
+        const errorText = await response.text();
+        console.error('Error details:', errorText);
       }
     } catch (error) {
       console.error('Error fetching resources:', error);
@@ -491,20 +505,9 @@ const ResourceUploader = () => {
     }
   };
 
-  // Filtered resources for display
-  const filteredResources = resources.filter((r) => {
-    return (
-      (!filters.subject || r.subject === filters.subject) &&
-      (!filters.paperType || r.paperType === filters.paperType) &&
-      (!filters.year || r.year === filters.year) &&
-      (!filters.month || r.month === filters.month) &&
-      (!filters.examStage || r.examStage === filters.examStage) &&
-      (!filters.search || 
-        (r.title && r.title.toLowerCase().includes(filters.search.toLowerCase()))
-      )
-    );
-  });
-
+  // Filter resources based on the selected filters
+  const filteredResources = resources;
+  
   // Pagination
   const indexOfLastResource = currentPage * resourcesPerPage;
   const indexOfFirstResource = indexOfLastResource - resourcesPerPage;
@@ -530,6 +533,10 @@ const ResourceUploader = () => {
     const query = queryParams.toString();
     console.log(`Applying filters: ${query}`);
     
+    // Reset to first page when applying filters
+    setCurrentPage(1);
+    
+    // Fetch with the filters
     fetchResources(token, query);
     
     // Cache the filter selections including the search term
@@ -943,6 +950,7 @@ const ResourceUploader = () => {
               <button 
                 className="reset-filter-btn"
                 onClick={() => {
+                  // Reset all filters to empty values
                   setFilters({
                     subject: '',
                     paperType: '',
@@ -951,8 +959,18 @@ const ResourceUploader = () => {
                     examStage: '',
                     search: '',
                   });
+                  
+                  // Reset to first page
+                  setCurrentPage(1);
+                  
+                  // Clear cached filters
                   localStorage.removeItem('resourceFilterSelections');
-                  fetchResources(localStorage.getItem('token'));
+                  
+                  // Fetch all resources without any query parameters
+                  const token = localStorage.getItem('token');
+                  if (token) {
+                    fetchResources(token, '');
+                  }
                 }}
               >
                 Reset Filters
