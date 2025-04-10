@@ -22,7 +22,7 @@ const AdminAnnouncements = () => {
   }, [location.pathname]);
   
   const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -44,7 +44,6 @@ const AdminAnnouncements = () => {
   // Fetch all announcements
   const fetchAnnouncements = async () => {
     try {
-      setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
@@ -65,8 +64,6 @@ const AdminAnnouncements = () => {
     } catch (err) {
       console.error('Error fetching announcements:', err);
       setError(err.message || 'Failed to fetch announcements');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -400,9 +397,7 @@ const AdminAnnouncements = () => {
         <div className="announcements-list">
           <h2>Current Announcements</h2>
           
-          {loading ? (
-            <div className="loading-spinner">Loading...</div>
-          ) : announcements.length === 0 ? (
+          {announcements.length === 0 ? (
             <div className="no-announcements">
               <p>No announcements found.</p>
             </div>
