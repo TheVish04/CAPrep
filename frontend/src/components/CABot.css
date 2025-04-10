@@ -1,49 +1,59 @@
 .ca-bot-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
+  position: relative;
+}
+
+.ca-bot-nav-item {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin-left: 15px;
 }
 
 .ca-bot-toggle {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #4c6ef5;
+  background-color: #03a9f4;
   color: white;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  padding: 0;
 }
 
 .ca-bot-toggle:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  background-color: #364fc7;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  background-color: #239ecf;
 }
 
 .ca-bot-toggle.open {
-  background-color: #e03131;
+  background-color: #f44336;
 }
 
 .ca-bot-chat {
   position: absolute;
-  bottom: 80px;
+  top: 60px;
   right: 0;
   width: 350px;
   height: 500px;
-  background-color: white;
+  background-color: #121212;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
   animation: slideUp 0.3s forwards;
+  border: 1px solid #333;
 }
 
 @keyframes slideUp {
@@ -59,7 +69,7 @@
 
 .ca-bot-header {
   padding: 15px 20px;
-  background-color: #4169e1;
+  background-color: #03a9f4;
   color: white;
   display: flex;
   justify-content: space-between;
@@ -91,7 +101,7 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  background-color: #f8f9fa;
+  background-color: #1e1e1e;
 }
 
 .ca-bot-message {
@@ -104,15 +114,15 @@
 }
 
 .ca-bot-message.bot {
-  background-color: #e9f0ff;
+  background-color: #29b6f6;
   align-self: flex-start;
   border-bottom-left-radius: 4px;
-  color: #000;
+  color: #ffffff;
 }
 
 .ca-bot-message.user {
-  background-color: #4169e1;
-  color: white;
+  background-color: #333;
+  color: #ffffff;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
@@ -122,37 +132,40 @@
   margin-top: 5px;
   opacity: 0.7;
   text-align: right;
+  color: inherit;
 }
 
 .ca-bot-input {
   padding: 15px;
   display: flex;
   gap: 10px;
-  background-color: white;
-  border-top: 1px solid #eaeaea;
+  background-color: #242424;
+  border-top: 1px solid #333;
 }
 
 .ca-bot-input textarea {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 20px;
   resize: none;
   height: 44px;
   font-family: inherit;
   font-size: 14px;
   outline: none;
+  background-color: #333;
+  color: #fff;
 }
 
 .ca-bot-input textarea:focus {
-  border-color: #4169e1;
+  border-color: #03a9f4;
 }
 
 .ca-bot-send-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: #4169e1;
+  background-color: #03a9f4;
   color: white;
   border: none;
   cursor: pointer;
@@ -163,11 +176,11 @@
 }
 
 .ca-bot-send-btn:hover {
-  background-color: #364fc7;
+  background-color: #239ecf;
 }
 
 .ca-bot-send-btn:disabled {
-  background-color: #adb5bd;
+  background-color: #555;
   cursor: not-allowed;
 }
 
@@ -183,7 +196,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #777;
+  background-color: #fff;
   animation: typing-bounce 1.4s infinite ease-in-out both;
 }
 
@@ -207,16 +220,17 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 600px) {
+@media screen and (max-width: 960px) {
   .ca-bot-chat {
-    width: calc(100vw - 40px);
+    width: 300px;
     height: 450px;
-    bottom: 70px;
-    right: 0;
+    position: fixed;
+    top: 70px;
+    right: 10px;
   }
   
   .ca-bot-toggle {
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
   }
 } 

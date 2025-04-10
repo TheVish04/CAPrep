@@ -6,7 +6,6 @@ import './LandingPage.css';
 import Navbar from '../components/Navbar';
 import CountUp from 'react-countup';
 import DonationButton from '../components/DonationButton';
-import CABot from '../components/CABot';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -337,8 +336,6 @@ const LandingPage = () => {
           <p>&copy; {new Date().getFullYear()} CAprep. All rights reserved.</p>
         </div>
       </footer>
-
-      <CABot />
     </div>
   );
 };

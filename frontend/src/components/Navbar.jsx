@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Navbar.css';
+import CABot from './CABot';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -192,6 +193,10 @@ const Navbar = () => {
               </motion.li>
             </>
           )}
+          
+          <li className="nav-item ca-bot-nav-item">
+            <CABot />
+          </li>
         </motion.ul>
       </div>
     </motion.nav>

@@ -6,7 +6,6 @@ import DonationButton from './DonationButton';
 import axios from 'axios';
 import MoreMenu from './MoreMenu';
 import DiscussionModal from './DiscussionModal';
-import CABot from './CABot';
 
 // Paper Title with View PDF button component
 const PaperViewHeader = ({ title, paperType, month, year, examStage, subject, onViewPDF, isLoading }) => {
@@ -441,9 +440,6 @@ const Resources = () => {
           itemTitle={currentDiscussionResource.title}
         />
       )}
-      
-      {/* Add CABot at the end */}
-      <CABot />
     </div>
   );
 };
