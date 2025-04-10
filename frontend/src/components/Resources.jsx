@@ -361,17 +361,28 @@ const Resources = () => {
             <div className="resources-list">
               {currentResources.map((r) => (
                 <div key={r._id} className="resource-card">
-                  <div className="resource-actions">
-                    <button 
-                      onClick={() => handleBookmarkToggle(r._id)} 
-                      className="bookmark-btn resource-bookmark"
-                      title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                    >
-                      <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
-                    </button>
-                    <div className="more-menu-wrapper">
-                      <MoreMenu onDiscuss={() => handleOpenDiscussion(r)} />
+                  <div className="resource-top-controls">
+                    <div className="resource-actions">
+                      <button 
+                        onClick={() => handleBookmarkToggle(r._id)} 
+                        className="bookmark-btn resource-bookmark"
+                        title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                      >
+                        <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
+                      </button>
+                      <div className="more-menu-wrapper">
+                        <MoreMenu onDiscuss={() => handleOpenDiscussion(r)} />
+                      </div>
                     </div>
+                    <button 
+                      onClick={() => handleDownload(r)} 
+                      className="download-btn view-pdf-btn"
+                      disabled={downloadingResource === r._id}
+                    >
+                      {downloadingResource === r._id 
+                        ? 'Opening...' 
+                        : 'View PDF'}
+                    </button>
                   </div>
                   <div className="resource-header">
                     <h3 className="resource-title">{r.title}</h3>
@@ -382,18 +393,6 @@ const Resources = () => {
                     <span>{r.year} {r.month}</span> | 
                     <span>{r.examStage}</span>
                   </div>
-                   <div className="resource-footer">
-                      <span className="file-size">Size: {formatFileSize(r.fileSize)}</span>
-                      <button 
-                        onClick={() => handleDownload(r)} 
-                        className="download-btn"
-                        disabled={downloadingResource === r._id}
-                      >
-                        {downloadingResource === r._id 
-                          ? 'Opening...' 
-                          : 'View PDF'}
-                      </button>
-                   </div>
                 </div>
               ))}
             </div>
