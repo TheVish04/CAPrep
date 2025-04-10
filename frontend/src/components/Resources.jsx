@@ -10,16 +10,14 @@ import DiscussionModal from './DiscussionModal';
 // Paper Title with View PDF button component
 const PaperViewHeader = ({ title, paperType, month, year, examStage, subject, onViewPDF, isLoading }) => {
   return (
-    <div className="paper-view-container">
-      <div className="paper-view-header">
-        <div>
-          <h2 className="paper-view-title">{title}</h2>
-          <div className="paper-tags-container">
-            <span className="paper-tag">{examStage}</span>
-            <span className="paper-tag">{subject}</span>
-            <span className="paper-tag">{paperType}</span>
-            <span className="paper-tag">{month} {year}</span>
-          </div>
+    <div className="paper-view-header">
+      <div>
+        <h2 className="paper-view-title">{title}</h2>
+        <div className="paper-tags-container">
+          <span className="paper-tag">{examStage}</span>
+          <span className="paper-tag">{subject}</span>
+          <span className="paper-tag">{paperType}</span>
+          <span className="paper-tag">{month} {year}</span>
         </div>
       </div>
       <button 
