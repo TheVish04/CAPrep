@@ -7,6 +7,30 @@ import axios from 'axios';
 import MoreMenu from './MoreMenu';
 import DiscussionModal from './DiscussionModal';
 
+// Paper Title with View PDF button component
+const PaperViewHeader = ({ title, paperType, month, year, examStage, subject, onViewPDF, isLoading }) => {
+  return (
+    <div className="paper-view-header">
+      <div>
+        <h2 className="paper-view-title">{title}</h2>
+        <div className="paper-tags-container">
+          <span className="paper-tag">{examStage}</span>
+          <span className="paper-tag">{subject}</span>
+          <span className="paper-tag">{paperType}</span>
+          <span className="paper-tag">{month} {year}</span>
+        </div>
+      </div>
+      <button 
+        onClick={onViewPDF} 
+        className="download-btn view-pdf-btn"
+        disabled={isLoading}
+      >
+        {isLoading ? 'Opening...' : 'View PDF'}
+      </button>
+    </div>
+  );
+};
+
 // Re-use Bookmark icon from Questions component (or define it here if preferred)
 const BookmarkIcon = ({ filled }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? '#03a9f4' : 'none'} stroke={filled ? 'none' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -361,38 +385,29 @@ const Resources = () => {
             <div className="resources-list">
               {currentResources.map((r) => (
                 <div key={r._id} className="resource-card">
-                  <div className="resource-top-controls">
-                    <div className="resource-actions">
-                      <button 
-                        onClick={() => handleBookmarkToggle(r._id)} 
-                        className="bookmark-btn resource-bookmark"
-                        title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                      >
-                        <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
-                      </button>
-                      <div className="more-menu-wrapper">
-                        <MoreMenu onDiscuss={() => handleOpenDiscussion(r)} />
-                      </div>
-                    </div>
+                  <div className="resource-top-actions">
                     <button 
-                      onClick={() => handleDownload(r)} 
-                      className="download-btn view-pdf-btn"
-                      disabled={downloadingResource === r._id}
+                      onClick={() => handleBookmarkToggle(r._id)} 
+                      className="bookmark-btn resource-bookmark"
+                      title={bookmarkedResourceIds.has(r._id) ? 'Remove Bookmark' : 'Add Bookmark'}
                     >
-                      {downloadingResource === r._id 
-                        ? 'Opening...' 
-                        : 'View PDF'}
+                      <BookmarkIcon filled={bookmarkedResourceIds.has(r._id)} />
                     </button>
+                    <div className="more-menu-wrapper">
+                      <MoreMenu onDiscuss={() => handleOpenDiscussion(r)} />
+                    </div>
                   </div>
-                  <div className="resource-header">
-                    <h3 className="resource-title">{r.title}</h3>
-                  </div>
-                  <div className="resource-meta">
-                    <span>{r.subject}</span> | 
-                    <span>{r.paperType}</span> | 
-                    <span>{r.year} {r.month}</span> | 
-                    <span>{r.examStage}</span>
-                  </div>
+                  
+                  <PaperViewHeader 
+                    title={r.title}
+                    paperType={r.paperType}
+                    month={r.month}
+                    year={r.year}
+                    examStage={r.examStage}
+                    subject={r.subject}
+                    onViewPDF={() => handleDownload(r)}
+                    isLoading={downloadingResource === r._id}
+                  />
                 </div>
               ))}
             </div>

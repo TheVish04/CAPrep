@@ -524,4 +524,131 @@
 
 .view-pdf-btn {
   margin-left: auto;
+}
+
+/* Remove the existing paper-header styles */
+.paper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.paper-header h1,
+.paper-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #03a9f4;
+  text-align: left;
+}
+
+/* Direct target for the specific layout in the image */
+.paper-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 15px 20px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.paper-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #03a9f4;
+  font-weight: 600;
+}
+
+/* Target for resource card top section */
+.resource-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .paper-header,
+  .paper-title-container,
+  .resource-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .paper-header .view-pdf-btn,
+  .paper-title-container .view-pdf-btn {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+}
+
+/* Specific target for the paper title and View PDF layout shown in the image */
+.paper-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.paper-view-title {
+  font-size: 1.8rem;
+  color: #03a9f4;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.paper-view-header .view-pdf-btn {
+  white-space: nowrap;
+  margin-left: 20px;
+}
+
+.paper-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.paper-tag {
+  background-color: #333;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .paper-view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .paper-view-header .view-pdf-btn {
+    margin-left: 0;
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+}
+
+.resource-top-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.resource-top-actions .bookmark-btn,
+.resource-top-actions .more-menu-wrapper {
+  z-index: 5;
 } 
