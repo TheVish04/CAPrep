@@ -94,6 +94,11 @@ router.get('/announcements', authMiddleware, adminMiddleware, async (req, res) =
     if (req.query.type) filter.type = req.query.type;
     if (req.query.priority) filter.priority = req.query.priority;
     
+    // Only filter by validUntil if not showing all announcements
+    if (req.query.showAll !== 'true') {
+      filter.validUntil = { $gte: new Date() };
+    }
+    
     // Get announcements with pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;

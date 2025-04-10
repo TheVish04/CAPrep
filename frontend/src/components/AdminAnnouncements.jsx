@@ -50,9 +50,14 @@ const AdminAnnouncements = () => {
         return;
       }
 
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`, {
+      // Use the admin endpoint instead, which should return all announcements
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/announcements`, {
         headers: {
           Authorization: `Bearer ${token}`
+        },
+        params: {
+          showAll: true, // Include all announcements, even expired ones
+          limit: 100 // Get a larger number of announcements
         }
       });
 
