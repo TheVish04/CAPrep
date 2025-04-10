@@ -13,15 +13,35 @@ const CABot = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const messageEndRef = useRef(null);
+  const menuRef = useRef(null);
   
   // Auto scroll to bottom of messages
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+  
   const toggleChat = () => {
     setIsOpen(!isOpen);
+  };
+  
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
   };
   
   const handleInputChange = (e) => {
@@ -80,6 +100,36 @@ const CABot = () => {
     }
   };
   
+  const clearChat = () => {
+    setMessages([{ 
+      type: 'bot', 
+      content: 'Chat cleared. How can I help you today?',
+      timestamp: new Date()
+    }]);
+    setMenuOpen(false);
+  };
+  
+  const newChat = () => {
+    setMessages([{ 
+      type: 'bot', 
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy.',
+      timestamp: new Date()
+    }]);
+    setMenuOpen(false);
+  };
+  
+  const deleteChat = () => {
+    setIsOpen(false);
+    setTimeout(() => {
+      setMessages([{ 
+        type: 'bot', 
+        content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy.',
+        timestamp: new Date()
+      }]);
+      setMenuOpen(false);
+    }, 300);
+  };
+  
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -90,7 +140,25 @@ const CABot = () => {
         <div className="ca-bot-chat">
           <div className="ca-bot-header">
             <h3>CA Assistant</h3>
-            <button onClick={toggleChat} className="ca-bot-close-btn">×</button>
+            <div className="ca-bot-header-actions">
+              <div className="ca-bot-menu-container" ref={menuRef}>
+                <button onClick={toggleMenu} className="ca-bot-menu-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="6" r="2" />
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="12" cy="18" r="2" />
+                  </svg>
+                </button>
+                {menuOpen && (
+                  <div className="ca-bot-menu">
+                    <button onClick={newChat}>New Chat</button>
+                    <button onClick={clearChat}>Clear Chat</button>
+                    <button onClick={deleteChat}>Delete Chat</button>
+                  </div>
+                )}
+              </div>
+              <button onClick={toggleChat} className="ca-bot-close-btn">×</button>
+            </div>
           </div>
           <div className="ca-bot-messages">
             {messages.map((message, index) => (
