@@ -1,10 +1,8 @@
 .ca-bot-container {
-  position: relative;
-  margin-top: 30px;
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: center;
-  z-index: 100;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .ca-bot-toggle {
@@ -35,8 +33,7 @@
 .ca-bot-chat {
   position: absolute;
   bottom: 70px;
-  right: 50%;
-  transform: translateX(50%);
+  right: 0;
   width: 350px;
   height: 500px;
   background-color: white;

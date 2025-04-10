@@ -250,9 +250,6 @@ const Questions = () => {
         <div className="questions-container">
           <h1>Questions</h1>
           
-          {/* Add CABot here */}
-          <CABot />
-          
           {loading && <div className="loading-indicator">Loading questions...</div>}
           
           {error && (
@@ -523,6 +520,9 @@ const Questions = () => {
           itemTitle={`Question ${currentDiscussionQuestion.questionNumber} - ${currentDiscussionQuestion.subject}`}
         />
       )}
+      
+      {/* Add CABot at the end */}
+      <CABot />
     </div>
   );
 };
