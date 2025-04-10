@@ -742,7 +742,10 @@ const Dashboard = () => {
                           <span className="resource-date">Added {formatDistanceToNow(new Date(resource.createdAt), { addSuffix: true })}</span>
                         </p>
                       </div>
-                      <div className="resource-arrow">View</div>
+                      <div className="resource-arrow" onClick={(e) => {
+                        e.stopPropagation();
+                        trackResourceView(resource._id);
+                      }}>View</div>
                     </li>
                   ))}
                 </ul>
