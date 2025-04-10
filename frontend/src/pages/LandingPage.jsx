@@ -37,7 +37,8 @@ const LandingPage = () => {
         const parts = token.split('.');
         if (parts.length === 3) {
           setIsLoggedIn(true);
-          setShouldRedirect(true); // Redirect logged-in users to dashboard
+          // Remove the auto-redirect for logged-in users
+          // setShouldRedirect(true); // Redirect logged-in users to dashboard
         } else {
           localStorage.removeItem('token'); // Clear invalid token
         }
@@ -66,10 +67,6 @@ const LandingPage = () => {
     fetchQuestionCount();
     AOS.refresh();
   }, []);
-
-  if (shouldRedirect) {
-    return <Navigate to="/dashboard" />;
-  }
 
   return (
     <div className={`landing-page ${isVisible ? 'visible' : ''}`}>
