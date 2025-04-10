@@ -14,24 +14,45 @@ router.get('/', authMiddleware, async (req, res) => {
     const userId = req.user.id;
     
     // Get user data with selected fields
-    const user = await User.findById(userId)
-      .select('quizHistory bookmarkedQuestions bookmarkedResources studyHours recentlyViewedQuestions recentlyViewedResources lastActiveSession subjectStrengths resourceEngagement')
-      .populate({
-        path: 'recentlyViewedQuestions.questionId',
-        select: 'text subject difficulty subQuestions'
-      })
-      .populate({
-        path: 'recentlyViewedResources.resourceId',
-        select: 'title description subject resourceType'
-      })
-      .populate({
-        path: 'bookmarkedQuestions',
-        select: 'text subject difficulty'
-      })
-      .populate({
-        path: 'bookmarkedResources',
-        select: 'title description subject resourceType'
-      });
+    let user;
+    try {
+      user = await User.findById(userId)
+        .select('quizHistory bookmarkedQuestions bookmarkedResources studyHours recentlyViewedQuestions recentlyViewedResources lastActiveSession subjectStrengths resourceEngagement')
+        .populate({
+          path: 'recentlyViewedQuestions.questionId',
+          select: 'text subject difficulty subQuestions'
+        })
+        .populate({
+          path: 'recentlyViewedResources.resourceId',
+          select: 'title description subject resourceType'
+        });
+
+      // Handle potential issues with populating bookmarked resources
+      try {
+        await User.populate(user, {
+          path: 'bookmarkedQuestions',
+          select: 'text subject difficulty'
+        });
+      } catch (populateError) {
+        console.error('Error populating bookmarked questions:', populateError);
+        // Ensure this field exists even if population fails
+        user.bookmarkedQuestions = [];
+      }
+
+      try {
+        await User.populate(user, {
+          path: 'bookmarkedResources',
+          select: 'title description subject resourceType'
+        });
+      } catch (populateError) {
+        console.error('Error populating bookmarked resources:', populateError);
+        // Ensure this field exists even if population fails
+        user.bookmarkedResources = [];
+      }
+    } catch (userError) {
+      console.error('Error fetching user data:', userError);
+      return res.status(404).json({ success: false, message: 'User not found or data error' });
+    }
     
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -174,8 +195,8 @@ router.get('/', authMiddleware, async (req, res) => {
     
     // Prepare the dashboard response
     const dashboardData = {
-      quizScoreTrends,
-      studyHoursSummary,
+      quizScoreTrends: user.quizHistory ? formatQuizScoreTrends(user.quizHistory) : {},
+      studyHoursSummary: user.studyHours ? formatStudyHours(user.studyHours) : { daily: [], weekly: {}, monthly: {}, bySubject: {} },
       recentlyViewedQuestions: user.recentlyViewedQuestions || [],
       recentlyViewedResources: user.recentlyViewedResources || [],
       bookmarkedContent: {
@@ -184,10 +205,10 @@ router.get('/', authMiddleware, async (req, res) => {
       },
       continueSession: user.lastActiveSession,
       subjectStrengths: user.subjectStrengths || [],
-      recentDiscussions,
-      announcements,
-      newResources,
-      resourceStats
+      recentDiscussions: recentDiscussions || [],
+      announcements: announcements || [],
+      newResources: newResources || [],
+      resourceStats: formatResourceStats(user.resourceEngagement)
     };
     
     res.status(200).json({ success: true, data: dashboardData });
@@ -423,6 +444,102 @@ function getWeekNumber(date) {
   d.setDate(d.getDate() + 4 - (d.getDay() || 7));
   const yearStart = new Date(d.getFullYear(), 0, 1);
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// Helper function to format quiz score trends
+function formatQuizScoreTrends(quizHistory) {
+  const quizScoreTrends = {};
+  if (quizHistory && quizHistory.length > 0) {
+    // Group by subject
+    quizHistory.forEach(quiz => {
+      if (!quizScoreTrends[quiz.subject]) {
+        quizScoreTrends[quiz.subject] = [];
+      }
+      quizScoreTrends[quiz.subject].push({
+        date: quiz.date,
+        score: quiz.percentage
+      });
+    });
+    
+    // Sort each subject's scores by date
+    Object.keys(quizScoreTrends).forEach(subject => {
+      quizScoreTrends[subject].sort((a, b) => new Date(a.date) - new Date(b.date));
+    });
+  }
+  return quizScoreTrends;
+}
+
+// Helper function to format study hours
+function formatStudyHours(studyHours) {
+  const studyHoursSummary = {
+    daily: [],
+    weekly: {},
+    monthly: {},
+    bySubject: {}
+  };
+  
+  if (studyHours && studyHours.length > 0) {
+    const today = new Date();
+    const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    const filteredHours = studyHours.filter(entry => 
+      new Date(entry.date) >= last30Days
+    );
+    
+    // Daily tracking for last 30 days
+    filteredHours.forEach(entry => {
+      const date = new Date(entry.date);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Add to daily tracking
+      const existingDayIndex = studyHoursSummary.daily.findIndex(d => d.date === dateStr);
+      if (existingDayIndex >= 0) {
+        studyHoursSummary.daily[existingDayIndex].hours += entry.hours;
+      } else {
+        studyHoursSummary.daily.push({ date: dateStr, hours: entry.hours });
+      }
+      
+      // Weekly tracking
+      const weekNumber = getWeekNumber(date);
+      const weekKey = `${date.getFullYear()}-W${weekNumber}`;
+      studyHoursSummary.weekly[weekKey] = (studyHoursSummary.weekly[weekKey] || 0) + entry.hours;
+      
+      // Monthly tracking
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      studyHoursSummary.monthly[monthKey] = (studyHoursSummary.monthly[monthKey] || 0) + entry.hours;
+      
+      // By subject tracking
+      if (entry.subject) {
+        if (!studyHoursSummary.bySubject[entry.subject]) {
+          studyHoursSummary.bySubject[entry.subject] = 0;
+        }
+        studyHoursSummary.bySubject[entry.subject] += entry.hours;
+      }
+    });
+    
+    // Sort daily data by date
+    studyHoursSummary.daily.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+  
+  return studyHoursSummary;
+}
+
+// Helper function to format resource stats
+function formatResourceStats(resourceEngagement) {
+  const resourceStats = {
+    mostUsed: [],
+    timeSpentByType: {},
+    totalTimeSpent: 0
+  };
+  
+  if (resourceEngagement && resourceEngagement.length > 0) {
+    // Calculate total time spent
+    resourceStats.totalTimeSpent = resourceEngagement.reduce(
+      (total, resource) => total + (resource.timeSpent || 0), 0
+    );
+  }
+  
+  return resourceStats;
 }
 
 module.exports = router; 
