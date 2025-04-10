@@ -8,6 +8,7 @@ import DonationButton from './DonationButton';
 import axios from 'axios';
 import MoreMenu from './MoreMenu';
 import DiscussionModal from './DiscussionModal';
+import CABot from './CABot';
 
 // Add a Bookmark icon component (simple example)
 const BookmarkIcon = ({ filled }) => (
@@ -519,6 +520,9 @@ const Questions = () => {
           itemTitle={`Question ${currentDiscussionQuestion.questionNumber} - ${currentDiscussionQuestion.subject}`}
         />
       )}
+
+      {/* Add CABot component */}
+      <CABot />
     </div>
   );
 };

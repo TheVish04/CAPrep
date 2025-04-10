@@ -274,4 +274,67 @@ router.post('/generate', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/ai-quiz/ask - Answer CA-related questions using AI
+router.post('/ask', async (req, res) => {
+  try {
+    const { question } = req.body;
+    
+    console.log('AI Bot Question Request:', { question });
+
+    // Input Validation
+    if (!question) {
+      return res.status(400).json({ error: 'Question is required.' });
+    }
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI API Key not configured in .env');
+      return res.status(500).json({ error: 'AI service configuration error.' });
+    }
+
+    // Construct prompt for CA-related answers
+    const prompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
+    Please provide a helpful, accurate, and educational response to the following question related to Chartered Accountancy:
+    
+    "${question}"
+    
+    Ensure your answer:
+    1. Is accurate and reflects the latest CA curriculum and accounting standards
+    2. Is educational and helpful for a CA student
+    3. Includes relevant examples or explanations when appropriate
+    4. Cites relevant accounting standards or legal provisions where applicable
+    5. Is concise yet comprehensive`;
+
+    // Call Google Gemini API
+    try {
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash", 
+        safetySettings 
+      });
+      
+      const generationConfig = {
+        temperature: 0.3, // Lower temperature for more factual responses
+        maxOutputTokens: 4096,
+      };
+      
+      console.log("Calling Gemini API for question answering...");
+      const result = await model.generateContent(prompt);
+      console.log("Received response from Google Gemini API.");
+
+      if (result && result.response) {
+        const answer = result.response.text();
+        console.log("Answer length:", answer.length, "characters");
+        
+        res.json({ answer });
+      } else {
+        throw new Error("Empty or invalid response from AI service");
+      }
+    } catch (aiError) {
+      console.error("Error calling Gemini AI:", aiError);
+      res.status(500).json({ error: 'Failed to generate answer', details: aiError.message });
+    }
+  } catch (error) {
+    console.error('Error handling CA question:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
 module.exports = router; 
