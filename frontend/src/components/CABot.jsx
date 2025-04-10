@@ -95,7 +95,10 @@ const CABot = () => {
           <div className="ca-bot-messages">
             {messages.map((message, index) => (
               <div key={index} className={`ca-bot-message ${message.type}`}>
-                <div className="ca-bot-message-content">
+                <div 
+                  className="ca-bot-message-content"
+                  style={message.type === 'bot' ? {color: '#000000'} : {}}
+                >
                   {message.content}
                 </div>
                 <div className="ca-bot-message-time">

@@ -114,10 +114,10 @@
 }
 
 .ca-bot-message.bot {
-  background-color: #29b6f6;
+  background-color: #03a9f4 !important;
   align-self: flex-start;
   border-bottom-left-radius: 4px;
-  color: #000000;
+  color: #000000 !important;
 }
 
 .ca-bot-message.user {
@@ -233,4 +233,13 @@
     width: 36px;
     height: 36px;
   }
+}
+
+.ca-bot-message-content {
+  color: inherit !important; 
+}
+
+.ca-bot-message.bot .ca-bot-message-content {
+  color: #000000 !important;
+  font-weight: 500;
 } 
