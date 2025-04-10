@@ -507,9 +507,13 @@ const Dashboard = () => {
                   {dashboardData.recentlyViewedQuestions.map((item) => (
                     <li key={item.questionId._id} onClick={() => trackQuestionView(item.questionId._id)}>
                       <div className="recent-item-content">
-                        <p className="item-title">{item.questionId.text.substring(0, 80)}...</p>
+                        <p className="item-title">
+                          {item.questionId && item.questionId.text 
+                            ? item.questionId.text.substring(0, 80) + '...' 
+                            : 'No question text available'}
+                        </p>
                         <p className="item-meta">
-                          <span className="subject-tag">{item.questionId.subject}</span>
+                          <span className="subject-tag">{item.questionId && item.questionId.subject}</span>
                           <span className="timestamp">{formatDistanceToNow(new Date(item.viewedAt), { addSuffix: true })}</span>
                         </p>
                       </div>
@@ -574,7 +578,9 @@ const Dashboard = () => {
                       {dashboardData.bookmarkedContent.questions.slice(0, 5).map((question) => (
                         <li key={question._id} onClick={() => trackQuestionView(question._id)}>
                           <div className="bookmark-item-content">
-                            <p className="item-title">{question.text.substring(0, 80)}...</p>
+                            <p className="item-title">
+                              {question.text ? question.text.substring(0, 80) + '...' : 'No question text available'}
+                            </p>
                             <p className="item-meta">
                               <span className="subject-tag">{question.subject}</span>
                               <span className="difficulty-tag">{question.difficulty}</span>
@@ -735,7 +741,9 @@ const Dashboard = () => {
                           <span className="type-tag">{resource.resourceType}</span>
                           <span className="resource-date">Added {formatDistanceToNow(new Date(resource.createdAt), { addSuffix: true })}</span>
                         </p>
-                        <p className="resource-description">{resource.description.substring(0, 100)}...</p>
+                        <p className="resource-description">
+                          {resource.description ? resource.description.substring(0, 100) + '...' : 'No description available'}
+                        </p>
                       </div>
                       <div className="resource-arrow">View</div>
                     </li>
