@@ -141,18 +141,19 @@
 }
 
 .resource-card {
-  background-color: var(--card-bg-color, #333);
-  border-radius: 8px;
-  padding: 1.5rem;
-  padding-top: 1rem;
-  margin-bottom: 1.5rem;
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  padding: 25px;
+  padding-top: 18px;
+  margin-bottom: 20px;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .resource-card:hover {
   transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
 }
 
 .resource-header {
@@ -594,10 +595,10 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  padding: 15px 20px;
-  margin-bottom: 20px;
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 10px;
+  border-radius: 0;
 }
 
 .paper-view-title {
@@ -621,7 +622,7 @@
 }
 
 .paper-tag {
-  background-color: #333;
+  background-color: #222;
   color: #fff;
   padding: 5px 10px;
   border-radius: 4px;
