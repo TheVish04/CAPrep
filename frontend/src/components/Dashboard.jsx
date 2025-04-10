@@ -741,9 +741,6 @@ const Dashboard = () => {
                           <span className="type-tag">{resource.resourceType}</span>
                           <span className="resource-date">Added {formatDistanceToNow(new Date(resource.createdAt), { addSuffix: true })}</span>
                         </p>
-                        <p className="resource-description">
-                          {resource.description ? resource.description.substring(0, 100) + '...' : 'No description available'}
-                        </p>
                       </div>
                       <div className="resource-arrow">View</div>
                     </li>
