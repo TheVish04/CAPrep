@@ -32,7 +32,7 @@
 
 .ca-bot-chat {
   position: absolute;
-  bottom: 70px;
+  bottom: 80px;
   right: 0;
   width: 350px;
   height: 500px;
@@ -59,7 +59,7 @@
 
 .ca-bot-header {
   padding: 15px 20px;
-  background-color: #4c6ef5;
+  background-color: #4169e1;
   color: white;
   display: flex;
   justify-content: space-between;
@@ -104,14 +104,14 @@
 }
 
 .ca-bot-message.bot {
-  background-color: #eef2ff;
+  background-color: #e9f0ff;
   align-self: flex-start;
   border-bottom-left-radius: 4px;
-  color: #333;
+  color: #000;
 }
 
 .ca-bot-message.user {
-  background-color: #4c6ef5;
+  background-color: #4169e1;
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
@@ -145,14 +145,14 @@
 }
 
 .ca-bot-input textarea:focus {
-  border-color: #4c6ef5;
+  border-color: #4169e1;
 }
 
 .ca-bot-send-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: #4c6ef5;
+  background-color: #4169e1;
   color: white;
   border: none;
   cursor: pointer;
