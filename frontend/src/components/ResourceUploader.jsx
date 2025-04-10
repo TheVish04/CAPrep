@@ -139,10 +139,34 @@ const ResourceUploader = () => {
       
       console.log(`Fetching from URL: ${url}`);
       
+      // First try with standard headers to avoid CORS issues
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`Fetched ${Array.isArray(data) ? data.length : 0} resources`);
+          
+          if (Array.isArray(data)) {
+            setResources(data);
+          } else {
+            console.error('API did not return an array:', data);
+            setResources([]);
+          }
+          return; // Exit successfully
+        }
+      } catch (initialError) {
+        console.log('Initial fetch attempt failed, trying with cache headers:', initialError);
+      }
+      
+      // If the first attempt failed, try with cache control headers
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'x-skip-cache': 'true', // Skip the cache for this request
           'Cache-Control': 'no-cache, no-store, must-revalidate'
         },
       });
@@ -151,7 +175,6 @@ const ResourceUploader = () => {
         const data = await response.json();
         console.log(`Fetched ${Array.isArray(data) ? data.length : 0} resources`);
         
-        // Ensure we're handling the response data correctly
         if (Array.isArray(data)) {
           setResources(data);
         } else {

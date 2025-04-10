@@ -48,7 +48,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cors({
   origin: ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'x-skip-cache'],
   exposedHeaders: ['Content-Length', 'Content-Type'],
   credentials: true,
   optionsSuccessStatus: 200,
