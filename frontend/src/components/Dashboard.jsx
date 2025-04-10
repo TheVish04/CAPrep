@@ -724,7 +724,15 @@ const Dashboard = () => {
               {dashboardData && dashboardData.newResources && dashboardData.newResources.length > 0 ? (
                 <ul className="new-resources-list">
                   {dashboardData.newResources.map((resource) => (
-                    <li key={resource._id} onClick={() => trackResourceView(resource._id)}>
+                    <li key={resource._id}>
+                      <div className="resource-top-actions">
+                        <button className="bookmark-btn resource-bookmark">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                        </button>
+                        <div className="more-menu-dots">⋯</div>
+                      </div>
                       <div className="resource-item-content">
                         <h3>{resource.title}</h3>
                         <p className="resource-meta">
@@ -733,10 +741,14 @@ const Dashboard = () => {
                           <span className="resource-date">Added {formatDistanceToNow(new Date(resource.createdAt), { addSuffix: true })}</span>
                         </p>
                       </div>
-                      <div className="resource-arrow" onClick={(e) => {
-                        e.stopPropagation();
-                        trackResourceView(resource._id);
-                      }}>View</div>
+                      <div className="resource-footer">
+                        <button 
+                          className="resource-arrow" 
+                          onClick={() => trackResourceView(resource._id)}
+                        >
+                          View
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>

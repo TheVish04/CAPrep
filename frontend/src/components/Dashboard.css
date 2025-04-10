@@ -693,8 +693,8 @@ canvas {
   transition: all 0.3s ease;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
   border: 1px solid #333;
   position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -707,9 +707,43 @@ canvas {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+.resource-top-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.resource-top-actions .bookmark-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s ease;
+  padding: 5px;
+}
+
+.resource-top-actions .bookmark-btn:hover {
+  color: #03a9f4;
+}
+
+.more-menu-dots {
+  font-size: 20px;
+  color: #777;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.more-menu-dots:hover {
+  color: #03a9f4;
+}
+
 .resource-item-content {
   flex: 1;
   padding-right: 15px;
+  margin-top: 10px;
 }
 
 .resource-item-content h3 {
@@ -729,11 +763,10 @@ canvas {
   align-items: center;
 }
 
-.resource-description {
-  font-size: 0.9rem;
-  color: #b0b0b0;
-  line-height: 1.4;
-  margin: 8px 0 0;
+.resource-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
 }
 
 .resource-arrow {
@@ -744,12 +777,12 @@ canvas {
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  align-self: center;
   white-space: nowrap;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   cursor: pointer;
+  border: none;
 }
 
 .new-resources-list li:hover .resource-arrow {
