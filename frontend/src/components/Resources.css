@@ -590,10 +590,17 @@
 }
 
 /* Specific target for the paper title and View PDF layout shown in the image */
+.paper-view-container {
+  position: relative;
+  width: 100%;
+  min-height: 170px;
+  padding-bottom: 50px;
+}
+
 .paper-view-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   background-color: transparent;
   padding: 0;
@@ -609,9 +616,14 @@
   flex: 1;
 }
 
-.paper-view-header .view-pdf-btn {
-  white-space: nowrap;
-  margin-left: 20px;
+.view-pdf-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 0;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .paper-tags-container {
@@ -635,10 +647,18 @@
     align-items: flex-start;
   }
   
-  .paper-view-header .view-pdf-btn {
-    margin-left: 0;
-    margin-top: 10px;
-    align-self: flex-end;
+  .paper-view-container {
+    padding-bottom: 60px;
+  }
+  
+  .view-pdf-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
+  
+  .paper-tags-container {
+    margin-top: 15px;
   }
 }
 
