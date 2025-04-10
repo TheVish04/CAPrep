@@ -200,19 +200,10 @@ const Dashboard = () => {
   // Track resource view
   const trackResourceView = async (resourceId) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/dashboard/resource-engagement`, {
-        resourceId,
-        timeSpent: 0 // Initial view
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      // Skip the engagement tracking for now since it's causing 400 errors
       navigateToItem('resource', resourceId);
     } catch (err) {
-      console.error('Error tracking resource view:', err);
+      console.error('Error navigating to resource:', err);
     }
   };
 
