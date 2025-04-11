@@ -107,43 +107,65 @@ const Resources = () => {
     } else {
       fetchBookmarkIds(token);
       
-      // Check for location state with filter parameters (from Dashboard)
-      if (location.state && location.state.filters) {
-        const { filters: stateFilters } = location.state;
-        const initialFilters = { ...filters };
+      // Check if we have state from the dashboard or other navigation
+      if (location.state?.preSelectedResource) {
+        // Will be processed separately to show the specific resource
+        console.log('Pre-selected resource ID:', location.state.preSelectedResource);
+      }
+      
+      // Set search query from navigation state if available
+      if (location.state?.searchQuery) {
+        setFilters(prev => ({
+          ...prev,
+          search: location.state.searchQuery
+        }));
+      }
+      
+      // Apply URL params to initial filters before fetching
+      const params = new URLSearchParams(location.search);
+      const initialFilters = { ...filters }; // Start with default filters
+      if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
+      if (params.get('subject')) initialFilters.subject = params.get('subject');
+      if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
+      // Update state once, triggering the fetch effect
+      setFilters(initialFilters);
+    }
+  }, [navigate, location.search, location.state, fetchBookmarkIds]); // Rerun if location search or state changes
+  
+  // --- Load specific resource when preSelectedResource is present ---
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token && location.state?.preSelectedResource) {
+      const resourceId = location.state.preSelectedResource;
+      
+      // Find the resource in the current list
+      const resource = resources.find(r => r._id === resourceId);
+      
+      if (resource) {
+        // Resource is already loaded, so we can handle it directly
+        handleDownload(resource);
+      } else if (!loading) {
+        // Resource not in current list, fetch it specifically
+        const fetchSpecificResource = async () => {
+          try {
+            const response = await axios.get(`${API_BASE_URL}/api/resources/${resourceId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.data) {
+              // We have the resource data, now open it
+              handleDownload(response.data);
+            }
+          } catch (err) {
+            console.error('Error fetching specific resource:', err);
+            setError('Could not load the requested resource.');
+          }
+        };
         
-        // Apply filters from state
-        if (stateFilters.subject) initialFilters.subject = stateFilters.subject;
-        if (stateFilters.resourceType) initialFilters.paperType = stateFilters.resourceType;
-        if (stateFilters.searchTerm) initialFilters.search = stateFilters.searchTerm;
-        
-        // Apply URL query parameters (takes precedence over state)
-        const params = new URLSearchParams(location.search);
-        if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
-        if (params.get('subject')) initialFilters.subject = params.get('subject');
-        if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
-        
-        // Update state once, triggering the fetch effect
-        setFilters(initialFilters);
-        
-        // Check if there's a preSelectedResource to view
-        if (location.state.preSelectedResource) {
-          // Find the resource with this ID after fetching
-          const resourceToView = location.state.preSelectedResource;
-          // We'll set up a listener for when resources are loaded
-        }
-      } else {
-        // Just apply URL params if no state filters
-        const params = new URLSearchParams(location.search);
-        const initialFilters = { ...filters }; // Start with default filters
-        if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
-        if (params.get('subject')) initialFilters.subject = params.get('subject');
-        if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
-        // Update state once, triggering the fetch effect
-        setFilters(initialFilters);
+        fetchSpecificResource();
       }
     }
-  }, [navigate, location, fetchBookmarkIds]); // Rerun if location or its search changes
+  }, [resources, loading, location.state, API_BASE_URL]);
 
   // --- Fetch on Filter Change --- 
    useEffect(() => {
@@ -155,30 +177,6 @@ const Resources = () => {
     // Exclude fetchResources if wrapped in useCallback and API_BASE_URL is stable
   }, [filters]); // Dependency on filters object
 
-  // --- Effect to auto-open preSelectedResource ---
-  useEffect(() => {
-    // Only run when resources have loaded and there's a preSelectedResource
-    if (!loading && resources.length > 0 && location.state?.preSelectedResource) {
-      const resourceId = location.state.preSelectedResource;
-      const resourceToView = resources.find(r => r._id === resourceId);
-      
-      // If the resource is found in the loaded results, open it
-      if (resourceToView) {
-        console.log('Auto-opening resource:', resourceToView.title);
-        handleDownload(resourceToView);
-        
-        // Clear the preSelectedResource from location state to prevent reopening on filter changes
-        const newState = { ...location.state };
-        delete newState.preSelectedResource;
-        
-        // Replace state to avoid browser history issues
-        navigate(location.pathname, { 
-          state: newState, 
-          replace: true 
-        });
-      }
-    }
-  }, [loading, resources, location.state, navigate]);
 
   // Get unique years for filtering
   const getUniqueYears = () => {
