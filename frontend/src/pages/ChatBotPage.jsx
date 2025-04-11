@@ -143,13 +143,18 @@ const ChatBotPage = () => {
   const deleteConversation = (e, historyId) => {
     e.stopPropagation(); // Prevent triggering the loadConversation
     
-    const updatedHistory = chatHistory.filter(item => item.id !== historyId);
-    setChatHistory(updatedHistory);
-    localStorage.setItem('ca_assistant_chat_history', JSON.stringify(updatedHistory));
+    // Show confirmation dialog
+    const confirmDelete = window.confirm('Are you sure you want to delete this conversation?');
     
-    // If the deleted conversation is the currently selected one, create a new chat
-    if (selectedConversation && selectedConversation.id === historyId) {
-      createNewChat();
+    if (confirmDelete) {
+      const updatedHistory = chatHistory.filter(item => item.id !== historyId);
+      setChatHistory(updatedHistory);
+      localStorage.setItem('ca_assistant_chat_history', JSON.stringify(updatedHistory));
+      
+      // If the deleted conversation is the currently selected one, create a new chat
+      if (selectedConversation && selectedConversation.id === historyId) {
+        createNewChat();
+      }
     }
   };
   
