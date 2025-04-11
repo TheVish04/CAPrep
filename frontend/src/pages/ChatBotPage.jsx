@@ -8,7 +8,7 @@ const ChatBotPage = () => {
   const [messages, setMessages] = useState([
     { 
       type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy.',
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.',
       timestamp: new Date()
     }
   ]);
@@ -56,7 +56,7 @@ const ChatBotPage = () => {
   const createNewChat = () => {
     setMessages([{ 
       type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy.',
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.',
       timestamp: new Date()
     }]);
     setSelectedConversation(null);
