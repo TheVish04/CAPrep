@@ -106,16 +106,44 @@ const Resources = () => {
       navigate('/login'); // Redirect to login if no token
     } else {
       fetchBookmarkIds(token);
-      // Apply URL params to initial filters before fetching
-      const params = new URLSearchParams(location.search);
-      const initialFilters = { ...filters }; // Start with default filters
-      if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
-      if (params.get('subject')) initialFilters.subject = params.get('subject');
-      if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
-      // Update state once, triggering the fetch effect
-      setFilters(initialFilters);
+      
+      // Check for location state with filter parameters (from Dashboard)
+      if (location.state && location.state.filters) {
+        const { filters: stateFilters } = location.state;
+        const initialFilters = { ...filters };
+        
+        // Apply filters from state
+        if (stateFilters.subject) initialFilters.subject = stateFilters.subject;
+        if (stateFilters.resourceType) initialFilters.paperType = stateFilters.resourceType;
+        if (stateFilters.searchTerm) initialFilters.search = stateFilters.searchTerm;
+        
+        // Apply URL query parameters (takes precedence over state)
+        const params = new URLSearchParams(location.search);
+        if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
+        if (params.get('subject')) initialFilters.subject = params.get('subject');
+        if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
+        
+        // Update state once, triggering the fetch effect
+        setFilters(initialFilters);
+        
+        // Check if there's a preSelectedResource to view
+        if (location.state.preSelectedResource) {
+          // Find the resource with this ID after fetching
+          const resourceToView = location.state.preSelectedResource;
+          // We'll set up a listener for when resources are loaded
+        }
+      } else {
+        // Just apply URL params if no state filters
+        const params = new URLSearchParams(location.search);
+        const initialFilters = { ...filters }; // Start with default filters
+        if (params.get('examStage')) initialFilters.examStage = params.get('examStage');
+        if (params.get('subject')) initialFilters.subject = params.get('subject');
+        if (params.get('bookmarked') === 'true') initialFilters.bookmarked = true;
+        // Update state once, triggering the fetch effect
+        setFilters(initialFilters);
+      }
     }
-  }, [navigate, location.search, fetchBookmarkIds]); // Rerun if location search changes
+  }, [navigate, location, fetchBookmarkIds]); // Rerun if location or its search changes
 
   // --- Fetch on Filter Change --- 
    useEffect(() => {
@@ -127,6 +155,30 @@ const Resources = () => {
     // Exclude fetchResources if wrapped in useCallback and API_BASE_URL is stable
   }, [filters]); // Dependency on filters object
 
+  // --- Effect to auto-open preSelectedResource ---
+  useEffect(() => {
+    // Only run when resources have loaded and there's a preSelectedResource
+    if (!loading && resources.length > 0 && location.state?.preSelectedResource) {
+      const resourceId = location.state.preSelectedResource;
+      const resourceToView = resources.find(r => r._id === resourceId);
+      
+      // If the resource is found in the loaded results, open it
+      if (resourceToView) {
+        console.log('Auto-opening resource:', resourceToView.title);
+        handleDownload(resourceToView);
+        
+        // Clear the preSelectedResource from location state to prevent reopening on filter changes
+        const newState = { ...location.state };
+        delete newState.preSelectedResource;
+        
+        // Replace state to avoid browser history issues
+        navigate(location.pathname, { 
+          state: newState, 
+          replace: true 
+        });
+      }
+    }
+  }, [loading, resources, location.state, navigate]);
 
   // Get unique years for filtering
   const getUniqueYears = () => {

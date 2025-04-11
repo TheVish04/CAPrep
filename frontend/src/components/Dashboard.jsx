@@ -158,13 +158,27 @@ const Dashboard = () => {
   };
 
   // Navigate to a specific item
-  const navigateToItem = (type, id) => {
+  const navigateToItem = (type, id, resourceData = null) => {
     switch (type) {
       case 'question':
         navigate('/questions', { state: { preSelectedQuestion: id } });
         break;
       case 'resource':
-        navigate('/resources', { state: { preSelectedResource: id } });
+        // Enhanced navigation with resource filters
+        if (resourceData) {
+          navigate('/resources', { 
+            state: { 
+              preSelectedResource: id,
+              filters: {
+                subject: resourceData.subject || '',
+                resourceType: resourceData.resourceType || '',
+                searchTerm: resourceData.title || ''
+              }
+            } 
+          });
+        } else {
+          navigate('/resources', { state: { preSelectedResource: id } });
+        }
         break;
       case 'quiz':
         navigate('/quiz-review', { state: { quizId: id } });
@@ -183,10 +197,10 @@ const Dashboard = () => {
   };
 
   // Track resource view
-  const trackResourceView = async (resourceId) => {
+  const trackResourceView = async (resourceId, resourceData = null) => {
     try {
-      // Skip the engagement tracking for now since it's causing 400 errors
-      navigateToItem('resource', resourceId);
+      // Pass resource data for filtering
+      navigateToItem('resource', resourceId, resourceData);
     } catch (err) {
       console.error('Error navigating to resource:', err);
     }
@@ -510,7 +524,7 @@ const Dashboard = () => {
               {dashboardData && dashboardData.recentlyViewedResources && dashboardData.recentlyViewedResources.length > 0 ? (
                 <ul className="recent-list">
                   {dashboardData.recentlyViewedResources.map((item) => (
-                    <li key={item.resourceId._id} onClick={() => trackResourceView(item.resourceId._id)}>
+                    <li key={item.resourceId._id} onClick={() => trackResourceView(item.resourceId._id, item.resourceData)}>
                       <div className="recent-item-content">
                         <p className="item-title">{item.resourceId.title}</p>
                         <p className="item-meta">
@@ -575,7 +589,7 @@ const Dashboard = () => {
                   dashboardData && dashboardData.bookmarkedContent && dashboardData.bookmarkedContent.resources.length > 0 ? (
                     <ul className="bookmark-list">
                       {dashboardData.bookmarkedContent.resources.slice(0, 5).map((resource) => (
-                        <li key={resource._id} onClick={() => trackResourceView(resource._id)}>
+                        <li key={resource._id} onClick={() => trackResourceView(resource._id, resource)}>
                           <div className="bookmark-item-content">
                             <p className="item-title">{resource.title}</p>
                             <p className="item-meta">
@@ -655,7 +669,7 @@ const Dashboard = () => {
               {dashboardData && dashboardData.newResources && dashboardData.newResources.length > 0 ? (
                 <ul className="new-resources-list">
                   {dashboardData.newResources.map((resource) => (
-                    <li key={resource._id} onClick={() => trackResourceView(resource._id)}>
+                    <li key={resource._id} onClick={() => trackResourceView(resource._id, resource)}>
                       <div className="resource-item-content">
                         <h3>{resource.title}</h3>
                         <p className="resource-meta">
@@ -666,7 +680,7 @@ const Dashboard = () => {
                       </div>
                       <div className="resource-arrow" onClick={(e) => {
                         e.stopPropagation();
-                        trackResourceView(resource._id);
+                        trackResourceView(resource._id, resource);
                       }}>View</div>
                     </li>
                   ))}
