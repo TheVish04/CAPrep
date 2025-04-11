@@ -175,6 +175,12 @@
   color: white;
 }
 
+.bot-avatar svg {
+  stroke: white;
+  width: 20px;
+  height: 20px;
+}
+
 .user-avatar {
   background-color: #4f4f4f;
   color: white;
