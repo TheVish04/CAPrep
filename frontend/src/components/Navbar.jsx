@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Navbar.css';
-import CABot from './CABot';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -194,9 +193,23 @@ const Navbar = () => {
             </>
           )}
           
-          <li className="nav-item ca-bot-nav-item">
-            <CABot />
-          </li>
+          {isLoggedIn && (
+            <motion.li 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="nav-item chat-nav-item"
+            >
+              <Link to="/chat" className="nav-link chat-link" onClick={() => setIsMenuOpen(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+                Chat
+              </Link>
+            </motion.li>
+          )}
         </motion.ul>
       </div>
     </motion.nav>

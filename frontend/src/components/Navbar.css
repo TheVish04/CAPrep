@@ -224,3 +224,27 @@
     margin: 10px auto;
   }
 }
+
+.chat-nav-item {
+  margin-left: auto !important;
+  display: flex;
+  align-items: center;
+}
+
+.chat-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #03a9f4 !important;
+  font-weight: 500;
+}
+
+.chat-link:hover {
+  color: #29b6f6 !important;
+}
+
+@media screen and (max-width: 960px) {
+  .chat-nav-item {
+    margin: 10px auto !important;
+  }
+}

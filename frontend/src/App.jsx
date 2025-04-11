@@ -21,6 +21,7 @@ import UserProfile from './components/UserProfile';
 import QuizReview from './pages/QuizReview';
 import Dashboard from './components/Dashboard';
 import AdminAnnouncements from './components/AdminAnnouncements';
+import ChatBotPage from './pages/ChatBotPage';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -120,6 +121,10 @@ const App = () => {
             <Route
               path="/dashboard"
               element={<ProtectedRoute element={<Dashboard />} />}
+            />
+            <Route
+              path="/chat"
+              element={<ProtectedRoute element={<ChatBotPage />} />}
             />
             
             {/* Admin Routes */}
