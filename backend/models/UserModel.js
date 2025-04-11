@@ -98,11 +98,6 @@ const UserSchema = new Schema({
     resourceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Resource' },
     viewedAt: { type: Date, default: Date.now }
   }],
-  lastActiveSession: {
-    type: { type: String, enum: ['quiz', 'resource', 'discussion', 'question'] },
-    itemId: { type: mongoose.Schema.Types.ObjectId },
-    timestamp: { type: Date, default: Date.now }
-  },
   subjectStrengths: [{
     subject: { type: String, required: true },
     strengthScore: { type: Number, required: true, min: 0, max: 100 },

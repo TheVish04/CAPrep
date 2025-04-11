@@ -17,7 +17,7 @@ router.get('/', authMiddleware, async (req, res) => {
     let user;
     try {
       user = await User.findById(userId)
-        .select('quizHistory bookmarkedQuestions bookmarkedResources studyHours recentlyViewedQuestions recentlyViewedResources lastActiveSession subjectStrengths resourceEngagement')
+        .select('quizHistory bookmarkedQuestions bookmarkedResources studyHours recentlyViewedQuestions recentlyViewedResources subjectStrengths resourceEngagement')
         .populate({
           path: 'recentlyViewedQuestions.questionId',
           select: 'text subject difficulty subQuestions'
@@ -57,13 +57,6 @@ router.get('/', authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
-    // Get recent discussions
-    const recentDiscussions = await Discussion.find({})
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select('title content subject createdAt')
-      .populate('createdBy', 'fullName');
     
     // Get announcements
     const announcements = await Announcement.find({
@@ -203,9 +196,7 @@ router.get('/', authMiddleware, async (req, res) => {
         questions: user.bookmarkedQuestions || [],
         resources: user.bookmarkedResources || []
       },
-      continueSession: user.lastActiveSession,
       subjectStrengths: user.subjectStrengths || [],
-      recentDiscussions: recentDiscussions || [],
       announcements: announcements || [],
       newResources: newResources || [],
       resourceStats: formatResourceStats(user.resourceEngagement)
@@ -308,20 +299,6 @@ router.post('/resource-engagement', authMiddleware, async (req, res) => {
       });
     }
     
-    // Add to recently viewed resources
-    if (!user.recentlyViewedResources) {
-      user.recentlyViewedResources = [];
-    }
-    
-    // Remove if already in recently viewed
-    const recentIndex = user.recentlyViewedResources.findIndex(
-      item => item.resourceId.toString() === resourceId
-    );
-    
-    if (recentIndex >= 0) {
-      user.recentlyViewedResources.splice(recentIndex, 1);
-    }
-    
     // Add to beginning of recently viewed
     user.recentlyViewedResources.unshift({
       resourceId,
@@ -332,13 +309,6 @@ router.post('/resource-engagement', authMiddleware, async (req, res) => {
     if (user.recentlyViewedResources.length > 10) {
       user.recentlyViewedResources = user.recentlyViewedResources.slice(0, 10);
     }
-    
-    // Update last active session
-    user.lastActiveSession = {
-      type: 'resource',
-      itemId: resourceId,
-      timestamp: new Date()
-    };
     
     await user.save();
     
@@ -397,13 +367,6 @@ router.post('/question-view', authMiddleware, async (req, res) => {
     if (user.recentlyViewedQuestions.length > 10) {
       user.recentlyViewedQuestions = user.recentlyViewedQuestions.slice(0, 10);
     }
-    
-    // Update last active session
-    user.lastActiveSession = {
-      type: 'question',
-      itemId: questionId,
-      timestamp: new Date()
-    };
     
     await user.save();
     

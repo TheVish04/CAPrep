@@ -56,10 +56,6 @@ const Dashboard = () => {
           if (!data.announcements) {
             data.announcements = [];
           }
-          // Ensure recentDiscussions exists
-          if (!data.recentDiscussions) {
-            data.recentDiscussions = [];
-          }
           setDashboardData(data);
         } else {
           setError('Failed to fetch dashboard data');
@@ -173,9 +169,6 @@ const Dashboard = () => {
       case 'quiz':
         navigate('/quiz-review', { state: { quizId: id } });
         break;
-      case 'discussion':
-        navigate('/discussions', { state: { discussionId: id } });
-        break;
       case 'announcement':
         // Simply display the announcement in an alert for now
         // In a full implementation, you might navigate to a dedicated announcements page
@@ -187,14 +180,6 @@ const Dashboard = () => {
       default:
         break;
     }
-  };
-
-  // Continue last session
-  const continueSession = () => {
-    if (!dashboardData || !dashboardData.continueSession) return;
-    
-    const { type, itemId } = dashboardData.continueSession;
-    navigateToItem(type, itemId);
   };
 
   // Track resource view
@@ -611,37 +596,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Continue Where You Left Off */}
-            <div className="dashboard-card continue-session">
-              <h2>Continue Where You Left Off</h2>
-              {dashboardData && dashboardData.continueSession ? (
-                <div className="continue-card" onClick={continueSession}>
-                  <div className="continue-icon">
-                    {dashboardData.continueSession.type === 'quiz' && <span className="material-icons">quiz</span>}
-                    {dashboardData.continueSession.type === 'resource' && <span className="material-icons">menu_book</span>}
-                    {dashboardData.continueSession.type === 'question' && <span className="material-icons">help_outline</span>}
-                    {dashboardData.continueSession.type === 'discussion' && <span className="material-icons">forum</span>}
-                  </div>
-                  <div className="continue-details">
-                    <p className="continue-type">
-                      {dashboardData.continueSession.type === 'quiz' && 'Continue Quiz'}
-                      {dashboardData.continueSession.type === 'resource' && 'Continue Reading'}
-                      {dashboardData.continueSession.type === 'question' && 'Continue Question'}
-                      {dashboardData.continueSession.type === 'discussion' && 'Continue Discussion'}
-                    </p>
-                    <p className="continue-time">
-                      Last active {formatDistanceToNow(new Date(dashboardData.continueSession.timestamp), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <div className="continue-arrow">Continue</div>
-                </div>
-              ) : (
-                <div className="no-data">
-                  <p>No recent activity detected. Start exploring content to see your last session here.</p>
-                </div>
-              )}
-            </div>
-
             {/* Subject-wise Strength/Weakness Analysis */}
             <div className="dashboard-card subject-strengths">
               <h2>Subject Performance Analysis</h2>
@@ -664,29 +618,6 @@ const Dashboard = () => {
               ) : (
                 <div className="no-data">
                   <p>No subject performance data available yet. Complete more quizzes to see your strengths and weaknesses.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Recent Discussions */}
-            <div className="dashboard-card recent-discussions">
-              <h2>Recent Discussion Posts</h2>
-              {dashboardData && dashboardData.recentDiscussions && dashboardData.recentDiscussions.length > 0 ? (
-                <ul className="discussion-list">
-                  {dashboardData.recentDiscussions.map((discussion) => (
-                    <li key={discussion._id} onClick={() => navigateToItem('discussion', discussion._id)} style={{ cursor: 'pointer' }}>
-                      <div className="discussion-item-header">
-                        <h3>{discussion.title}</h3>
-                        <span className="discussion-date">{formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true })}</span>
-                      </div>
-                      <p className="discussion-author">By: {discussion.createdBy.fullName}</p>
-                      <p className="subject-tag">{discussion.subject}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="no-data">
-                  <p>No recent discussions. Join the community and start discussing with peers.</p>
                 </div>
               )}
             </div>
