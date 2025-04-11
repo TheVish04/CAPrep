@@ -17,7 +17,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #1e88e5;
+  background-color: #03a9f4;
   color: white;
   border: none;
   cursor: pointer;
@@ -31,13 +31,14 @@
 .ca-bot-nav-button:hover {
   transform: scale(1.05);
   box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  background-color: #29b6f6;
 }
 
 .ca-bot-nav-chat {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 350px;
+  width: 400px;
 }
 
 .ca-bot-button {
@@ -64,19 +65,20 @@
   position: absolute;
   bottom: 80px;
   right: 0;
-  width: 350px;
-  height: 500px;
-  background-color: white;
+  width: 400px;
+  height: 600px;
+  background-color: #121212;
   border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
+  border: 1px solid #333;
 }
 
 .ca-bot-header {
-  background-color: #1e88e5;
+  background-color: #03a9f4;
   color: white;
   padding: 15px;
   display: flex;
@@ -119,11 +121,12 @@
   position: absolute;
   top: 60px;
   right: 15px;
-  background-color: white;
+  background-color: #1e1e1e;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   z-index: 1001;
   overflow: hidden;
+  border: 1px solid #333;
 }
 
 .ca-bot-menu button {
@@ -133,10 +136,11 @@
   text-align: left;
   background: none;
   border: none;
-  border-bottom: 1px solid #f1f1f1;
+  border-bottom: 1px solid #333;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
+  color: #ddd;
 }
 
 .ca-bot-menu button:last-child {
@@ -144,7 +148,7 @@
 }
 
 .ca-bot-menu button:hover {
-  background-color: #f5f5f5;
+  background-color: #333;
 }
 
 .ca-bot-messages {
@@ -154,6 +158,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  background-color: #1e1e1e;
 }
 
 .ca-bot-message {
@@ -167,14 +172,14 @@
 }
 
 .ca-bot-message.user {
-  background-color: #1e88e5;
+  background-color: #03a9f4;
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
 .ca-bot-message.bot {
-  background-color: #1e88e5;
+  background-color: #239ecf;
   color: white;
   align-self: flex-start;
   border-bottom-left-radius: 4px;
@@ -226,23 +231,25 @@
 .ca-bot-input {
   padding: 15px;
   display: flex;
-  border-top: 1px solid #eee;
-  background-color: white;
+  border-top: 1px solid #333;
+  background-color: #1e1e1e;
 }
 
 .ca-bot-input input {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #333;
   border-radius: 20px;
   font-size: 14px;
   resize: none;
   outline: none;
   margin-right: 10px;
+  background-color: #2a2a2a;
+  color: white;
 }
 
 .ca-bot-input button {
-  background-color: #1e88e5;
+  background-color: #03a9f4;
   color: white;
   border: none;
   border-radius: 20px;
@@ -253,7 +260,7 @@
 }
 
 .ca-bot-input button:hover {
-  background-color: #1976d2;
+  background-color: #29b6f6;
 }
 
 .ca-bot-input button:disabled {
@@ -308,7 +315,7 @@
 @media screen and (max-width: 960px) {
   .ca-bot-chat {
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     height: 70vh;
     position: fixed;
     top: 70px;
@@ -325,7 +332,7 @@
     top: 70px;
     right: 10px;
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     height: 70vh;
   }
   
@@ -382,10 +389,38 @@
 .ca-bot-history-title {
   font-weight: 600;
   margin-bottom: 5px;
-  color: #eee;
+  color: white;
 }
 
 .ca-bot-history-date {
   font-size: 0.8rem;
   color: #aaa;
+}
+
+/* Delete button for history items */
+.ca-bot-history-item {
+  position: relative;
+}
+
+.ca-bot-history-delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.ca-bot-history-delete:hover {
+  color: #ff5252;
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
 } 

@@ -221,6 +221,14 @@ const CABot = () => {
     setShowHistory(false);
   };
   
+  const deleteHistoryItem = (e, historyId) => {
+    e.stopPropagation(); // Prevent triggering the loadConversation
+    
+    const updatedHistory = chatHistory.filter(item => item.id !== historyId);
+    setChatHistory(updatedHistory);
+    localStorage.setItem('cabot_history', JSON.stringify(updatedHistory));
+  };
+  
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -301,8 +309,17 @@ const CABot = () => {
                     className="ca-bot-history-item"
                     onClick={() => loadConversation(convo)}
                   >
-                    <h4>{convo.title}</h4>
-                    <p>{formatDate(convo.timestamp)}</p>
+                    <h4 className="ca-bot-history-title">{convo.title}</h4>
+                    <p className="ca-bot-history-date">{formatDate(convo.timestamp)}</p>
+                    <button 
+                      className="ca-bot-history-delete"
+                      onClick={(e) => deleteHistoryItem(e, convo.id)}
+                      aria-label="Delete history item"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                      </svg>
+                    </button>
                   </div>
                 ))
               )}
