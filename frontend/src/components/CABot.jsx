@@ -17,9 +17,29 @@ const CABot = () => {
   const messageEndRef = useRef(null);
   const menuRef = useRef(null);
   
-  // Auto scroll to bottom of messages
+  // Auto scroll to bottom of messages without affecting page scroll
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messageEndRef.current) {
+      // Use scrollIntoView with a specific configuration
+      messageEndRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'end',
+        inline: 'nearest'
+      });
+    }
+  }, [messages]);
+  
+  // Alternative scroll function that doesn't affect page
+  const scrollMessagesToBottom = () => {
+    const messagesContainer = document.querySelector('.ca-bot-messages');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  };
+
+  // Call this function after messages update
+  useEffect(() => {
+    scrollMessagesToBottom();
   }, [messages]);
   
   // Close menu when clicking outside

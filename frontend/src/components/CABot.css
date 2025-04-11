@@ -43,10 +43,11 @@
   position: absolute;
   top: 60px;
   right: 0;
-  width: 350px;
-  height: 500px;
+  width: 90%;
+  max-width: 800px;
+  height: 600px;
   background-color: #121212;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
@@ -69,20 +70,21 @@
 
 .ca-bot-header {
   padding: 15px 20px;
-  background-color: #03a9f4;
+  background-color: #121212;
   color: black;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 1px solid #333;
 }
 
 .ca-bot-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: black;
+  color: #03a9f4;
 }
 
 .ca-bot-header-actions {
@@ -118,13 +120,14 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: white;
+  background-color: #1e1e1e;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 10;
   overflow: hidden;
   width: 150px;
   margin-top: 8px;
+  border: 1px solid #333;
 }
 
 .ca-bot-menu button {
@@ -135,12 +138,13 @@
   border: none;
   cursor: pointer;
   font-size: 14px;
-  color: #333;
+  color: #eee;
   transition: background-color 0.2s;
 }
 
 .ca-bot-menu button:hover {
-  background-color: #f5f5f5;
+  background-color: #333;
+  color: #03a9f4;
 }
 
 .ca-bot-close-btn {
@@ -161,29 +165,35 @@
   flex-direction: column;
   gap: 15px;
   background-color: #1e1e1e;
+  scroll-behavior: smooth;
+  overflow-anchor: none;
+  max-height: calc(100% - 140px);
 }
 
 .ca-bot-message {
-  max-width: 80%;
+  max-width: 85%;
   padding: 12px 16px;
-  border-radius: 18px;
+  border-radius: 6px;
   position: relative;
   line-height: 1.5;
   font-size: 14px;
+  margin-bottom: 5px;
 }
 
 .ca-bot-message.bot {
   background-color: #03a9f4 !important;
   align-self: flex-start;
-  border-bottom-left-radius: 4px;
+  border-radius: 15px 15px 15px 3px;
   color: #000000 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .ca-bot-message.user {
-  background-color: #333;
+  background-color: #0d47a1;
   color: #ffffff;
   align-self: flex-end;
-  border-bottom-right-radius: 4px;
+  border-radius: 15px 15px 3px 15px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .ca-bot-message-time {
@@ -195,29 +205,30 @@
 }
 
 .ca-bot-input {
-  padding: 15px;
+  padding: 15px 20px;
   display: flex;
   gap: 10px;
-  background-color: #242424;
+  background-color: #121212;
   border-top: 1px solid #333;
 }
 
 .ca-bot-input textarea {
   flex: 1;
-  padding: 12px;
+  padding: 12px 15px;
   border: 1px solid #444;
-  border-radius: 20px;
+  border-radius: 6px;
   resize: none;
   height: 44px;
   font-family: inherit;
   font-size: 14px;
   outline: none;
-  background-color: #333;
-  color: #fff;
+  background-color: #2d2d2d;
+  color: #eee;
 }
 
 .ca-bot-input textarea:focus {
   border-color: #03a9f4;
+  box-shadow: 0 0 0 1px rgba(3, 169, 244, 0.3);
 }
 
 .ca-bot-send-btn {
@@ -231,7 +242,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .ca-bot-send-btn:hover {
@@ -281,8 +293,9 @@
 /* Mobile responsiveness */
 @media screen and (max-width: 960px) {
   .ca-bot-chat {
-    width: 300px;
-    height: 450px;
+    width: 90%;
+    max-width: 400px;
+    height: 70vh;
     position: fixed;
     top: 70px;
     right: 10px;
@@ -295,7 +308,8 @@
 }
 
 .ca-bot-message-content {
-  color: inherit !important; 
+  color: inherit !important;
+  word-break: break-word;
 }
 
 .ca-bot-message.bot .ca-bot-message-content {
