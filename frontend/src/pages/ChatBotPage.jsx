@@ -20,7 +20,7 @@ const ChatBotPage = () => {
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
-    const savedHistory = localStorage.getItem('cabot_history');
+    const savedHistory = localStorage.getItem('ca_assistant_chat_history');
     if (savedHistory) {
       try {
         const parsedHistory = JSON.parse(savedHistory);
@@ -82,7 +82,7 @@ const ChatBotPage = () => {
     
     setChatHistory(newHistory);
     setSelectedConversation(newConvo);
-    localStorage.setItem('cabot_history', JSON.stringify(newHistory));
+    localStorage.setItem('ca_assistant_chat_history', JSON.stringify(newHistory));
   };
   
   const handleSendMessage = async () => {
@@ -99,11 +99,9 @@ const ChatBotPage = () => {
     setIsLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
       const config = {
         headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          'Content-Type': 'application/json'
         }
       };
       
@@ -147,7 +145,7 @@ const ChatBotPage = () => {
     
     const updatedHistory = chatHistory.filter(item => item.id !== historyId);
     setChatHistory(updatedHistory);
-    localStorage.setItem('cabot_history', JSON.stringify(updatedHistory));
+    localStorage.setItem('ca_assistant_chat_history', JSON.stringify(updatedHistory));
     
     // If the deleted conversation is the currently selected one, create a new chat
     if (selectedConversation && selectedConversation.id === historyId) {

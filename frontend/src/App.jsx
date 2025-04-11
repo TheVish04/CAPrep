@@ -92,6 +92,7 @@ const App = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/chat" element={<ChatBotPage />} />
             
             {/* Protected Routes */}
             <Route
@@ -121,10 +122,6 @@ const App = () => {
             <Route
               path="/dashboard"
               element={<ProtectedRoute element={<Dashboard />} />}
-            />
-            <Route
-              path="/chat"
-              element={<ProtectedRoute element={<ChatBotPage />} />}
             />
             
             {/* Admin Routes */}
