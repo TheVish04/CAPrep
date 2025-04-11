@@ -236,9 +236,9 @@ const CABot = () => {
   };
 
   return (
-    <div className="ca-bot-container">
+    <div className="ca-bot-nav-container">
       <button 
-        className="ca-bot-button" 
+        className="ca-bot-nav-button" 
         onClick={toggleChat}
         aria-label="Toggle chat bot"
       >
@@ -258,7 +258,7 @@ const CABot = () => {
       </button>
       
       {isOpen && (
-        <div className="ca-bot-chat">
+        <div className="ca-bot-chat ca-bot-nav-chat">
           <div className="ca-bot-header">
             <h3 className="ca-bot-title">{showHistory ? 'Chat History' : 'CA Assistant'}</h3>
             <div className="ca-bot-menu-container" ref={menuRef}>
