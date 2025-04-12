@@ -27,7 +27,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
   storage: storage, 
   fileFilter: fileFilter,
-  limits: { fileSize: 15 * 1024 * 1024 } // Limit to 15MB
+  limits: { fileSize: 20 * 1024 * 1024 } // Increased to 20MB to match server limit
 });
 
 // Import cloudinary configuration

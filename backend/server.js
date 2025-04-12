@@ -42,8 +42,9 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Middleware
+// Middleware - increase all body parser limits to 20MB
 app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Get allowed origins from environment variable
 const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];

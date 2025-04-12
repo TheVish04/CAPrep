@@ -225,8 +225,8 @@ const ResourceUploader = () => {
       if (selectedFile.type !== 'application/pdf') {
         setErrors((prev) => ({ ...prev, file: 'Only PDF files are allowed' }));
         setFile(null);
-      } else if (selectedFile.size > 15 * 1024 * 1024) { // 15MB limit
-        setErrors((prev) => ({ ...prev, file: 'File size must be less than 15MB' }));
+      } else if (selectedFile.size > 20 * 1024 * 1024) { // 20MB limit
+        setErrors((prev) => ({ ...prev, file: 'File size must be less than 20MB' }));
         setFile(null);
       } else {
         setErrors((prev) => ({ ...prev, file: '' }));
@@ -296,8 +296,8 @@ const ResourceUploader = () => {
           error = 'File is required';
         } else if (value && value.type !== 'application/pdf') {
           error = 'Only PDF files are allowed';
-        } else if (value && value.size > 15 * 1024 * 1024) { // 15MB limit
-          error = 'File size must be less than 15MB';
+        } else if (value && value.size > 20 * 1024 * 1024) { // 20MB limit
+          error = 'File size must be less than 20MB';
         }
         break;
         
