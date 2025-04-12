@@ -44,6 +44,22 @@ const ChatBotPage = () => {
     }
   }, [messages]);
 
+  // Function to remove markdown formatting from AI responses
+  const sanitizeResponse = (text) => {
+    if (!text) return '';
+    
+    // Remove markdown italics/bold asterisks (replace with the actual text)
+    let sanitized = text.replace(/\*\*\*(.*?)\*\*\*/g, '$1'); // Bold + italic (three asterisks)
+    sanitized = sanitized.replace(/\*\*(.*?)\*\*/g, '$1'); // Bold (two asterisks)
+    sanitized = sanitized.replace(/\*(.*?)\*/g, '$1'); // Italic (one asterisk)
+    
+    // Remove other markdown if needed
+    sanitized = sanitized.replace(/__(.*?)__/g, '$1'); // Underline
+    sanitized = sanitized.replace(/_(.*?)_/g, '$1'); // Alternate italic
+    
+    return sanitized;
+  };
+
   const handleInputChange = (e) => {
     setInput(e.target.value);
   };
@@ -137,7 +153,8 @@ const ChatBotPage = () => {
       
       const botMessage = {
         type: 'bot',
-        content: response.data.answer,
+        // Sanitize the response to remove markdown formatting
+        content: sanitizeResponse(response.data.answer),
         timestamp: new Date()
       };
       

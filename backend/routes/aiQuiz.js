@@ -301,7 +301,7 @@ router.post('/ask', async (req, res) => {
     }
 
     // Construct prompt for CA-related answers with context if available
-    const prompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
+    let prompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
     Please provide a helpful, accurate, and educational response to the following question related to Chartered Accountancy ${contextDetails}:
     
     "${question}"
@@ -311,7 +311,15 @@ router.post('/ask', async (req, res) => {
     2. Is educational and helpful for a CA student
     3. Includes relevant examples or explanations when appropriate
     4. Cites relevant accounting standards or legal provisions where applicable
-    5. Is concise yet comprehensive${examStage && subject ? `\n6. Is specifically tailored for ${examStage} level and the subject ${subject}` : ''}`;
+    5. Is concise yet comprehensive`;
+    
+    // Add conditional 6th point if both examStage and subject are provided
+    if (examStage && subject) {
+      prompt += `\n6. Is specifically tailored for ${examStage} level and the subject ${subject}`;
+    }
+    
+    // Add the markdown formatting instruction
+    prompt += `\n\nIMPORTANT: Do not use markdown formatting (like asterisks for emphasis) in your response. Use plain text only without any special formatting characters like *, _, \`, or #.`;
 
     // Call Google Gemini API
     try {
