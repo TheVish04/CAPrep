@@ -647,7 +647,11 @@ router.post('/verify-reset-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
     
-    console.log('Verify reset OTP request:', { email, otp: otp ? '****' : null });
+    console.log('Verify reset OTP request received:', { 
+      email, 
+      otp: otp ? otp : null,
+      reqBody: JSON.stringify(req.body) // Log the entire request body for debugging
+    });
     
     if (!email || !otp) {
       return res.status(400).json({ 
@@ -656,8 +660,9 @@ router.post('/verify-reset-otp', async (req, res) => {
       });
     }
     
-    // Find user by email first
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    // Find user by email first - add select to ensure we get the reset fields
+    const user = await User.findOne({ email: email.trim().toLowerCase() })
+      .select('+resetPasswordToken +resetPasswordExpires');
     
     if (!user) {
       console.log(`User not found for email: ${email}`);
@@ -667,25 +672,48 @@ router.post('/verify-reset-otp', async (req, res) => {
       });
     }
     
-    console.log('User found, checking OTP:', { 
-      userToken: user.resetPasswordToken ? 'exists' : 'missing',
+    // Add detailed logging to see exactly what's saved
+    console.log('User found, detailed OTP info:', { 
+      userEmail: user.email,
+      providedOTP: otp,
+      storedToken: user.resetPasswordToken,
       tokenExpiry: user.resetPasswordExpires,
+      currentTime: new Date(),
       isExpired: user.resetPasswordExpires < new Date(),
-      otpMatch: user.resetPasswordToken === otp
+      typesMatch: typeof otp === typeof user.resetPasswordToken,
+      exactMatch: user.resetPasswordToken === otp,
+      trimmedMatch: user.resetPasswordToken?.trim() === otp?.trim()
     });
     
-    // Verify that resetPasswordToken exists, matches OTP, and has not expired
-    if (!user.resetPasswordToken || user.resetPasswordToken !== otp) {
+    // Check if token exists
+    if (!user.resetPasswordToken) {
       return res.status(400).json({ 
         success: false,
-        error: 'Invalid OTP'
+        error: 'No reset token found - please request a new OTP'
       });
     }
     
+    // Check if token has expired
     if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
       return res.status(400).json({ 
         success: false,
-        error: 'OTP has expired'
+        error: 'OTP has expired - please request a new OTP'
+      });
+    }
+    
+    // Normalize both values before comparison - trim spaces and ensure string comparison
+    const normalizedStoredOTP = String(user.resetPasswordToken).trim();
+    const normalizedProvidedOTP = String(otp).trim();
+    
+    // Check if the OTP matches - use normalized values for comparison
+    if (normalizedStoredOTP !== normalizedProvidedOTP) {
+      console.log('OTP mismatch:', {
+        normalizedStored: normalizedStoredOTP,
+        normalizedProvided: normalizedProvidedOTP
+      });
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid OTP - please check and try again'
       });
     }
     
@@ -708,7 +736,12 @@ router.post('/reset-password', async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
     
-    console.log('Reset password request received:', { email, otpProvided: !!otp, passwordLength: newPassword?.length });
+    console.log('Reset password request received:', { 
+      email, 
+      otpProvided: otp ? otp : null,
+      passwordLength: newPassword?.length,
+      reqBody: JSON.stringify(req.body) // Log full request for debugging
+    });
     
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ 
@@ -723,28 +756,47 @@ router.post('/reset-password', async (req, res) => {
     }
     
     // Find user by email first
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    const user = await User.findOne({ email: email.trim().toLowerCase() })
+      .select('+resetPasswordToken +resetPasswordExpires');
     
     if (!user) {
       console.log(`User not found for email: ${email}`);
       return res.status(400).json({ error: 'Invalid email address' });
     }
     
-    // Verify reset token
-    console.log('User found, checking OTP:', { 
-      userToken: user.resetPasswordToken ? 'exists' : 'missing',
+    // Verify reset token with robust logging
+    console.log('User found, detailed OTP info:', { 
+      userEmail: user.email,
+      providedOTP: otp,
+      storedToken: user.resetPasswordToken,
       tokenExpiry: user.resetPasswordExpires,
+      currentTime: new Date(),
       isExpired: user.resetPasswordExpires < new Date(),
-      otpMatch: user.resetPasswordToken === otp
+      typesMatch: typeof otp === typeof user.resetPasswordToken,
+      exactMatch: user.resetPasswordToken === otp
     });
     
-    // Verify that resetPasswordToken exists, matches OTP, and has not expired
-    if (!user.resetPasswordToken || user.resetPasswordToken !== otp) {
-      return res.status(400).json({ error: 'Invalid OTP' });
+    // Check if token exists
+    if (!user.resetPasswordToken) {
+      return res.status(400).json({ error: 'No reset token found - please request a new OTP' });
     }
     
+    // Check if token has expired
     if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
-      return res.status(400).json({ error: 'OTP has expired' });
+      return res.status(400).json({ error: 'OTP has expired - please request a new OTP' });
+    }
+    
+    // Normalize both values before comparison
+    const normalizedStoredOTP = String(user.resetPasswordToken).trim();
+    const normalizedProvidedOTP = String(otp).trim();
+    
+    // Check if the OTP matches
+    if (normalizedStoredOTP !== normalizedProvidedOTP) {
+      console.log('OTP mismatch:', {
+        normalizedStored: normalizedStoredOTP,
+        normalizedProvided: normalizedProvidedOTP
+      });
+      return res.status(400).json({ error: 'Invalid OTP - please check and try again' });
     }
     
     // Hash the new password

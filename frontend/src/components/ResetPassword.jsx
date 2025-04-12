@@ -30,7 +30,16 @@ const ResetPassword = () => {
   }, [location]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // For OTP, automatically remove spaces and non-numeric characters
+    if (name === 'otp') {
+      // Remove non-numeric characters
+      const cleanValue = value.replace(/[^0-9]/g, '');
+      setFormData({ ...formData, [name]: cleanValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const verifyOtp = async (e) => {
@@ -45,11 +54,18 @@ const ResetPassword = () => {
         return;
       }
 
-      console.log('Verifying OTP:', { email: formData.email, otp: formData.otp });
+      // Clean and format the OTP - remove any spaces and ensure it's a string
+      const cleanOtp = formData.otp.toString().trim();
+      
+      console.log('Verifying OTP:', { 
+        email: formData.email.trim(), 
+        otp: cleanOtp,
+        originalOtp: formData.otp
+      });
       
       const response = await axios.post('https://caprep.onrender.com/api/auth/verify-reset-otp', {
-        email: formData.email,
-        otp: formData.otp
+        email: formData.email.trim(),
+        otp: cleanOtp
       });
 
       console.log('OTP verification response:', response.data);
