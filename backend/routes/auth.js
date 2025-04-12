@@ -231,7 +231,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user by email - use case insensitive search
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    const user = await User.findByEmail(email.trim().toLowerCase());
 
     // Add small delay to prevent timing attacks
     await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 100));
@@ -243,8 +243,24 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Log debugging info
+    console.log(`User found for login: ${email}, password field exists: ${!!user.password}`);
+
     // Verify password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = false;
+    try {
+      if (!user.password) {
+        console.error(`Password field missing for user ${email}`);
+        throw new Error('Password field is missing from user record');
+      }
+      isMatch = await bcrypt.compare(password, user.password);
+    } catch (bcryptError) {
+      console.error(`Password comparison error for ${email}:`, bcryptError.message);
+      // Update failed attempts counter
+      updateLoginAttempts(loginKey, false);
+      return res.status(500).json({ error: 'Authentication error', details: 'Error verifying credentials' });
+    }
+    
     if (!isMatch) {
       // Update failed attempts counter
       updateLoginAttempts(loginKey, false);
