@@ -101,6 +101,15 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
     
+    // Check file size explicitly with a clearer message
+    const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+    if (req.file.size > maxSize) {
+      return res.status(400).json({ 
+        error: 'Failed to create resource',
+        details: `File size too large. Maximum allowed size is 20MB (${maxSize} bytes), but received ${req.file.size} bytes.`
+      });
+    }
+    
     // Log upload attempt
     console.log(`Attempting to upload file: ${req.file.originalname}, size: ${req.file.size}, mimetype: ${req.file.mimetype}`);
     
