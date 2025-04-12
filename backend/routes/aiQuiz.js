@@ -124,11 +124,11 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     try {
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash", 
+        model: "gemini-2.0-flash", 
         safetySettings 
       });
       
-      console.log("Using model: gemini-1.5-flash");
+      console.log("Using model: gemini-2.0-flash");
 
       const generationConfig = {
         temperature: 0.7,
@@ -316,7 +316,7 @@ router.post('/ask', async (req, res) => {
     // Call Google Gemini API
     try {
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash", 
+        model: "gemini-2.0-flash", 
         safetySettings 
       });
       
