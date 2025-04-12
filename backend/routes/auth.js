@@ -204,6 +204,7 @@ router.post('/login', async (req, res) => {
     });
 
     const { email, password } = req.body;
+    console.log(`Login handler started for email: ${email}`);
 
     // Validate email format
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -287,6 +288,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.log(`Entering login catch block for email: ${email}`);
     const { email } = req.body;
     console.error('Login error:', {
       message: error.message,
