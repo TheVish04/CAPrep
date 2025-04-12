@@ -796,10 +796,6 @@ const ResourceUploader = () => {
                   className={errors.file ? 'error' : ''}
                 />
                 {errors.file && <div className="error-message">{errors.file}</div>}
-                <div className="file-size-info">
-                  <p>Maximum file size: 10MB. Only PDF files are accepted.</p>
-                  <p className="warning-text">Note: Files larger than 10MB will be automatically compressed which may reduce quality.</p>
-                </div>
               </div>
             )}
             
