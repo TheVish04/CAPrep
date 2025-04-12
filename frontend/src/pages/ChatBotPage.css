@@ -391,13 +391,13 @@
 
 /* Style links within the warning text */
 .warning-text a {
-  color: #4fb5ff;
+  color: #da3939;
   text-decoration: underline;
   font-weight: bold;
   transition: color 0.2s;
 }
 
 .warning-text a:hover {
-  color: #63c0ff;
+  color: #da3939;
   text-decoration: underline;
 } 
