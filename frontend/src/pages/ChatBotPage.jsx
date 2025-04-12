@@ -132,9 +132,16 @@ const ChatBotPage = () => {
         }
       };
       
+      // Prepare conversation history (last 10 messages or fewer)
+      // Skip the initial greeting/instructions message
+      const conversationHistory = messages.length > 1 
+        ? messages.slice(1).slice(-10) 
+        : [];
+      
       // Include the selected options in the API request if they're set
       const requestData = { 
-        question: userMessage.content 
+        question: userMessage.content,
+        conversationHistory: conversationHistory
       };
       
       if (selectedExamStage) {

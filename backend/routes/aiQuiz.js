@@ -277,9 +277,9 @@ router.post('/generate', authMiddleware, async (req, res) => {
 // POST /api/ai-quiz/ask - Answer CA-related questions using AI
 router.post('/ask', async (req, res) => {
   try {
-    const { question, examStage, subject } = req.body;
+    const { question, examStage, subject, conversationHistory = [] } = req.body;
     
-    console.log('AI Bot Question Request:', { question, examStage, subject });
+    console.log('AI Bot Question Request:', { question, examStage, subject, historyLength: conversationHistory.length });
 
     // Input Validation
     if (!question) {
@@ -300,29 +300,22 @@ router.post('/ask', async (req, res) => {
       contextDetails = `about the subject ${subject}`;
     }
 
-    // Construct prompt for CA-related answers with context if available
-    let prompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
-    Please provide a helpful, accurate, and educational response to the following question related to Chartered Accountancy ${contextDetails}:
+    // System instructions for the chatbot
+    const systemPrompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
+    You specialize in providing helpful, accurate, and educational responses to questions related to Chartered Accountancy ${contextDetails}.
     
-    "${question}"
+    In your responses:
+    1. Be accurate and reflect the latest CA curriculum and accounting standards
+    2. Be educational and helpful for CA students
+    3. Include relevant examples or explanations when appropriate
+    4. Cite relevant accounting standards or legal provisions where applicable
+    5. Be concise yet comprehensive
+    ${examStage && subject ? `6. Specifically tailor your answers for ${examStage} level and the subject ${subject}` : ''}
     
-    Ensure your answer:
-    1. Is accurate and reflects the latest CA curriculum and accounting standards
-    2. Is educational and helpful for a CA student
-    3. Includes relevant examples or explanations when appropriate
-    4. Cites relevant accounting standards or legal provisions where applicable
-    5. Is concise yet comprehensive`;
-    
-    // Add conditional 6th point if both examStage and subject are provided
-    if (examStage && subject) {
-      prompt += `\n6. Is specifically tailored for ${examStage} level and the subject ${subject}`;
-    }
-    
-    // Add the markdown formatting instruction
-    prompt += `\n\nIMPORTANT: Do not use markdown formatting (like asterisks for emphasis) in your response. Use plain text only without any special formatting characters like *, _, \`, or #.`;
+    IMPORTANT: Do not use markdown formatting (like asterisks for emphasis) in your response. Use plain text only without any special formatting characters like *, _, \`, or #.`;
 
-    // Call Google Gemini API
     try {
+      // Initialize the model
       const model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash", 
         safetySettings 
@@ -333,9 +326,41 @@ router.post('/ask', async (req, res) => {
         maxOutputTokens: 4096,
       };
       
-      console.log("Calling Gemini API for question answering...");
-      const result = await model.generateContent(prompt);
-      console.log("Received response from Google Gemini API.");
+      console.log("Setting up chat with Gemini...");
+      
+      // Convert conversation history to Gemini's chat format
+      const chatHistory = [];
+      
+      // Add system prompt as first message if there's no history yet
+      if (conversationHistory.length === 0) {
+        chatHistory.push({
+          role: "user",
+          parts: [{ text: "System instructions: " + systemPrompt }]
+        });
+        
+        chatHistory.push({
+          role: "model",
+          parts: [{ text: "I understand. I'll act as a Chartered Accountancy expert assistant, following all the guidelines you've provided." }]
+        });
+      } else {
+        // Convert existing chat history to Gemini's format
+        conversationHistory.forEach(msg => {
+          chatHistory.push({
+            role: msg.type === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content }]
+          });
+        });
+      }
+      
+      // Create a chat session with history
+      const chat = model.startChat({
+        history: chatHistory,
+        generationConfig
+      });
+      
+      console.log("Sending message to Gemini chat...");
+      const result = await chat.sendMessage(question);
+      console.log("Received response from Gemini chat API.");
 
       if (result && result.response) {
         const answer = result.response.text();
@@ -346,7 +371,7 @@ router.post('/ask', async (req, res) => {
         throw new Error("Empty or invalid response from AI service");
       }
     } catch (aiError) {
-      console.error("Error calling Gemini AI:", aiError);
+      console.error("Error calling Gemini AI chat:", aiError);
       res.status(500).json({ error: 'Failed to generate answer', details: aiError.message });
     }
   } catch (error) {
