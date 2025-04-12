@@ -11,6 +11,7 @@ const { cacheMiddleware, clearCache } = require('../middleware/cacheMiddleware')
 const User = require('../models/UserModel');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const { PDFDocument } = require('pdf-lib');
 
 // Configure multer to use memory storage for Cloudinary uploads
 const storage = multer.memoryStorage();
@@ -113,8 +114,67 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
     // Log upload attempt
     console.log(`Attempting to upload file: ${req.file.originalname}, size: ${req.file.size}, mimetype: ${req.file.mimetype}`);
     
+    // Compress PDF if larger than Cloudinary's limit (10MB)
+    let fileBuffer = req.file.buffer;
+    const cloudinaryLimit = 10 * 1024 * 1024; // 10MB
+    
+    if (req.file.size > cloudinaryLimit) {
+      console.log(`File size ${req.file.size} exceeds Cloudinary's 10MB limit. Compressing PDF...`);
+      try {
+        // Load PDF document
+        const pdfDoc = await PDFDocument.load(fileBuffer);
+        
+        // Compress PDF using pdf-lib's built-in compression
+        fileBuffer = await pdfDoc.save({
+          // Use more aggressive compression settings
+          useObjectStreams: false,
+          addDefaultPage: false,
+          useCompression: true
+        });
+        
+        console.log(`PDF compressed from ${req.file.size} to ${fileBuffer.length} bytes`);
+        
+        // If compression wasn't enough, try more aggressive compression
+        if (fileBuffer.length > cloudinaryLimit) {
+          console.log('First compression attempt insufficient, trying with more aggressive settings...');
+          
+          // Create a copy with lower quality
+          const compressedPdf = await PDFDocument.create();
+          const pages = await compressedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+          
+          // Add all pages to the new document
+          pages.forEach(page => {
+            compressedPdf.addPage(page);
+          });
+          
+          // Save with maximum compression
+          fileBuffer = await compressedPdf.save({
+            useObjectStreams: false,
+            addDefaultPage: false,
+            useCompression: true
+          });
+          
+          console.log(`PDF further compressed to ${fileBuffer.length} bytes`);
+        }
+        
+        // If still too large, return error with helpful message
+        if (fileBuffer.length > cloudinaryLimit) {
+          return res.status(400).json({
+            error: 'Failed to create resource',
+            details: `File too large for upload even after compression. Please manually compress the PDF to below 10MB or split it into multiple files.`
+          });
+        }
+      } catch (compressionError) {
+        console.error('Error compressing PDF:', compressionError);
+        return res.status(400).json({
+          error: 'Failed to create resource',
+          details: 'Error compressing PDF. Please manually compress the file to below 10MB.'
+        });
+      }
+    }
+    
     // Upload file to Cloudinary
-    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const b64 = Buffer.from(fileBuffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
     // Generate a clean filename (alphanumeric with hyphens)
