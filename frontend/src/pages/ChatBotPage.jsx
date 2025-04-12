@@ -8,7 +8,7 @@ const ChatBotPage = () => {
   const [messages, setMessages] = useState([
     { 
       type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\nPlease mention your Exam stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info.',
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info.',
       timestamp: new Date()
     }
   ]);
