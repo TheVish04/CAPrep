@@ -924,9 +924,10 @@ const AdminPanel = () => {
                     onChange={handleChange}
                     rows={6}
                     className="form-input"
-                    placeholder="Paste HTML code for tables, or just type your question..."
+                    placeholder="Optional: Paste HTML code for tables, or type your question text..."
                   />
                   {errors.questionText && <p className="error-message">{errors.questionText}</p>}
+                  <p className="field-info">(Optional) You can leave this empty if you're only using sub-questions</p>
                 </div>
               </div>
 

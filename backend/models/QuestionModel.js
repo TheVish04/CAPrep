@@ -62,8 +62,7 @@ const QuestionSchema = new Schema({
     required: true
   },
   questionText: {
-    type: String,
-    required: true
+    type: String
   },
   answerText: {
     type: String
