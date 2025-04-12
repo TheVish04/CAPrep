@@ -287,10 +287,11 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    const { email } = req.body;
     console.error('Login error:', {
       message: error.message,
-      stack: error.stack
-    });
+      stack: error.stack,
+      email: email });
     
     res.status(500).json({ 
       error: 'An error occurred during login',
