@@ -8,7 +8,7 @@ const ChatBotPage = () => {
   const [messages, setMessages] = useState([
     { 
       type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info.',
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info. Please dont rely on answers blindly. Check the official ICAI publications for the most up-to-date information.',
       timestamp: new Date()
     }
   ]);
@@ -74,7 +74,7 @@ const ChatBotPage = () => {
   const createNewChat = () => {
     setMessages([{ 
       type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info.',
+      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info. Please dont rely on answers blindly. Check the official ICAI publications for the most up-to-date information.',
       timestamp: new Date()
     }]);
     setSelectedConversation(null);
@@ -219,6 +219,29 @@ const ChatBotPage = () => {
     });
   };
 
+  // Add rendering function to format warning message with styled content
+  const formatMessageWithWarning = (content) => {
+    if (!content) return '';
+    
+    // Check if the message contains the warning text
+    if (content.includes('CA Assistant can make mistakes')) {
+      // Find the warning part of the message (starting with "CA Assistant can make mistakes")
+      const parts = content.split('CA Assistant can make mistakes');
+      
+      if (parts.length === 2) {
+        return (
+          <>
+            {parts[0]}
+            <span className="warning-text">CA Assistant can make mistakes{parts[1]}</span>
+          </>
+        );
+      }
+    }
+    
+    // Return the original content if no warning text found
+    return content;
+  };
+
   return (
     <div className="chatbot-page">
       <Navbar />
@@ -288,7 +311,11 @@ const ChatBotPage = () => {
                   )}
                 </div>
                 <div className="message-content">
-                  <div className="message-text">{message.content}</div>
+                  <div className="message-text">
+                    {message.type === 'bot' 
+                      ? formatMessageWithWarning(message.content) 
+                      : message.content}
+                  </div>
                   <div className="message-time">{formatTime(message.timestamp)}</div>
                 </div>
               </div>

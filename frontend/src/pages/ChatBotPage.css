@@ -378,4 +378,16 @@
   .message-text {
     font-size: 14px;
   }
+}
+
+/* Add styling for warning text */
+.warning-text {
+  color: #e83e8c;
+  font-weight: bold;
+  display: block;
+  margin-top: 8px;
+  padding: 8px;
+  border-left: 3px solid #e83e8c;
+  background-color: rgba(232, 62, 140, 0.1);
+  border-radius: 4px;
 } 
