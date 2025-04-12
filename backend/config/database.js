@@ -6,11 +6,9 @@ const connectDB = async (retryCount = 5, delay = 5000) => {
   try {
     // Add connection options for better reliability
     const options = {
-      serverSelectionTimeoutMS: 30000, // Increased from 10s to 30s
-      socketTimeoutMS: 60000, // Increased from 45s to 60s
+      serverSelectionTimeoutMS: 30000, // Increased timeout for server selection
+      socketTimeoutMS: 60000, // Increased socket timeout
       connectTimeoutMS: 30000, // Add explicit connection timeout
-      keepAlive: true,
-      keepAliveInitialDelay: 300000, // 5 minutes
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
       w: 'majority',

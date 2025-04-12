@@ -440,67 +440,65 @@ app.post('/api/admin/clear-cache', authMiddleware, adminMiddleware, (req, res) =
   }
 });
 
-// Global error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Global error:', {
-    stack: err.stack,
-    message: err.message,
-    status: err.status || 500,
-    path: req.path,
-    method: req.method,
-  });
-  res.status(err.status || 500).json({
-    error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'production' ? 'Server error' : err.message,
-  });
-});
-
-// Start server function with error handling
+// Server startup function
 const startServer = async () => {
   try {
-    // Initialize database and models
-    const dbInitialized = await initializeDatabase();
-    
-    if (!dbInitialized) {
-      console.error('Database initialization failed. Starting server with limited functionality.');
-    }
-    
-    // Define port (with fallback)
     const PORT = process.env.PORT || 5000;
-    
-    // Start the server
-    const server = app.listen(PORT, () => {
-      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-      console.log(`Health check available at: http://localhost:${PORT}/health`);
-      
-      if (dbInitialized) {
-        console.log('✅ Server started successfully with database connection');
-      } else {
-        console.log('⚠️ Server started with limited functionality (database connection issues)');
-      }
+
+    // Initialize database with error handling
+    let dbInitialized = false;
+    try {
+      dbInitialized = await initializeDatabase();
+      console.log('Database initialization successful:', dbInitialized);
+    } catch (dbError) {
+      console.error('Database initialization error:', dbError.message);
+      console.warn('Server will continue without full database functionality');
+    }
+
+    // Define fallback routes if database initialization fails
+    if (!dbInitialized) {
+      app.get('/', (req, res) => {
+        res.status(200).json({ 
+          message: 'Server is running, but database connection failed. Some features may not work properly.',
+          status: 'partial'
+        });
+      });
+    }
+
+    // Error handling middleware
+    app.use((err, req, res, next) => {
+      console.error(err.stack);
+      res.status(500).json({ 
+        error: 'Server error', 
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong' 
+      });
+    });
+
+    // 404 middleware
+    app.use((req, res) => {
+      res.status(404).json({ error: 'Endpoint not found' });
     });
     
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (err) => {
-      console.error('UNHANDLED REJECTION! 💥 Shutting down...');
-      console.error(err.name, err.message, err.stack);
+    // Start the server
+    await new Promise(resolve => {
+      const server = app.listen(PORT, () => {
+        console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+        resolve();
+      });
       
-      // Close server & exit process
-      server.close(() => {
+      // Handle server errors
+      server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+          console.error(`Port ${PORT} is already in use`);
+        } else {
+          console.error('Server error:', error);
+        }
         process.exit(1);
       });
     });
     
-    // Handle SIGTERM signal (e.g. Heroku shutdown)
-    process.on('SIGTERM', () => {
-      console.log('👋 SIGTERM RECEIVED. Shutting down gracefully...');
-      server.close(() => {
-        console.log('💥 Process terminated!');
-      });
-    });
-    
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('UNHANDLED REJECTION! 💥 Shutting down...', error);
     process.exit(1);
   }
 };
@@ -508,4 +506,5 @@ const startServer = async () => {
 // Start the server
 startServer();
 
+// Export the app for testing
 module.exports = app;
