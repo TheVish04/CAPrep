@@ -3,6 +3,7 @@
 .more-menu-container {
   position: relative;
   z-index: 5;
+  display: flex;
 }
 
 .more-button {
@@ -16,8 +17,10 @@
   color: #ffffff;
   border-radius: 50%;
   transition: all 0.2s ease;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .more-button:hover {
@@ -28,8 +31,9 @@
   outline: none;
 }
 
-.more-button i {
-  font-size: 16px;
+.more-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .more-menu {
@@ -65,14 +69,13 @@
   background-color: #333;
 }
 
-.menu-item i {
+.menu-item svg {
   color: #ddd;
-  font-size: 14px;
-  width: 16px;
-  text-align: center;
+  width: 14px;
+  height: 14px;
 }
 
-.menu-item:hover i {
+.menu-item:hover svg {
   color: #03a9f4;
 }
 
@@ -92,8 +95,15 @@
 @media (max-width: 576px) {
   .more-button {
     padding: 4px;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+  
+  .more-button svg {
+    width: 14px;
+    height: 14px;
   }
   
   .more-menu {
