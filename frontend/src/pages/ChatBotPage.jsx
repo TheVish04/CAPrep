@@ -306,64 +306,64 @@ const ChatBotPage = () => {
                 disabled={isLoading}
               />
             
-              <div className="input-actions">
-                <div className="input-selectors">
-                  <select 
-                    value={selectedExamStage}
-                    onChange={handleExamStageChange}
-                    className="input-selector"
-                  >
-                    <option value="">-- Exam Stage --</option>
-                    <option value="Foundation">Foundation</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Final">Final</option>
-                  </select>
-                  
-                  <select
-                    value={selectedSubject}
-                    onChange={handleSubjectChange}
-                    disabled={!selectedExamStage}
-                    className="input-selector"
-                  >
-                    <option value="">-- Subject --</option>
-                    {selectedExamStage === 'Foundation' ? (
-                      <>
-                        <option value="Accounting">Accounting</option>
-                        <option value="Business Laws">Business Laws</option>
-                        <option value="Quantitative Aptitude">Quantitative Aptitude</option>
-                        <option value="Business Economics">Business Economics</option>
-                      </>
-                    ) : selectedExamStage === 'Intermediate' ? (
-                      <>
-                        <option value="Advanced Accounting">Advanced Accounting</option>
-                        <option value="Corporate Laws">Corporate Laws</option>
-                        <option value="Cost and Management Accounting">Cost and Management Accounting</option>
-                        <option value="Taxation">Taxation</option>
-                        <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
-                        <option value="Financial and Strategic Management">Financial and Strategic Management</option>
-                      </>
-                    ) : selectedExamStage === 'Final' ? (
-                      <>
-                        <option value="Financial Reporting">Financial Reporting</option>
-                        <option value="Advanced Financial Management">Advanced Financial Management</option>
-                        <option value="Advanced Auditing">Advanced Auditing</option>
-                        <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
-                        <option value="Indirect Tax Laws">Indirect Tax Laws</option>
-                        <option value="Integrated Business Solutions">Integrated Business Solutions</option>
-                      </>
-                    ) : null}
-                  </select>
-                </div>
-                
-                <button 
-                  onClick={handleSendMessage} 
-                  disabled={isLoading || !input.trim()}
-                  className="send-button"
+              <button 
+                onClick={handleSendMessage} 
+                disabled={isLoading || !input.trim()}
+                className="send-button"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="input-controls">
+              <div className="input-selectors">
+                <select 
+                  value={selectedExamStage}
+                  onChange={handleExamStageChange}
+                  className="input-selector"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
+                  <option value="">-- Exam Stage --</option>
+                  <option value="Foundation">Foundation</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Final">Final</option>
+                </select>
+                
+                <select
+                  value={selectedSubject}
+                  onChange={handleSubjectChange}
+                  disabled={!selectedExamStage}
+                  className="input-selector"
+                >
+                  <option value="">-- Subject --</option>
+                  {selectedExamStage === 'Foundation' ? (
+                    <>
+                      <option value="Accounting">Accounting</option>
+                      <option value="Business Laws">Business Laws</option>
+                      <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                      <option value="Business Economics">Business Economics</option>
+                    </>
+                  ) : selectedExamStage === 'Intermediate' ? (
+                    <>
+                      <option value="Advanced Accounting">Advanced Accounting</option>
+                      <option value="Corporate Laws">Corporate Laws</option>
+                      <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                      <option value="Taxation">Taxation</option>
+                      <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                      <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                    </>
+                  ) : selectedExamStage === 'Final' ? (
+                    <>
+                      <option value="Financial Reporting">Financial Reporting</option>
+                      <option value="Advanced Financial Management">Advanced Financial Management</option>
+                      <option value="Advanced Auditing">Advanced Auditing</option>
+                      <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                      <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                      <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                    </>
+                  ) : null}
+                </select>
               </div>
             </div>
           </div>
