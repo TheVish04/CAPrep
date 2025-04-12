@@ -229,10 +229,18 @@ const ChatBotPage = () => {
       const parts = content.split('CA Assistant can make mistakes');
       
       if (parts.length === 2) {
+        // Replace "official ICAI publications" with hyperlink
+        const warningText = parts[1].replace(
+          'official ICAI publications', 
+          '<a href="https://boslive.icai.org/index.php" target="_blank" rel="noopener noreferrer">official ICAI publications</a>'
+        );
+        
         return (
           <>
             {parts[0]}
-            <span className="warning-text">CA Assistant can make mistakes{parts[1]}</span>
+            <span className="warning-text" dangerouslySetInnerHTML={{ 
+              __html: `CA Assistant can make mistakes${warningText}` 
+            }} />
           </>
         );
       }
