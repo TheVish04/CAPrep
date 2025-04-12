@@ -25,6 +25,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const { clearAllCache } = require('./middleware/cacheMiddleware');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
