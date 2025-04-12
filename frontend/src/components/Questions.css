@@ -53,12 +53,12 @@
   font-weight: 600;
 }
 
-/* Questions Actions Bar - Enhanced styling */
+/* Questions Actions Bar - Enhanced styling & spacing */
 .questions-actions {
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
-  gap: 24px !important;
+  gap: 20px !important; /* Slightly reduced gap */
   margin-bottom: 32px;
   width: 100%;
   position: relative;
@@ -68,7 +68,7 @@
 
 .export-btn, 
 .toggle-answers-btn {
-  flex: 1 !important;
+  flex: 1 1 0% !important; /* Allow shrinking but prefer equal basis */
   padding: 12px 16px;
   border-radius: 8px;
   font-weight: 500;
@@ -78,25 +78,26 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  max-width: 30% !important;
+  max-width: 32% !important; /* Adjusted max-width slightly */
   margin: 0 !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .export-btn {
-  background: white;
+  background: #f0f0f0;
   color: #121212;
-  border: none;
+  border: 1px solid #ddd;
 }
 
 .export-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #ffffff;
 }
 
 .toggle-answers-btn {
-  background: #333;
+  background: #3a3a3a;
   color: white;
   border: 1px solid #555;
 }
@@ -104,18 +105,19 @@
 .toggle-answers-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #4a4a4a;
 }
 
 .toggle-answers-btn.active {
-  background: #444;
+  background: #555;
   color: white;
-  border-color: #666;
+  border-color: #777;
 }
 
 .questions-actions .donation-button-container {
-  flex: 1 !important;
+  flex: 1 1 0% !important;
   display: inline-flex !important;
-  max-width: 30% !important;
+  max-width: 32% !important;
   margin: 0 !important;
 }
 
@@ -132,7 +134,7 @@
   justify-content: center;
   background: #e57373;
   color: white;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -148,26 +150,26 @@
   width: 100% !important;
 }
 
-/* Filters Section - Enhanced styling with vertical wrapping */
+/* Filters Section - Enhanced styling */
 .filters {
   display: flex !important;
   flex-direction: row !important;
-  flex-wrap: wrap !important; /* Allow wrapping to multiple rows */
+  flex-wrap: wrap !important; 
   gap: 16px !important;
   margin-bottom: 32px;
-  background: #1a1a1a;
-  padding: 18px !important;
+  background: #1f1f1f;
+  padding: 20px !important;
   border-radius: 10px;
   width: 100% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border: 1px solid #333;
-  overflow-x: visible !important; /* Disable horizontal scrolling */
+  overflow-x: visible !important; 
 }
 
 .filter-group {
   flex: 0 0 auto !important;
   min-width: 150px !important;
-  max-width: calc(25% - 16px) !important; /* 4 per row with gap consideration */
+  max-width: calc(25% - 16px) !important; 
   display: inline-block !important;
   vertical-align: top !important;
   white-space: normal !important;
@@ -175,25 +177,25 @@
 
 .filter-group label {
   display: block !important;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #ccc;
   font-weight: 500;
-  margin-bottom: 7px !important;
+  margin-bottom: 6px !important;
   letter-spacing: 0.3px;
 }
 
 .filter-group select,
 .filter-group input[type="text"] {
   display: block !important;
-  background: rgba(0, 0, 0, 0.3);
+  background: #2c2c2c;
   color: white;
   border: 1px solid #444;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 10px 12px;
-  font-size: 0.95rem;
-  min-height: 42px;
+  font-size: 0.9rem;
+  min-height: 40px;
   outline: none;
-  width: auto !important;
+  width: 100% !important; /* Make inputs fill the group width */
   min-width: 130px !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -210,17 +212,17 @@
 }
 
 .filter-group input[type="text"] {
-  min-width: 220px !important;
+  min-width: auto !important; /* Remove specific min-width for text input */
 }
 
 .filter-group-bookmark {
   display: inline-flex !important;
   align-items: center;
-  min-height: 42px;
-  margin-top: 27px !important;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0 15px;
-  border-radius: 8px;
+  min-height: 40px;
+  margin-top: 26px !important;
+  background: #2c2c2c;
+  padding: 0 12px;
+  border-radius: 6px;
   border: 1px solid #444;
 }
 
@@ -229,16 +231,16 @@
   align-items: center;
   cursor: pointer;
   white-space: nowrap;
-  padding: 8px 5px;
-  font-size: 0.95rem;
+  padding: 8px 0;
+  font-size: 0.9rem;
   color: white;
 }
 
 .bookmark-checkbox {
-  margin-right: 10px;
+  margin-right: 8px;
   accent-color: var(--primary-color);
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Loading & Error States */
@@ -298,10 +300,14 @@
   grid-template-columns: unset !important;
 }
 
+/* Question Card Header adjustments */
 .question-header {
-  padding: 16px 20px;
-  background: rgba(2, 136, 209, 0.1);
+  padding: 12px 20px;
+  background: rgba(2, 136, 209, 0.08);
   border-bottom: 1px solid var(--border-color);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
 .question-header h2 {
@@ -309,16 +315,17 @@
   font-weight: 500;
   color: var(--secondary-color);
   margin: 0;
+  flex-grow: 1;
+  margin-right: 15px;
 }
 
+/* Repositioned Question Actions (Bookmark/More) */
 .question-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 5;
+  position: static !important; /* Override absolute positioning */
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .bookmark-btn {
@@ -328,9 +335,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4px;
   border-radius: 50%;
   width: 32px;
   height: 32px;
+  transition: background-color 0.15s ease;
+}
+
+.bookmark-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bookmark-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .more-menu-wrapper {
@@ -556,44 +574,25 @@
   border: 2px solid var(--primary-color);
 }
 
-/* Responsive adjustments - keep horizontal layout */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  /* Allow filters to wrap on mobile */
-  .filters {
-    flex-wrap: wrap !important;
-    overflow-x: visible !important;
-    padding: 12px !important;
-  }
-  
-  /* Make filters take half width on mobile */
-  .filter-group {
-    min-width: 120px !important;
-    max-width: calc(50% - 16px) !important; /* 2 per row on mobile */
-  }
-  
-  /* Search should take full width */
-  .filter-group input[type="text"] {
-    width: 100% !important;
-  }
-  
-  /* Make the search group take full width */
-  .filter-group-search {
-    flex-basis: 100% !important;
-    max-width: 100% !important;
-  }
-  
   /* Keep action buttons side by side but with more spacing */
   .questions-actions {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 15px !important;
+    gap: 10px !important; /* Adjusted mobile gap */
     padding: 0 5px;
   }
-  
+
   .export-btn, 
   .toggle-answers-btn,
   .questions-actions .donation-button {
-    font-size: 0.8rem;
-    padding: 8px;
+    font-size: 0.85rem; /* Adjusted font size */
+    padding: 10px 8px;
+  }
+
+  .filter-group {
+    min-width: 120px !important;
+    max-width: calc(50% - 8px) !important; /* Adjusted mobile width with gap */
   }
 }
