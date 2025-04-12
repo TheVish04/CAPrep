@@ -466,8 +466,7 @@ const Questions = () => {
                 <div key={q._id} id={`question-${q._id}`} className="question-card">
                   <div className="question-header">
                     <h2>
-                      Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
-                      ({q.paperType} {q.examStage}) 
+                      Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} ({q.paperType} {q.examStage})
                     </h2>
                     <div className="question-actions">
                       <button 
