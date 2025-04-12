@@ -61,6 +61,38 @@ const Resources = () => {
   const [currentDiscussionResource, setCurrentDiscussionResource] = useState(null);
   const [showDiscussionModal, setShowDiscussionModal] = useState(false);
 
+  // Download a resource and increment download count
+  const handleDownload = useCallback(async (resource) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return navigate('/login');
+      
+      console.log('Starting download process for resource:', resource.title);
+      setDownloadingResource(resource._id);
+      
+      // First increment the download count
+      try {
+        await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (countError) {
+        console.error('Failed to increment download count:', countError);
+        // Continue even if count increment fails
+      }
+      
+      // Simplest and most reliable method: just open the PDF in a new tab
+      // This allows the browser to handle the PDF natively
+      window.open(resource.fileUrl, '_blank');
+      
+    } catch (error) {
+      console.error('Error in download process:', error);
+      setError('Failed to download the resource. Please try again later.');
+      setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
+    } finally {
+      setDownloadingResource(null);
+    }
+  }, [API_BASE_URL, navigate]);
+
   // --- Fetch Bookmarked Resource IDs --- 
   const fetchBookmarkIds = useCallback(async (token) => {
     try {
@@ -263,38 +295,6 @@ const Resources = () => {
   const totalPages = Math.ceil(resources.length / resourcesPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Download a resource and increment download count
-  const handleDownload = async (resource) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return navigate('/login');
-      
-      console.log('Starting download process for resource:', resource.title);
-      setDownloadingResource(resource._id);
-      
-      // First increment the download count
-      try {
-        await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      } catch (countError) {
-        console.error('Failed to increment download count:', countError);
-        // Continue even if count increment fails
-      }
-      
-      // Simplest and most reliable method: just open the PDF in a new tab
-      // This allows the browser to handle the PDF natively
-      window.open(resource.fileUrl, '_blank');
-      
-    } catch (error) {
-      console.error('Error in download process:', error);
-      setError('Failed to download the resource. Please try again later.');
-      setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
-    } finally {
-      setDownloadingResource(null);
-    }
-  };
 
   // Format file size
   const formatFileSize = (bytes) => {
