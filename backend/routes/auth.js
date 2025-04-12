@@ -288,12 +288,14 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.log(`Entering login catch block for email: ${email}`);
+    // Extract email from request body first
     const { email } = req.body;
+    console.log(`Entering login catch block for email: ${email || 'unknown'}`);
+    
     console.error('Login error:', {
       message: error.message,
       stack: error.stack,
-      email: email });
+      email: email || 'unknown' });
     
     res.status(500).json({ 
       error: 'An error occurred during login',

@@ -6,19 +6,19 @@ const connectDB = async (retryCount = 5, delay = 5000) => {
   try {
     // Add connection options for better reliability
     const options = {
-      serverSelectionTimeoutMS: 10000, // Timeout after 10 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      serverSelectionTimeoutMS: 30000, // Increased from 10s to 30s
+      socketTimeoutMS: 60000, // Increased from 45s to 60s
+      connectTimeoutMS: 30000, // Add explicit connection timeout
+      keepAlive: true,
+      keepAliveInitialDelay: 300000, // 5 minutes
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
-      w: 'majority'
+      w: 'majority',
+      maxPoolSize: 10, // Limit connection pool size
+      minPoolSize: 2 // Maintain minimum connections
     };
 
-    // Attempt database connection
-    console.log(`Attempting MongoDB connection to: ${process.env.MONGODB_URI?.split('@')[1] || '[URI hidden]'}`);
-    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    
-    // Setup connection event handlers for better monitoring
+    // Add connection events before connecting
     mongoose.connection.on('error', err => {
       console.error('MongoDB connection error:', err);
     });
@@ -30,6 +30,11 @@ const connectDB = async (retryCount = 5, delay = 5000) => {
     mongoose.connection.on('reconnected', () => {
       console.log('MongoDB reconnected successfully');
     });
+
+    // Attempt database connection
+    console.log(`Attempting MongoDB connection to: ${process.env.MONGODB_URI?.split('@')[1] || '[URI hidden]'}`);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
     
     return conn;
   } catch (error) {
