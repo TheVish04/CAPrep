@@ -121,6 +121,21 @@
 
 .pdf-error {
   color: #f44336;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 90%;
+  line-height: 1.5;
+}
+
+.pdf-error p {
+  margin: 5px 0;
 }
 
 .pdf-viewer-footer {

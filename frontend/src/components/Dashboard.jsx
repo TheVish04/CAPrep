@@ -197,6 +197,13 @@ const Dashboard = () => {
         return;
       }
       
+      // Show loading state
+      setCurrentPDF({
+        fileUrl: null,
+        title: resourceTitle || 'Loading PDF...'
+      });
+      setViewingPDF(true);
+      
       // Get the full resource data to display in the PDF viewer
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -213,15 +220,37 @@ const Dashboard = () => {
           // Continue even if count increment fails
         }
         
+        // Check if using Cloudinary URL
+        let fileUrl = response.data.fileUrl;
+        
+        // Try to get a proxied download URL if available
+        try {
+          const downloadResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}/download-url`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (downloadResponse.data && downloadResponse.data.viewUrl) {
+            fileUrl = downloadResponse.data.viewUrl;
+          }
+        } catch (urlError) {
+          console.error('Could not get alternative URL:', urlError);
+          // Continue with the original URL
+        }
+        
         // Open the PDF in the viewer
         setCurrentPDF({
-          fileUrl: response.data.fileUrl,
-          title: response.data.title
+          fileUrl: fileUrl,
+          title: response.data.title,
+          originalUrl: response.data.fileUrl // Keep original URL as backup
         });
-        setViewingPDF(true);
       }
     } catch (err) {
       console.error('Error navigating to resource:', err);
+      // Close the viewer if we encountered an error
+      setViewingPDF(false);
+      setCurrentPDF(null);
+      // Show an error message
+      alert('Could not load the PDF. Please try the "Details" option instead.');
     }
   };
 
