@@ -185,9 +185,22 @@ const Dashboard = () => {
   // Track resource view
   const trackResourceView = async (resourceId, resourceTitle = null) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      // Track the resource view on the backend
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/dashboard/resource-view`, {
+        resourceId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Navigate to the resource
       navigateToItem('resource', resourceId, resourceTitle);
     } catch (err) {
-      console.error('Error navigating to resource:', err);
+      console.error('Error tracking resource view:', err);
+      // Still navigate even if tracking fails
+      navigateToItem('resource', resourceId, resourceTitle);
     }
   };
   

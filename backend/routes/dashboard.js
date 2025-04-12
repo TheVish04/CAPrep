@@ -380,6 +380,88 @@ router.post('/question-view', authMiddleware, async (req, res) => {
   }
 });
 
+// Track resource view
+router.post('/resource-view', authMiddleware, async (req, res) => {
+  try {
+    const { resourceId } = req.body;
+    const userId = req.user.id;
+    
+    if (!resourceId || !mongoose.Types.ObjectId.isValid(resourceId)) {
+      return res.status(400).json({ success: false, message: 'Valid resource ID is required' });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Check if resource exists
+    const resource = await Resource.findById(resourceId);
+    if (!resource) {
+      return res.status(404).json({ success: false, message: 'Resource not found' });
+    }
+    
+    // Initialize recentlyViewedResources array if it doesn't exist
+    if (!user.recentlyViewedResources) {
+      user.recentlyViewedResources = [];
+    }
+    
+    // Remove if already in recently viewed
+    const recentIndex = user.recentlyViewedResources.findIndex(
+      item => item.resourceId.toString() === resourceId
+    );
+    
+    if (recentIndex >= 0) {
+      user.recentlyViewedResources.splice(recentIndex, 1);
+    }
+    
+    // Add to beginning of recently viewed
+    user.recentlyViewedResources.unshift({
+      resourceId,
+      viewedAt: new Date()
+    });
+    
+    // Limit to 10 recent resources
+    if (user.recentlyViewedResources.length > 10) {
+      user.recentlyViewedResources = user.recentlyViewedResources.slice(0, 10);
+    }
+    
+    // Track in resource engagement as well (if not already tracking)
+    if (!user.resourceEngagement) {
+      user.resourceEngagement = [];
+    }
+    
+    // Update resource engagement
+    const engagementIndex = user.resourceEngagement.findIndex(
+      item => item.resourceId.toString() === resourceId
+    );
+    
+    if (engagementIndex >= 0) {
+      // Update existing engagement
+      user.resourceEngagement[engagementIndex].accessCount += 1;
+      user.resourceEngagement[engagementIndex].lastAccessed = new Date();
+    } else {
+      // Add new resource engagement
+      user.resourceEngagement.push({
+        resourceId,
+        timeSpent: 0, // Start with 0 time spent
+        lastAccessed: new Date(),
+        accessCount: 1
+      });
+    }
+    
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Resource view tracked successfully'
+    });
+  } catch (error) {
+    console.error('Resource view tracking error:', error);
+    res.status(500).json({ success: false, message: 'Error tracking resource view', error: error.message });
+  }
+});
+
 // Get active announcements
 router.get('/announcements', authMiddleware, async (req, res) => {
   try {

@@ -70,7 +70,19 @@ const Resources = () => {
       console.log('Starting download process for resource:', resource.title);
       setDownloadingResource(resource._id);
       
-      // First increment the download count
+      // First track the resource view
+      try {
+        await axios.post(`${API_BASE_URL}/api/dashboard/resource-view`, {
+          resourceId: resource._id
+        }, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (viewError) {
+        console.error('Failed to track resource view:', viewError);
+        // Continue even if view tracking fails
+      }
+      
+      // Then increment the download count
       try {
         await axios.post(`${API_BASE_URL}/api/resources/${resource._id}/download`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
