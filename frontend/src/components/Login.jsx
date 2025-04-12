@@ -11,7 +11,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
+  // Use consistent API URL from your utils
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
 
   // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +50,8 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        timeout: 15000 // Add a timeout to prevent hanging requests
       });
       
       console.log('Login response received:', response.status);
@@ -85,7 +87,7 @@ const Login = () => {
       } else if (err.request) {
         // Request was made but no response
         console.error('No response received:', err.request);
-        setError('Network error: No response from server. Please check your connection.');
+        setError('Network error: No response from server. Please try again later or check if the server is running.');
       } else {
         // Error in request setup
         console.error('Request error:', err.message);
