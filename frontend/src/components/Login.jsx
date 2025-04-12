@@ -51,7 +51,6 @@ const Login = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        timeout: 15000 // Add a timeout to prevent hanging requests
       });
       
       console.log('Login response received:', response.status);
