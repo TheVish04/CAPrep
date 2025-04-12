@@ -147,6 +147,8 @@ section {
   color: #239ecf;
   font-weight: 700;
   line-height: 1.2;
+  display: flex;
+  justify-content: center;
 }
 
 .hero p {
@@ -781,6 +783,10 @@ section {
   .footer-links {
     margin-top: 30px;
   }
+  
+  .hero-breathing-text {
+    font-size: inherit;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1015,4 +1021,15 @@ section {
   100% {
     transform: scale(1) rotate(0deg);
   }
+}
+
+/* Breathing Text styling in hero section */
+.hero-breathing-text {
+  justify-content: center;
+  font-size: inherit;
+  color: #239ecf;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 auto;
+  letter-spacing: -0.02em;
 }

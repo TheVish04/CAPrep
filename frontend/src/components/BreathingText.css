@@ -1,0 +1,56 @@
+@font-face {
+  font-family: 'Lexington-Variable';
+  src: url('https://fonts.gstatic.com/s/lexend/v18/wlpwgwvFAVdoq2_v9KQU4Wc.woff2') format('woff2 supports variations'),
+       url('https://fonts.gstatic.com/s/lexend/v18/wlpwgwvFAVdoq2_v9KQU4Wc.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-stretch: 25% 151%;
+  font-style: normal;
+}
+
+.breathing-text-container {
+  display: flex;
+  font-family: 'Lexington-Variable', 'Poppins', sans-serif;
+  font-variation-settings: var(--from-settings);
+  color: inherit;
+  line-height: 1.2;
+}
+
+.breathing-letter {
+  display: inline-block;
+  animation: breathe calc(var(--animation-duration) * 2) ease-in-out infinite;
+  animation-delay: var(--animation-delay);
+  font-variation-settings: var(--from-settings);
+}
+
+@keyframes breathe {
+  0%, 100% {
+    font-variation-settings: var(--from-settings);
+  }
+  50% {
+    font-variation-settings: var(--to-settings);
+  }
+}
+
+/* Fallback for browsers that don't support variable fonts */
+@supports not (font-variation-settings: normal) {
+  .breathing-text-container {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+  
+  .breathing-letter {
+    animation: fallback-breathe calc(var(--animation-duration) * 2) ease-in-out infinite;
+    animation-delay: var(--animation-delay);
+  }
+  
+  @keyframes fallback-breathe {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+} 
