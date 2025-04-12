@@ -343,10 +343,11 @@ const ChatBotPage = () => {
                   </div>
                 </div>
                 <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                  <div className="skeleton-container">
+                    <div className="skeleton-line" style={{ width: '90%' }}></div>
+                    <div className="skeleton-line" style={{ width: '75%' }}></div>
+                    <div className="skeleton-line" style={{ width: '80%' }}></div>
+                    <div className="skeleton-line" style={{ width: '60%' }}></div>
                   </div>
                 </div>
               </div>
