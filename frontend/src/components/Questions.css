@@ -1514,3 +1514,22 @@
     position: relative;
     /* other existing styles... */
   }
+
+  /* Highlighted question for navigation */
+  .highlight-question {
+    animation: highlight-pulse 2s ease-in-out;
+    border: 2px solid #03a9f4;
+    box-shadow: 0 0 15px rgba(3, 169, 244, 0.5);
+  }
+
+  @keyframes highlight-pulse {
+    0% {
+      background-color: rgba(3, 169, 244, 0.1);
+    }
+    50% {
+      background-color: rgba(3, 169, 244, 0.2);
+    }
+    100% {
+      background-color: rgba(3, 169, 244, 0);
+    }
+  }
