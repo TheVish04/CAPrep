@@ -216,7 +216,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Implement rate limiting
-    const clientIP = req.ip || 'unknown';
+    const clientIP = req.headers['x-forwarded-for'] || req.ip || 'unknown';
     const loginKey = `${email.toLowerCase()}:${clientIP}`;
     const now = Date.now();
     
