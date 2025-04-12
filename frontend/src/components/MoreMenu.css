@@ -6,14 +6,14 @@
 }
 
 .more-button {
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4a5568;
+  color: #ffffff;
   border-radius: 50%;
   transition: all 0.2s ease;
   width: 32px;
@@ -21,13 +21,11 @@
 }
 
 .more-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #2c3e50;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .more-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(76, 161, 175, 0.25);
 }
 
 .more-button i {
@@ -38,14 +36,14 @@
   position: absolute;
   top: calc(100% + 5px);
   right: 0;
-  background-color: white;
+  background-color: #262626;
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   min-width: 160px;
   z-index: 10;
   overflow: hidden;
   animation: slideDown 0.2s ease-out;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid #333;
 }
 
 .menu-item {
@@ -59,24 +57,23 @@
   cursor: pointer;
   font-size: 14px;
   gap: 10px;
-  color: #333;
+  color: #ffffff;
   transition: all 0.2s ease;
 }
 
 .menu-item:hover {
-  background-color: #f5f7fa;
-  color: #4CA1AF;
+  background-color: #333;
 }
 
 .menu-item i {
-  color: #4a5568;
+  color: #ddd;
   font-size: 14px;
   width: 16px;
   text-align: center;
 }
 
 .menu-item:hover i {
-  color: #4CA1AF;
+  color: #03a9f4;
 }
 
 /* Animation for menu appearance */
@@ -94,7 +91,7 @@
 /* Responsive adjustments */
 @media (max-width: 576px) {
   .more-button {
-    padding: 6px;
+    padding: 4px;
     width: 28px;
     height: 28px;
   }

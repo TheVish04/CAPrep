@@ -336,8 +336,8 @@
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
-  flex-wrap: nowrap;
-  overflow: hidden;
+  width: 100%;
+  gap: 10px;
 }
 
 .question-header h2 {
@@ -347,18 +347,17 @@
   color: var(--text-light);
   margin: 0;
   flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 10px;
+  display: block;
+  max-width: calc(100% - 80px); /* Allow space for the buttons */
+  /* Add this to show full content without truncation */
+  white-space: normal;
 }
 
 /* Move action buttons to header */
 .question-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: 16px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -373,6 +372,8 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  min-width: 32px;
+  min-height: 32px;
 }
 
 .bookmark-btn svg {
@@ -386,6 +387,7 @@
 
 .more-menu-wrapper {
   position: relative;
+  display: flex;
 }
 
 /* Remove the old top-right positioning of buttons */
@@ -647,17 +649,28 @@
   .question-header {
     flex-direction: row;
     align-items: center;
+    gap: 5px;
   }
   
   .question-header h2 {
     font-size: 0.95rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: 75%;
   }
   
   .question-actions {
-    margin-left: 8px;
-    margin-top: 0;
+    margin-left: 0;
+    gap: 5px;
+  }
+  
+  .bookmark-btn, 
+  .more-menu-wrapper button {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px;
+  }
+  
+  .bookmark-btn svg {
+    width: 16px;
+    height: 16px;
   }
 }
