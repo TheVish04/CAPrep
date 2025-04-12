@@ -465,7 +465,9 @@ const Questions = () => {
               {currentQuestions.map((q) => (
                 <div key={q._id} id={`question-${q._id}`} className="question-card">
                   <div className="question-header">
-                    <h2>Q{q.questionNumber}: {q.subject} ({q.month} {q.year} | {q.paperType})</h2>
+                    <h2>
+                      Q{q.questionNumber}: {q.subject} ({q.month} {q.year} | {q.paperType})
+                    </h2>
                     <div className="question-actions">
                       <button 
                         onClick={() => handleBookmarkToggle(q._id)} 

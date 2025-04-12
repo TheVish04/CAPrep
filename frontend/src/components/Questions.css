@@ -332,11 +332,12 @@
 .question-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .question-header h2 {
@@ -346,10 +347,13 @@
   margin: 0;
   padding-right: 8px;
   line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 80px);
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  margin-bottom: 4px;
 }
 
 /* Move action buttons to header */
