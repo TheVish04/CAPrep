@@ -144,6 +144,16 @@ const Resources = () => {
       if (resource) {
         // Resource is already loaded, so we can handle it directly
         handleDownload(resource);
+        
+        // Clear the preSelectedResource from location state to prevent 
+        // the PDF from opening again when filters change
+        navigate(location.pathname, { 
+          replace: true, 
+          state: { 
+            ...location.state,
+            preSelectedResource: null
+          } 
+        });
       } else if (!loading) {
         // Resource not in current list, fetch it specifically
         const fetchSpecificResource = async () => {
@@ -155,6 +165,15 @@ const Resources = () => {
             if (response.data) {
               // We have the resource data, now open it
               handleDownload(response.data);
+              
+              // Clear the preSelectedResource from location state
+              navigate(location.pathname, { 
+                replace: true, 
+                state: { 
+                  ...location.state,
+                  preSelectedResource: null
+                } 
+              });
             }
           } catch (err) {
             console.error('Error fetching specific resource:', err);
@@ -165,7 +184,7 @@ const Resources = () => {
         fetchSpecificResource();
       }
     }
-  }, [resources, loading, location.state, API_BASE_URL]);
+  }, [location.state?.preSelectedResource, navigate, handleDownload, API_BASE_URL]); // Only depend on preSelectedResource, not resources or loading
 
   // --- Fetch on Filter Change --- 
    useEffect(() => {
