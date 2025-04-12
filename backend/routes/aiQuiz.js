@@ -277,9 +277,9 @@ router.post('/generate', authMiddleware, async (req, res) => {
 // POST /api/ai-quiz/ask - Answer CA-related questions using AI
 router.post('/ask', async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, examStage, subject } = req.body;
     
-    console.log('AI Bot Question Request:', { question });
+    console.log('AI Bot Question Request:', { question, examStage, subject });
 
     // Input Validation
     if (!question) {
@@ -290,9 +290,19 @@ router.post('/ask', async (req, res) => {
       return res.status(500).json({ error: 'AI service configuration error.' });
     }
 
-    // Construct prompt for CA-related answers
+    // Build context based on provided parameters
+    let contextDetails = '';
+    if (examStage && subject) {
+      contextDetails = `for ${examStage} level students studying ${subject}`;
+    } else if (examStage) {
+      contextDetails = `for ${examStage} level students`;
+    } else if (subject) {
+      contextDetails = `about the subject ${subject}`;
+    }
+
+    // Construct prompt for CA-related answers with context if available
     const prompt = `You are an expert Chartered Accountancy assistant with deep knowledge of CA curriculum in India. 
-    Please provide a helpful, accurate, and educational response to the following question related to Chartered Accountancy:
+    Please provide a helpful, accurate, and educational response to the following question related to Chartered Accountancy ${contextDetails}:
     
     "${question}"
     
@@ -301,7 +311,7 @@ router.post('/ask', async (req, res) => {
     2. Is educational and helpful for a CA student
     3. Includes relevant examples or explanations when appropriate
     4. Cites relevant accounting standards or legal provisions where applicable
-    5. Is concise yet comprehensive`;
+    5. Is concise yet comprehensive${examStage && subject ? `\n6. Is specifically tailored for ${examStage} level and the subject ${subject}` : ''}`;
 
     // Call Google Gemini API
     try {

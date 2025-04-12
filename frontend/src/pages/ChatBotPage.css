@@ -314,4 +314,51 @@
   .message-text {
     font-size: 14px;
   }
+}
+
+.context-selectors {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.selector {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.selector label {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.selector select {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.selector select:focus {
+  border-color: #03a9f4;
+  box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.2);
+}
+
+.selector select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .context-selectors {
+    flex-direction: column;
+    gap: 10px;
+  }
 } 

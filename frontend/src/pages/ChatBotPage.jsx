@@ -17,6 +17,8 @@ const ChatBotPage = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const messageEndRef = useRef(null);
+  const [selectedExamStage, setSelectedExamStage] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -60,6 +62,15 @@ const ChatBotPage = () => {
       timestamp: new Date()
     }]);
     setSelectedConversation(null);
+  };
+
+  const handleExamStageChange = (e) => {
+    setSelectedExamStage(e.target.value);
+    setSelectedSubject(''); // Reset subject when exam stage changes
+  };
+
+  const handleSubjectChange = (e) => {
+    setSelectedSubject(e.target.value);
   };
   
   const saveToHistory = (conversation) => {
@@ -105,9 +116,22 @@ const ChatBotPage = () => {
         }
       };
       
+      // Include the selected options in the API request if they're set
+      const requestData = { 
+        question: userMessage.content 
+      };
+      
+      if (selectedExamStage) {
+        requestData.examStage = selectedExamStage;
+      }
+      
+      if (selectedSubject) {
+        requestData.subject = selectedSubject;
+      }
+      
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/ai-quiz/ask`, 
-        { question: userMessage.content },
+        requestData,
         config
       );
       
@@ -219,6 +243,60 @@ const ChatBotPage = () => {
         <div className="chatbot-main">
           <div className="chatbot-header">
             <h1>CA Assistant</h1>
+            
+            <div className="context-selectors">
+              <div className="selector">
+                <label htmlFor="examStage">Exam Stage:</label>
+                <select
+                  id="examStage"
+                  value={selectedExamStage}
+                  onChange={handleExamStageChange}
+                >
+                  <option value="">-- Select Exam Stage (Optional) --</option>
+                  <option value="Foundation">Foundation</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Final">Final</option>
+                </select>
+              </div>
+              
+              <div className="selector">
+                <label htmlFor="subject">Subject:</label>
+                <select
+                  id="subject"
+                  value={selectedSubject}
+                  onChange={handleSubjectChange}
+                  disabled={!selectedExamStage}
+                >
+                  <option value="">-- Select Subject (Optional) --</option>
+                  {selectedExamStage === 'Foundation' ? (
+                    <>
+                      <option value="Accounting">Accounting</option>
+                      <option value="Business Laws">Business Laws</option>
+                      <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+                      <option value="Business Economics">Business Economics</option>
+                    </>
+                  ) : selectedExamStage === 'Intermediate' ? (
+                    <>
+                      <option value="Advanced Accounting">Advanced Accounting</option>
+                      <option value="Corporate Laws">Corporate Laws</option>
+                      <option value="Cost and Management Accounting">Cost and Management Accounting</option>
+                      <option value="Taxation">Taxation</option>
+                      <option value="Auditing and Code of Ethics">Auditing and Code of Ethics</option>
+                      <option value="Financial and Strategic Management">Financial and Strategic Management</option>
+                    </>
+                  ) : selectedExamStage === 'Final' ? (
+                    <>
+                      <option value="Financial Reporting">Financial Reporting</option>
+                      <option value="Advanced Financial Management">Advanced Financial Management</option>
+                      <option value="Advanced Auditing">Advanced Auditing</option>
+                      <option value="Direct and International Tax Laws">Direct and International Tax Laws</option>
+                      <option value="Indirect Tax Laws">Indirect Tax Laws</option>
+                      <option value="Integrated Business Solutions">Integrated Business Solutions</option>
+                    </>
+                  ) : null}
+                </select>
+              </div>
+            </div>
           </div>
           
           <div className="chat-messages">
@@ -268,31 +346,27 @@ const ChatBotPage = () => {
                 </div>
               </div>
             )}
-            <div ref={messageEndRef} />
+            
+            <div ref={messageEndRef} className="message-end"></div>
           </div>
           
-          <div className="chat-input-container">
-            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
-              <div className="chat-input-box">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask a CA-related question..."
-                  disabled={isLoading}
-                />
-                <button 
-                  type="submit" 
-                  className="send-button"
-                  disabled={isLoading || input.trim() === ''}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2z" />
-                  </svg>
-                </button>
-              </div>
-            </form>
+          <div className="chatbot-input">
+            <textarea
+              value={input}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your question here..."
+              disabled={isLoading}
+            />
+            <button 
+              onClick={handleSendMessage} 
+              disabled={isLoading || !input.trim()}
+              className="send-button"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
