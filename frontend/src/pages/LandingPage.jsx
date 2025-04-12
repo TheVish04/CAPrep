@@ -6,7 +6,6 @@ import './LandingPage.css';
 import Navbar from '../components/Navbar';
 import CountUp from 'react-countup';
 import DonationButton from '../components/DonationButton';
-import BreathingText from '../components/fancy/components/text/breathing-text';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -76,15 +75,7 @@ const LandingPage = () => {
       <section className="hero">
         <div className="hero-overlay"></div>
         <div className="hero-content" data-aos="fade-up">
-          <div className="breathing-title">
-            <BreathingText
-              label="Master Your CA Journey"
-              staggerDuration={0.05}
-              fromFontVariationSettings="'wght' 300, 'slnt' 0"
-              toFontVariationSettings="'wght' 700, 'slnt' -5"
-              className="hero-title"
-            />
-          </div>
+          <h1>Master Your CA Journey</h1>
           <p>Access organized question papers, practice strategically, and excel in your CA examinations with our comprehensive preparation platform.</p>
           <div className="cta-buttons">
             {!isLoggedIn && (
