@@ -45,9 +45,23 @@ app.use('/api/', apiLimiter);
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
+// Get allowed origins from environment variable
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
+console.log('Configured CORS allowed origins:', allowedOrigins);
+
 // CORS middleware configuration
 app.use(cors({
-  origin: ['https://caprep.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked request from: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'x-skip-cache'],
   exposedHeaders: ['Content-Length', 'Content-Type'],
@@ -55,6 +69,28 @@ app.use(cors({
   optionsSuccessStatus: 200,
   maxAge: 86400 // Cache preflight requests for 24 hours
 }));
+
+// Add explicit CORS headers for all routes to ensure they're set
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Allow any of the specified origins that sent the request
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, Expires, x-skip-cache');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Log CORS information for debugging
+  console.log(`[CORS] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'No origin'}`);
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Handle OPTIONS requests explicitly
 app.options('*', cors());
