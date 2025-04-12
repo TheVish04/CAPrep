@@ -140,6 +140,8 @@ const STYLES = `
       padding: 15px;
       text-align: center;
       margin-bottom: 20px;
+      page-break-before: always;
+      page-break-after: avoid;
     }
     
     .filter-info {
@@ -147,19 +149,25 @@ const STYLES = `
       padding: 10px;
       margin-bottom: 20px;
       font-size: 12px;
+      page-break-after: avoid;
     }
     
     .question-card {
       border: 1px solid #000;
       margin-bottom: 20px;
       padding: 15px;
-      page-break-inside: avoid;
+      page-break-inside: auto;
     }
     
     .question-header {
       border-bottom: 1px solid #000;
       padding: 10px;
       margin: -15px -15px 15px -15px;
+      page-break-after: avoid;
+    }
+    
+    .question-content {
+      page-break-inside: auto;
     }
     
     .case-scenario {
@@ -170,6 +178,7 @@ const STYLES = `
     
     .sub-questions {
       margin-left: 20px;
+      page-break-inside: auto;
     }
     
     .options {
@@ -279,26 +288,31 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
         <div class="pdf-header">
           <h1>CA Exam Preparation</h1>
           <p>Generated on: ${new Date().toLocaleDateString()}</p>
-        </div>
         
-        <div class="filter-info">
-          ${Object.entries(filters)
-            .filter(([_, value]) => value)
-            .map(([key, value]) => `<div>${key}: ${value}</div>`)
-            .join('')}
+          <div class="filter-info">
+            ${Object.entries(filters)
+              .filter(([_, value]) => value)
+              .map(([key, value]) => `<div>${key}: ${value}</div>`)
+              .join('') || 'All Questions'}
+          </div>
         </div>
         
         ${questions.map((question, index) => `
           <div class="question-card">
             <div class="question-header">
-              <h2>Question ${index + 1} - ${question.subject || ''} ${question.month || ''} ${question.year || ''}</h2>
-              ${question.paperType ? `<div>Paper Type: ${question.paperType}</div>` : ''}
-              ${question.paperNo ? `<div>Paper No: ${question.paperNo}</div>` : ''}
+              <h2>Q${question.questionNumber || (index + 1)}: ${question.subject || ''} (${question.month || ''} ${question.year || ''} | ${question.paperType || ''})</h2>
             </div>
             
             <div class="question-content">
               ${DOMPurify.sanitize(formatContent(question.questionText || ''), sanitizeOptions)}
             </div>
+            
+            ${(includeAnswers || individualAnswers[question._id]) && question.answerText ? `
+              <div class="answer-section" style="margin-top: 10px; padding: 10px; border-top: 1px solid #ccc;">
+                <h3>Answer:</h3>
+                <div>${DOMPurify.sanitize(formatContent(question.answerText), sanitizeOptions)}</div>
+              </div>
+            ` : ''}
             
             ${question.subQuestions?.map((subQ, subIndex) => `
               <div class="sub-questions">
@@ -320,6 +334,13 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
                     }).join('')}
                   </div>
                 ` : ''}
+                
+                ${(includeAnswers || individualAnswers[question._id]) && subQ.answerText ? `
+                  <div class="answer-section" style="margin-top: 10px; padding: 10px; border-top: 1px dashed #ccc;">
+                    <h4>Answer:</h4>
+                    <div>${DOMPurify.sanitize(formatContent(subQ.answerText), sanitizeOptions)}</div>
+                  </div>
+                ` : ''}
               </div>
             `).join('') || ''}
           </div>
@@ -330,7 +351,7 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
 
   // PDF generation options
   const options = {
-    margin: [10, 10],
+    margin: [15, 15],
     filename: `ca-questions-${new Date().toISOString().slice(0, 10)}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
@@ -341,11 +362,13 @@ export const generateQuestionsPDF = async (questions, filters, includeAnswers, i
     jsPDF: { 
       unit: 'mm', 
       format: 'a4', 
-      orientation: 'portrait'
+      orientation: 'portrait',
+      compress: true
     },
     pagebreak: { 
       mode: 'avoid-all',
-      before: '.question-card'
+      before: '.pdf-header',
+      avoid: ['.question-header', 'h3', 'h4']
     }
   };
 
