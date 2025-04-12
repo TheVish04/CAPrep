@@ -53,17 +53,21 @@
   font-weight: 600;
 }
 
-/* Questions Actions Bar */
+/* Questions Actions Bar - Force horizontal layout */
 .questions-actions {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important; /* Force horizontal layout */
   justify-content: center;
   gap: 16px;
   margin-bottom: 32px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important; /* Prevent wrapping */
+  width: 100%;
 }
 
 .export-btn, 
-.toggle-answers-btn {
+.toggle-answers-btn,
+.questions-actions .donation-button {
+  flex: 1; /* Make buttons take equal width */
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   font-weight: 500;
@@ -73,7 +77,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 160px;
+  min-width: 0 !important; /* Allow buttons to shrink if needed */
+  white-space: nowrap;
 }
 
 .export-btn {
@@ -93,24 +98,19 @@
 }
 
 .questions-actions .donation-button-container {
-  flex-grow: 0;
+  flex: 1; /* Make the container take equal width */
+  display: flex;
 }
 
 .questions-actions .donation-button {
-  padding: 10px 16px;
-  background: #e57373; /* Softer red */
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  cursor: pointer;
+  width: 100%; /* Make the button fill the container */
 }
 
-/* Filters Section */
+/* Filters Section - Force horizontal layout */
 .filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px;
   margin-bottom: 32px;
   background: var(--bg-highlight);
   padding: 20px;
@@ -118,9 +118,9 @@
 }
 
 .filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex: 1;
+  min-width: 150px; /* Minimum width for filter groups */
+  max-width: calc(25% - 10px); /* Maximum width to ensure at least 4 per row */
 }
 
 .filter-group label {
@@ -142,7 +142,8 @@
 }
 
 .filter-group-search {
-  grid-column: span 2;
+  flex: 2; /* Make search field take more space */
+  min-width: 200px;
 }
 
 .filter-group-bookmark {
@@ -478,13 +479,7 @@
   border: 2px solid var(--primary-color);
 }
 
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-  .filters {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
-}
-
+/* Responsive Adjustments - Keep buttons side by side */
 @media (max-width: 768px) {
   .questions-section {
     padding: 70px 12px 24px;
@@ -498,27 +493,22 @@
     font-size: 1.5rem;
   }
   
+  /* Override the previous mobile style that made buttons stack */
   .questions-actions {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row !important;
+    align-items: center;
   }
   
   .export-btn, 
-  .toggle-answers-btn {
-    width: 100%;
+  .toggle-answers-btn,
+  .questions-actions .donation-button {
+    width: auto; /* Reset width */
+    font-size: 0.8rem; /* Smaller font for mobile */
+    padding: 8px 10px;
   }
   
-  .filters {
-    grid-template-columns: 1fr;
-    padding: 16px;
-  }
-  
-  .filter-group-search {
-    grid-column: span 1;
-  }
-  
-  .pagination button {
-    min-width: 36px;
-    height: 36px;
+  .filter-group {
+    min-width: 120px;
+    max-width: calc(50% - 10px); /* Allow 2 per row on mobile */
   }
 }
