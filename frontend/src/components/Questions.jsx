@@ -464,24 +464,23 @@ const Questions = () => {
               <div className="questions-list">
               {currentQuestions.map((q) => (
                 <div key={q._id} id={`question-${q._id}`} className="question-card">
-                  <div className="question-actions">
-                    <button 
-                      onClick={() => handleBookmarkToggle(q._id)} 
-                      className="bookmark-btn top-right-bookmark"
-                      title={bookmarkedQuestionIds.has(q._id) ? 'Remove Bookmark' : 'Add Bookmark'}
-                    >
-                      <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
-                    </button>
-                    <div className="more-menu-wrapper">
-                      <MoreMenu onDiscuss={() => handleOpenDiscussion(q)} />
-                    </div>
-                  </div>
-                  
                   <div className="question-header">
                     <h2>
                       Q: {q.questionNumber} - {q.subject} - {q.month}, {q.year} 
                       ({q.paperType} {q.examStage}) 
                     </h2>
+                    <div className="question-actions">
+                      <button 
+                        onClick={() => handleBookmarkToggle(q._id)} 
+                        className="bookmark-btn"
+                        title={bookmarkedQuestionIds.has(q._id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                      >
+                        <BookmarkIcon filled={bookmarkedQuestionIds.has(q._id)} />
+                      </button>
+                      <div className="more-menu-wrapper">
+                        <MoreMenu onDiscuss={() => handleOpenDiscussion(q)} />
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="question-content-container">

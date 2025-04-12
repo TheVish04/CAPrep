@@ -58,7 +58,7 @@
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
-  gap: 20px !important; /* Slightly reduced gap */
+  gap: 20px !important;
   margin-bottom: 32px;
   width: 100%;
   position: relative;
@@ -68,7 +68,7 @@
 
 .export-btn, 
 .toggle-answers-btn {
-  flex: 1 1 0% !important; /* Allow shrinking but prefer equal basis */
+  flex: 1 1 0% !important;
   padding: 12px 16px;
   border-radius: 8px;
   font-weight: 500;
@@ -78,10 +78,14 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  max-width: 32% !important; /* Adjusted max-width slightly */
+  max-width: 32% !important;
   margin: 0 !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: all 0.15s ease-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .export-btn {
@@ -96,6 +100,12 @@
   background: #ffffff;
 }
 
+.export-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #e8e8e8;
+}
+
 .toggle-answers-btn {
   background: #3a3a3a;
   color: white;
@@ -106,6 +116,12 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background: #4a4a4a;
+}
+
+.toggle-answers-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #333333;
 }
 
 .toggle-answers-btn.active {
@@ -134,7 +150,7 @@
   justify-content: center;
   background: #e57373;
   color: white;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: all 0.15s ease-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -142,6 +158,12 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background: #ef5350;
+}
+
+.questions-actions .donation-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #d32f2f;
 }
 
 /* Fix any parent elements of questions-actions */
@@ -195,9 +217,16 @@
   font-size: 0.9rem;
   min-height: 40px;
   outline: none;
-  width: 100% !important; /* Make inputs fill the group width */
+  width: 100% !important;
   min-width: 130px !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease-out;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
 }
 
 .filter-group select:hover,
@@ -212,7 +241,9 @@
 }
 
 .filter-group input[type="text"] {
-  min-width: auto !important; /* Remove specific min-width for text input */
+  min-width: auto !important;
+  background-image: none;
+  padding-right: 12px;
 }
 
 .filter-group-bookmark {
@@ -224,6 +255,11 @@
   padding: 0 12px;
   border-radius: 6px;
   border: 1px solid #444;
+  transition: all 0.2s ease-out;
+}
+
+.filter-group-bookmark:hover {
+  border-color: #666;
 }
 
 .bookmark-filter-label {
@@ -241,6 +277,7 @@
   accent-color: var(--primary-color);
   width: 16px;
   height: 16px;
+  cursor: pointer;
 }
 
 /* Loading & Error States */
@@ -281,65 +318,54 @@
 }
 
 .question-card {
-  width: 100% !important; /* Force full width */
-  max-width: 100% !important;
-  display: block !important; /* Ensure block display */
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  background: var(--bg-highlight);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border-color);
   position: relative;
-  grid-column: 1 / -1 !important; /* Force spanning all columns if grid exists */
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
-/* Override any grid properties on the parent container */
-.questions-container > div {
-  display: block !important;
-  grid-template-columns: unset !important;
-}
-
-/* Question Card Header adjustments */
+/* Question Header with buttons */
 .question-header {
-  padding: 12px 20px;
-  background: rgba(2, 136, 209, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
 }
 
 .question-header h2 {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--secondary-color);
+  font-size: 1.1rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-light);
   margin: 0;
-  flex-grow: 1;
-  margin-right: 15px;
+  flex: 1;
 }
 
-/* Repositioned Question Actions (Bookmark/More) */
+/* Move action buttons to header */
 .question-actions {
-  position: static !important; /* Override absolute positioning */
-  display: flex !important;
-  gap: 8px !important;
-  align-items: center !important;
-  flex-shrink: 0; /* Prevent shrinking */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
 }
 
 .bookmark-btn {
   background: transparent;
   border: none;
+  color: var(--text-light);
   cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  transition: background-color 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .bookmark-btn svg {
@@ -348,11 +374,41 @@
 }
 
 .bookmark-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .more-menu-wrapper {
   position: relative;
+}
+
+/* Remove the old top-right positioning of buttons */
+.top-right-bookmark {
+  position: static;
+  top: auto;
+  right: auto;
+}
+
+/* Toggle Answer Button */
+.toggle-answer-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: var(--bg-highlight);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease-out;
+}
+
+.toggle-answer-btn:hover {
+  background: #333;
+  border-color: #555;
+}
+
+.toggle-answer-btn:active {
+  transform: translateY(1px);
 }
 
 /* Question Content */
@@ -530,17 +586,6 @@
   border-top: 1px solid var(--border-color);
 }
 
-.toggle-answer-btn {
-  width: 100%;
-  padding: 12px;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border-color);
-  color: var(--primary-color);
-  font-weight: 500;
-  cursor: pointer;
-}
-
 /* Pagination */
 .pagination {
   display: flex;
@@ -574,25 +619,32 @@
   border: 2px solid var(--primary-color);
 }
 
-/* Responsive adjustments */
+/* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
-  /* Keep action buttons side by side but with more spacing */
   .questions-actions {
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 10px !important; /* Adjusted mobile gap */
-    padding: 0 5px;
+    flex-direction: column !important;
+    gap: 12px !important;
   }
-
+  
   .export-btn, 
   .toggle-answers-btn,
-  .questions-actions .donation-button {
-    font-size: 0.85rem; /* Adjusted font size */
-    padding: 10px 8px;
+  .questions-actions .donation-button-container {
+    max-width: 100% !important;
   }
-
+  
   .filter-group {
-    min-width: 120px !important;
-    max-width: calc(50% - 8px) !important; /* Adjusted mobile width with gap */
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  .question-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .question-actions {
+    margin-left: 0;
+    margin-top: 12px;
+    align-self: flex-end;
   }
 }
