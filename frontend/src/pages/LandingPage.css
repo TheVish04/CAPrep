@@ -139,27 +139,6 @@ section {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: 0 auto;
-}
-
-.breathing-title {
-  font-family: 'Overused Grotesk', sans-serif;
-  margin-bottom: 20px;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: white;
-}
-
-.hero-title {
-  display: inline-block;
-  font-weight: 600;
-  background: linear-gradient(45deg, var(--primary-color) 0%, #03a9f4 50%, #ffffff 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  text-align: center;
 }
 
 .hero h1 {
