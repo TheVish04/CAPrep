@@ -189,22 +189,35 @@
   margin: 20px 0;
 }
 
-/* Question Cards - Single row layout */
+/* Question Cards - Single row layout - Force grid override */
 .questions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: block !important; /* Force override any grid layout */
+  width: 100% !important;
   margin-bottom: 32px;
-  width: 100%;
+}
+
+.questions-list > * {
+  margin-bottom: 20px;
 }
 
 .question-card {
-  width: 100%;
+  width: 100% !important; /* Force full width */
+  max-width: 100% !important;
+  display: block !important; /* Ensure block display */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   background: var(--bg-highlight);
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border-color);
   position: relative;
+  grid-column: 1 / -1 !important; /* Force spanning all columns if grid exists */
+}
+
+/* Override any grid properties on the parent container */
+.questions-container > div {
+  display: block !important;
+  grid-template-columns: unset !important;
 }
 
 .question-header {
