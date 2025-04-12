@@ -6,7 +6,6 @@ import './Dashboard.css';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
-import PDFViewer from './PDFViewer';
 
 // Register ChartJS components
 ChartJS.register(
@@ -30,8 +29,6 @@ const Dashboard = () => {
   const [pomodoroSubject, setPomodoroSubject] = useState('');
   const [pomodoroExamStage, setPomodoroExamStage] = useState('');
   const [activeBookmarkTab, setActiveBookmarkTab] = useState('questions'); // Add state for active bookmark tab
-  const [viewingPDF, setViewingPDF] = useState(false);
-  const [currentPDF, setCurrentPDF] = useState(null);
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
@@ -186,71 +183,43 @@ const Dashboard = () => {
   };
 
   // Track resource view
-  const trackResourceView = async (resourceId, resourceTitle = null, openInViewer = false) => {
+  const trackResourceView = async (resourceId, resourceTitle = null) => {
+    try {
+      navigateToItem('resource', resourceId, resourceTitle);
+    } catch (err) {
+      console.error('Error navigating to resource:', err);
+    }
+  };
+  
+  // Download resource directly
+  const downloadResource = async (resourceId, resourceTitle = null) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      // Get the resource data if not viewing in the viewer
-      if (!openInViewer) {
-        navigateToItem('resource', resourceId, resourceTitle);
-        return;
+      // Increment download count
+      try {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}/download`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (countError) {
+        console.error('Failed to increment download count:', countError);
       }
       
-      // Show loading state
-      setCurrentPDF({
-        fileUrl: null,
-        title: resourceTitle || 'Loading PDF...'
-      });
-      setViewingPDF(true);
-      
-      // Get the full resource data to display in the PDF viewer
+      // Get the resource data
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
-      if (response.data) {
-        // Increment view count
-        try {
-          await axios.post(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}/download`, {}, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-        } catch (countError) {
-          console.error('Failed to increment download count:', countError);
-          // Continue even if count increment fails
-        }
-        
-        // Check if using Cloudinary URL
-        let fileUrl = response.data.fileUrl;
-        
-        // Try to get a proxied download URL if available
-        try {
-          const downloadResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/resources/${resourceId}/download-url`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          
-          if (downloadResponse.data && downloadResponse.data.viewUrl) {
-            fileUrl = downloadResponse.data.viewUrl;
-          }
-        } catch (urlError) {
-          console.error('Could not get alternative URL:', urlError);
-          // Continue with the original URL
-        }
-        
-        // Open the PDF in the viewer
-        setCurrentPDF({
-          fileUrl: fileUrl,
-          title: response.data.title,
-          originalUrl: response.data.fileUrl // Keep original URL as backup
-        });
+      if (response.data && response.data.fileUrl) {
+        // Open the PDF in a new tab (browser's native PDF viewer)
+        window.open(response.data.fileUrl, '_blank');
+      } else {
+        alert('Could not download the resource. Please try again later.');
       }
     } catch (err) {
-      console.error('Error navigating to resource:', err);
-      // Close the viewer if we encountered an error
-      setViewingPDF(false);
-      setCurrentPDF(null);
-      // Show an error message
-      alert('Could not load the PDF. Please try the "Details" option instead.');
+      console.error('Error downloading resource:', err);
+      alert('Failed to download the resource. Please try the Details option instead.');
     }
   };
 
@@ -717,7 +686,7 @@ const Dashboard = () => {
               {dashboardData && dashboardData.newResources && dashboardData.newResources.length > 0 ? (
                 <ul className="new-resources-list">
                   {dashboardData.newResources.map((resource) => (
-                    <li key={resource._id} onClick={() => trackResourceView(resource._id, resource.title, false)}>
+                    <li key={resource._id} onClick={() => trackResourceView(resource._id, resource.title)}>
                       <div className="resource-item-content">
                         <h3>{resource.title}</h3>
                         <p className="resource-meta">
@@ -729,11 +698,11 @@ const Dashboard = () => {
                       <div className="resource-buttons">
                         <button className="resource-arrow-btn view-resource-btn" onClick={(e) => {
                           e.stopPropagation();
-                          trackResourceView(resource._id, resource.title, true);
-                        }}>View PDF</button>
+                          downloadResource(resource._id, resource.title);
+                        }}>Download PDF</button>
                         <button className="resource-arrow-btn" onClick={(e) => {
                           e.stopPropagation();
-                          trackResourceView(resource._id, resource.title, false);
+                          trackResourceView(resource._id, resource.title);
                         }}>Details</button>
                       </div>
                     </li>
@@ -836,18 +805,6 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-      
-      {/* PDF Viewer Modal */}
-      {viewingPDF && currentPDF && (
-        <PDFViewer 
-          fileUrl={currentPDF.fileUrl} 
-          title={currentPDF.title} 
-          onClose={() => {
-            setViewingPDF(false);
-            setCurrentPDF(null);
-          }}
-        />
-      )}
     </div>
   );
 };
