@@ -468,7 +468,7 @@ const Questions = () => {
                     <h2>
                       Q{q.questionNumber}: {q.subject} ({q.month} {q.year} | {q.paperType})
                     </h2>
-                    <div className="question-actions">
+                    <div className="action-buttons-container">
                       <button 
                         onClick={() => handleBookmarkToggle(q._id)} 
                         className="bookmark-btn"
