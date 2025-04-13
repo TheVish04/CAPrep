@@ -154,7 +154,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
       if (result && result.response) {
         const rawContent = result.response.text();
         console.log("Raw Content length:", rawContent.length, "characters");
-        // console.log("Raw Content from AI:", rawContent);
+        console.log("Raw Content from AI:", rawContent);
 
         // Attempt to parse the content as JSON
         try {
