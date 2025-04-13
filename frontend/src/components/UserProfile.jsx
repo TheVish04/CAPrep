@@ -114,11 +114,18 @@ const UserProfile = () => {
                 <div className="profile-contribution card">
                     <h2>My Contribution</h2>
                     {userData.totalContribution > 0 ? (
-                        <p>
-                            Thank you for your generous contribution of 
-                            <strong> ₹{userData.totalContribution.toFixed(2)} </strong>! 
-                            Your support helps keep CAprep running and improving.
-                        </p>
+                        <div className="contribution-prompt">
+                            <p>
+                                Thank you for your generous contribution of 
+                                <strong> ₹{userData.totalContribution.toFixed(2)} </strong>! 
+                                Your support helps keep CAprep running and improving.
+                            </p>
+                            <p className="retention-message">
+                                Consistent support helps us enhance our platform with new features and content.
+                                Consider becoming a recurring supporter to help us serve the CA community better!
+                            </p>
+                            <DonationButton buttonText="Support Again ❤️" />
+                        </div>
                     ) : (
                         <div className="contribution-prompt">
                             <p>

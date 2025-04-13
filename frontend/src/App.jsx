@@ -94,7 +94,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/contactus" element={<ContactUs />} />
             <Route path="/chat" element={<ChatBotPage />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

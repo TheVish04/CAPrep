@@ -118,7 +118,7 @@ const Navbar = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Link to="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/contactus" className="nav-link" onClick={() => setIsMenuOpen(false)}>
               Contact Us
             </Link>
           </motion.li>

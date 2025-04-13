@@ -164,4 +164,34 @@
 /* Styling for the thank you message when donation is made */
 .profile-contribution p strong {
     color: var(--accent-color, #007bff); /* Use accent color for emphasis */
+}
+
+.retention-message {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: #b0b0b0;
+  font-style: italic;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  border-left: 3px solid #03a9f4;
+  padding-left: 15px;
+  background-color: rgba(3, 169, 244, 0.05);
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+
+.profile-contribution {
+  position: relative;
+  padding-bottom: 25px;
+}
+
+.profile-contribution .donation-button {
+  background-color: #0288d1;
+  transition: all 0.3s ease;
+}
+
+.profile-contribution .donation-button:hover {
+  background-color: #03a9f4;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(3, 169, 244, 0.3);
 } 
