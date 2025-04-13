@@ -333,9 +333,6 @@ router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async
         }
       },
       {
-        $sort: { _id: 1 }  // Sort alphabetically by subject name
-      },
-      {
         $project: {
           subject: '$_id',
           count: 1,
@@ -343,9 +340,6 @@ router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async
         }
       }
     ]);
-    
-    // Sort alphabetically
-    availableSubjects.sort((a, b) => a.subject.localeCompare(b.subject));
     
     // Clear related caches to ensure the changes take effect
     clearCache('/api/questions/available-subjects');
@@ -413,9 +407,6 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
         }
       },
       {
-        $sort: { _id: 1 }  // Sort alphabetically by subject name
-      },
-      {
         $project: {
           subject: '$_id',
           count: 1,
@@ -442,10 +433,7 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
         mergedSubjects.push(foundSubj);
       }
     });
-    
-    // Sort alphabetically
-    mergedSubjects.sort((a, b) => a.subject.localeCompare(b.subject));
-    
+        
     // Clear related caches to ensure the changes take effect
     clearCache('/api/questions/available-subjects');
     
