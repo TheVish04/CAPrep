@@ -286,12 +286,17 @@ const Resources = () => {
       }
 
       if (response.data && response.data.bookmarkedResourceIds) {
-        setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
-      }
-      
-      // Refetch if viewing bookmarks and one was removed
-      if (isCurrentlyBookmarked && filters.bookmarked) {
-          fetchResources(token, filters);
+        // Update the bookmarked IDs in state
+        const newBookmarkedIds = new Set(response.data.bookmarkedResourceIds);
+        setBookmarkedResourceIds(newBookmarkedIds);
+        
+        // If we're removing a bookmark and the bookmarked filter is active,
+        // remove this resource from the current list immediately
+        if (isCurrentlyBookmarked && filters.bookmarked) {
+          setResources(prevResources => 
+            prevResources.filter(resource => resource._id !== resourceId)
+          );
+        }
       }
 
     } catch (err) {
