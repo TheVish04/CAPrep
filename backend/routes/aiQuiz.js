@@ -140,7 +140,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
       const generationConfig = {
         temperature: 0.7,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
       };
       
       console.log("Generation config:", generationConfig);
@@ -331,7 +331,7 @@ router.post('/ask', async (req, res) => {
       
       const generationConfig = {
         temperature: 0.3, // Lower temperature for more factual responses
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
       };
       
       console.log("Setting up chat with Gemini...");
