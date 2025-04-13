@@ -344,6 +344,12 @@ router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async
       }
     ]);
     
+    // Sort alphabetically
+    availableSubjects.sort((a, b) => a.subject.localeCompare(b.subject));
+    
+    // Clear related caches to ensure the changes take effect
+    clearCache('/api/questions/available-subjects');
+    
     res.json(availableSubjects);
   } catch (error) {
     console.error('Error fetching available subjects:', error);
@@ -393,10 +399,10 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
     
     if (examStage === 'Foundation') {
       defaultSubjects = [
-        { subject: 'Principles and Practice of Accounting', count: 0 },
-        { subject: 'Business Laws and Business Correspondence and Reporting', count: 0 },
-        { subject: 'Business Mathematics and Logical Reasoning & Statistics', count: 0 },
-        { subject: 'Business Economics & Business and Commercial Knowledge', count: 0 }
+        { subject: 'Accounting', count: 0 },
+        { subject: 'Business Laws', count: 0 },
+        { subject: 'Quantitative Aptitude', count: 0 },
+        { subject: 'Business Economics', count: 0 }
       ];
     } else if (examStage === 'Intermediate') {
       defaultSubjects = [
@@ -435,6 +441,12 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
         mergedSubjects.push(defaultSubj);
       }
     });
+    
+    // Sort alphabetically
+    mergedSubjects.sort((a, b) => a.subject.localeCompare(b.subject));
+    
+    // Clear related caches to ensure the changes take effect
+    clearCache('/api/questions/available-subjects');
     
     res.json(mergedSubjects);
   } catch (error) {
