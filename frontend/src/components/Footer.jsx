@@ -30,7 +30,7 @@ const Footer = () => {
           <div className="footer-column">
             <h4>Contact Us</h4>
             <ul className="contact-info">
-              <li>Email: <a href="mailto:contact@caprep.in">contact@caprep.in</a></li>
+              <li>Email: <a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a></li>
               <li>Phone: +91 8591061249</li>
             </ul>
           </div>

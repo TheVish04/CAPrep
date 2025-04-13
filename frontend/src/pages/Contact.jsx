@@ -28,7 +28,7 @@ const Contact = () => {
     }
 
     // Create mailto link with form data
-    const mailtoLink = `mailto:report@caprep.com?subject=${encodeURIComponent(`Issue Report: ${reportData.subject}`)}&body=${encodeURIComponent(
+    const mailtoLink = `mailto:caprep8@gmail.com?subject=${encodeURIComponent(`Issue Report: ${reportData.subject}`)}&body=${encodeURIComponent(
       `Name: ${reportData.name}\nEmail: ${reportData.email}\n\nDescription:\n${reportData.description}`
     )}`;
 
@@ -62,7 +62,7 @@ const Contact = () => {
             <div className="contact-details">
               <div className="contact-item">
                 <h3>Email</h3>
-                <p><a href="mailto:support@caprep.com">caprep8@gmail.com</a></p>
+                <p><a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a></p>
               </div>
               
               <div className="contact-item">
@@ -74,8 +74,8 @@ const Contact = () => {
                 <h3>Address</h3>
                 <p>
                   CAprep<br />
-                  123 Education Street<br />
-                  Mumbai, Maharashtra 400001<br />
+                  Kandivali West<br />
+                  Mumbai, Maharashtra 400067<br />
                   India
                 </p>
               </div>
@@ -154,23 +154,8 @@ const Contact = () => {
             </form>
           </div>
           
-          <div className="contact-hours">
-            <h3>Hours of Operation</h3>
-            <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-            <p>Saturday: 10:00 AM - 2:00 PM</p>
-            <p>Sunday: Closed</p>
-          </div>
           
-          <div className="social-media">
-            <h3>Connect With Us</h3>
-            <p>Follow us on social media for updates and tips:</p>
-            <div className="social-links">
-              <a href="#" className="social-link">Facebook</a>
-              <a href="#" className="social-link">Twitter</a>
-              <a href="#" className="social-link">LinkedIn</a>
-              <a href="#" className="social-link">Instagram</a>
-            </div>
-          </div>
+          
           
           <div className="support-section">
             <h3>Support Our Mission</h3>

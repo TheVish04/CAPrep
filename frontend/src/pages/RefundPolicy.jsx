@@ -36,7 +36,7 @@ const RefundPolicy = () => {
           </ul>
           
           <h2>3. Refund Process</h2>
-          <p>3.1. <strong>How to Request a Refund:</strong> To request a refund, please contact us at <a href="mailto:refunds@caprep.in">refunds@caprep.in</a> with the following information:</p>
+          <p>3.1. <strong>How to Request a Refund:</strong> To request a refund, please contact us at <a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a> with the following information:</p>
           <ul>
             <li>Your registered email address</li>
             <li>Date of purchase</li>
@@ -67,7 +67,7 @@ const RefundPolicy = () => {
           <h2>8. Contact Us</h2>
           <p>If you have any questions about this Refund Policy, please contact us at:</p>
           <p>
-            Email: <a href="mailto:contact@caprep.in">contact@caprep.in</a> or <a href="mailto:refunds@caprep.in">refunds@caprep.in</a><br />
+            Email: <a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a><br />
             Phone: +91 8591061249
           </p>
           

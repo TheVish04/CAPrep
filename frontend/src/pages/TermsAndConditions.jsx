@@ -64,7 +64,7 @@ const TermsAndConditions = () => {
           
           <section>
             <h2>9. Contact Information</h2>
-            <p>If you have any questions about these Terms, please contact us at <a href="mailto:contact@caprep.in">contact@caprep.in</a> or call us at +91 8591061249.</p>
+            <p>If you have any questions about these Terms, please contact us at <a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a> or call us at +91 8591061249.</p>
           </section>
           
           <p className="updated-date">Last Updated: April 20, 2024</p>

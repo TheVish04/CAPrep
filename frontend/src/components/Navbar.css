@@ -291,3 +291,20 @@
   background-color: #121212;
   color: #239ecf;
 }
+
+@media screen and (max-width: 960px) {
+  .policies-menu {
+    position: relative;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+  
+  .policy-link {
+    padding: 10px 20px;
+    padding-left: 35px;
+  }
+}

@@ -124,7 +124,7 @@ const PrivacyPolicy = () => {
           <h2>8. Contact Us</h2>
           <p>If you have any questions about this Privacy Policy, please contact us at:</p>
           <p>
-            Email: <a href="mailto:contact@caprep.in">contact@caprep.in</a><br />
+            Email: <a href="mailto:caprep8@gmail.com">caprep8@gmail.com</a><br />
             Phone: +91 8591061249
           </p>
           

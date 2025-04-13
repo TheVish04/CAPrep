@@ -326,7 +326,7 @@ const LandingPage = () => {
             <div className="footer-column">
               <h4>Contact Us</h4>
               <ul className="contact-info">
-                <li><i className="fas fa-envelope"></i> support@caprep.com</li>
+                <li><i className="fas fa-envelope"></i> caprep8@gmail.com</li>
                 <li><i className="fas fa-phone"></i> +91 9876543210</li>
               </ul>
             </div>
