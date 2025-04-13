@@ -1,16 +1,16 @@
-# CA Exam Preparation Platform
+# CAprep
 
 ## Overview
-CA Exam Preparation Platform is a comprehensive web application designed to help Chartered Accountancy students prepare for their examinations effectively. This platform provides practice questions, quizzes, learning resources, discussion forums, and performance analytics to enhance the study experience. Built with a modern tech stack, the platform aims to provide a seamless, responsive user experience across devices.
+CAprep is a comprehensive web application designed to help Chartered Accountancy students prepare for their examinations effectively. This platform provides practice questions, quizzes, learning resources, discussion forums, and performance analytics to enhance the study experience. Built with a modern tech stack, the platform aims to provide a seamless, responsive user experience across devices.
 
 ## Features
 
 ### User Authentication and Authorization
-- **Secure Registration & Login**: Email verification and secure password management
-- **Role-Based Access Control**: Student, Premium User, and Admin roles with appropriate permissions
+- **Secure Registration & Login**: Email verification with OTP and secure password management
+- **Role-Based Access Control**: User and Admin roles with appropriate permissions
 - **JWT Authentication**: Secure token-based session management
 - **Password Reset**: Automated password recovery via email
-- **Social Login Integration**: Coming soon
+- **Security Measures**: Rate limiting, XSS protection, and more
 
 ### Learning Resources
 - **Categorized Study Materials**: Organized by subjects, topics, and difficulty levels
@@ -20,7 +20,7 @@ CA Exam Preparation Platform is a comprehensive web application designed to help
 - **Downloadable Content**: Save resources for offline study
 
 ### Question Bank & Practice
-- **Extensive Question Database**: Thousands of practice questions with solutions
+- **Extensive Question Database**: Practice questions with solutions
 - **Topic-Based Categorization**: Questions organized by examination topics
 - **Difficulty Levels**: Progressive difficulty settings
 - **Bookmarking System**: Save important questions for later review
@@ -44,29 +44,25 @@ CA Exam Preparation Platform is a comprehensive web application designed to help
 - **Topic-Based Discussions**: Organized conversations by subject area
 - **Question & Answer Format**: Ask questions and receive answers from peers and experts
 - **Moderation Tools**: Admin controls to maintain quality discussions
-- **Notification System**: Stay updated on responses and important discussions
-- **User Reputation System**: Recognize helpful community members
+- **User Engagement**: React and respond to posts
 
 ### Admin Panel
 - **User Management**: Create, edit, suspend user accounts
 - **Content Administration**: Manage questions, resources, and discussions
 - **Announcement System**: Create and publish important notifications
 - **Analytics Dashboard**: Monitor platform usage and performance
-- **System Configuration**: Adjust application settings
 
 ### Payment Integration
 - **Razorpay Integration**: Secure payment processing
 - **Subscription Management**: Handle premium subscription lifecycles
 - **Payment History**: Track user payment records
-- **Invoice Generation**: Automated invoice creation
-- **Refund Processing**: Managed refund workflow
 
 ## Tech Stack
 
 ### Frontend
-- **React (v19)**: Core framework for building interactive UI
-- **React Router Dom (v7)**: Client-side routing
-- **Tailwind CSS (v4)**: Utility-first CSS framework for styling
+- **React 19**: Core framework for building interactive UI
+- **React Router Dom 7**: Client-side routing
+- **Tailwind CSS 4**: Utility-first CSS framework for styling
 - **Chart.js / React-Chartjs-2**: Data visualization components
 - **Framer Motion / React Spring**: Advanced animations and transitions
 - **HTML2PDF / jsPDF**: PDF generation for reports and certificates
@@ -75,12 +71,12 @@ CA Exam Preparation Platform is a comprehensive web application designed to help
 - **Axios**: Promise-based HTTP client
 - **Date-fns**: Modern JavaScript date utility library
 - **DOMPurify**: XSS sanitization for user-generated content
-- **Vite**: Next-generation frontend build tool
+- **Vite 6**: Next-generation frontend build tool
 
 ### Backend
 - **Node.js with Express**: Server-side JavaScript runtime and framework
-- **MongoDB with Mongoose**: NoSQL database with ODM
-- **JWT (JSON Web Tokens)**: Stateless authentication mechanism
+- **MongoDB with Mongoose 8**: NoSQL database with ODM
+- **JWT**: Stateless authentication mechanism
 - **Google Generative AI**: Integration for AI-powered question generation
 - **Cloudinary**: Cloud-based image and file management
 - **Nodemailer**: Email sending capability for notifications
@@ -91,7 +87,6 @@ CA Exam Preparation Platform is a comprehensive web application designed to help
 - **Express Rate Limit**: API request rate limiting
 - **Node-Cache**: Server-side caching for performance
 - **OTP Generator**: One-time password functionality
-- **UUID**: Unique identifier generation
 
 ## Architecture
 The application follows a client-server architecture with clear separation of concerns:
@@ -100,7 +95,6 @@ The application follows a client-server architecture with clear separation of co
 - **Component-Based Structure**: Reusable UI components
 - **Custom Hooks**: Encapsulated logic for reusability
 - **Context API**: State management across components
-- **Lazy Loading**: Optimized bundle loading for performance
 - **Error Boundaries**: Fallback UI for component errors
 
 ### Backend Architecture
@@ -108,7 +102,6 @@ The application follows a client-server architecture with clear separation of co
 - **MVC Pattern**: Models, routes, and controllers separation
 - **Middleware Pipeline**: Request processing with composable middleware
 - **Service Layer**: Business logic encapsulation
-- **Repository Pattern**: Data access abstraction
 - **Caching Strategy**: Performance optimization with strategic caching
 
 ### Database Schema
@@ -126,8 +119,8 @@ The application follows a client-server architecture with clear separation of co
 - `POST /api/auth/refresh-token` - Refresh authentication token
 - `POST /api/auth/forgot-password` - Initiate password reset
 - `POST /api/auth/reset-password` - Complete password reset
-- `GET /api/auth/verify-email/:token` - Verify user email
-- `POST /api/auth/resend-verification` - Resend verification email
+- `POST /api/auth/send-otp` - Send OTP for email verification
+- `POST /api/auth/verify-otp` - Verify OTP
 
 ### Users
 - `GET /api/users/profile` - Get current user profile
@@ -198,44 +191,42 @@ The application follows a client-server architecture with clear separation of co
    - Build Command: `npm run build`
    - Output Directory: `dist`
    - Install Command: `npm install`
-3. Set up environment variables in Vercel dashboard
-4. Deploy with Vercel CLI:
-   ```bash
-   npm install -g vercel
-   vercel login
-   vercel
-   ```
+3. Set up environment variables in Vercel dashboard:
+   - `VITE_API_URL`: Backend API URL
+4. Deploy with Vercel CLI or GitHub integration
 
 ### Backend Deployment
-1. Set up a production MongoDB instance
-2. Configure environment variables for production
-3. Build the application:
-   ```bash
-   npm run build
-   ```
-4. Deploy using PM2 for process management:
+1. Set up a production MongoDB instance (MongoDB Atlas recommended)
+2. Configure environment variables for production:
+   - `MONGODB_URI`: MongoDB connection string
+   - `JWT_SECRET`: Secret key for JWT
+   - `CORS_ORIGIN`: Allowed origins for CORS
+   - `EMAIL_*`: Email service configuration
+   - `CLOUDINARY_*`: Cloudinary configuration
+   - `RAZORPAY_*`: Razorpay credentials
+   - `GOOGLE_AI_API_KEY`: Google AI API key
+3. Deploy using a cloud provider (e.g., Render, Railway, or AWS):
+   - Set Node.js environment
+   - Set start command: `node server.js`
+   - Configure environment variables
+4. Alternatively, use PM2 for VPS deployments:
    ```bash
    npm install -g pm2
    pm2 start server.js --name "ca-exam-platform-api"
    pm2 save
    ```
 
-### Database Migration
-1. Create database backup:
-   ```bash
-   mongodump --uri="mongodb://localhost:27017/ca-exam-platform" --out=./backup
-   ```
-2. Restore to production:
-   ```bash
-   mongorestore --uri="mongodb+srv://..." --db=ca-exam-platform ./backup/ca-exam-platform
-   ```
+## Development Setup
 
-## Development Guidelines
+### Prerequisites
+- Node.js (v18+)
+- MongoDB (v6+)
+- npm or yarn
 
 ### Getting Started
 1. Clone the repository:
    ```bash
-   git clone https://github.com/TheVish04/CAPrep.git
+   git clone https://github.com/yourusername/ca-exam-platform.git
    cd ca-exam-platform
    ```
 
@@ -251,8 +242,27 @@ The application follows a client-server architecture with clear separation of co
    ```
 
 3. Configure environment variables:
-   - Copy `.env.example` to `.env` in both frontend and backend directories
-   - Update variables with your local configuration
+   - Create `.env` file in the backend directory with:
+     ```
+     PORT=5000
+     MONGODB_URI=mongodb://localhost:27017/ca-exam-platform
+     JWT_SECRET=your_jwt_secret
+     JWT_EXPIRY=7d
+     CORS_ORIGIN=http://localhost:5173
+     EMAIL_SERVICE=
+     EMAIL_USER=
+     EMAIL_PASSWORD=
+     CLOUDINARY_CLOUD_NAME=
+     CLOUDINARY_API_KEY=
+     CLOUDINARY_API_SECRET=
+     RAZORPAY_KEY_ID=
+     RAZORPAY_KEY_SECRET=
+     GOOGLE_AI_API_KEY=
+     ```
+   - Create `.env` file in the frontend directory with:
+     ```
+     VITE_API_URL=http://localhost:5000/api
+     ```
 
 4. Start development servers:
    ```bash
@@ -265,7 +275,13 @@ The application follows a client-server architecture with clear separation of co
    npm run dev
    ```
 
-### Code Style and Conventions
+5. Access the application:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000/api
+
+## Code Style and Contribution
+
+### Code Style
 - Follow ESLint configuration for code style
 - Use meaningful variable and function names
 - Write JSDoc comments for functions
@@ -274,29 +290,20 @@ The application follows a client-server architecture with clear separation of co
   - Utilities and hooks: camelCase
   - API routes: kebab-case
 
-### Pull Request Process
-1. Create a feature branch from `develop`
-2. Implement changes with appropriate tests
-3. Ensure all tests pass
-4. Submit PR to `develop` branch
-5. Code review and approval required before merge
-
-## Performance Optimization
-- Frontend bundle optimization with code splitting
-- API response caching strategies
-- Database query optimization with indexes
-- Image and media optimization with Cloudinary
-- CDN integration for static assets
+### Contribution Guide
+1. Fork the repository
+2. Create a new branch for your feature
+3. Make your changes
+4. Write tests if applicable
+5. Submit a pull request
 
 ## Security Measures
 - **Input Validation**: All user inputs validated with Joi
 - **XSS Protection**: DOMPurify for client-side sanitization, xss-clean for server
-- **CSRF Protection**: Anti-CSRF tokens
-- **Rate Limiting**: Prevent brute force and DoS attacks
+- **Rate Limiting**: Prevent brute force attacks
 - **MongoDB Injection Prevention**: Mongoose schema validation
 - **Secure Headers**: Helmet for HTTP header security
 - **Authentication Security**: Bcrypt for password hashing, JWT with appropriate expiration
-- **Data Encryption**: HTTPS enforcement, sensitive data encryption
 - **Error Handling**: Custom error handling without leaking information
 
 ## Troubleshooting
@@ -305,7 +312,7 @@ The application follows a client-server architecture with clear separation of co
 1. **Connection Refused on API Calls**
    - Check if backend server is running
    - Verify API URL in frontend .env file
-   - Confirm network connectivity and firewall settings
+   - Confirm network connectivity
 
 2. **Authentication Failures**
    - Clear browser localStorage and try again
@@ -321,25 +328,8 @@ The application follows a client-server architecture with clear separation of co
    - Check MongoDB service status
    - Confirm network access to database server
 
-5. **Build Errors**
-   - Clear node_modules and reinstall dependencies
-   - Check for version conflicts in package.json
-   - Update Node.js to compatible version
-
-## Future Roadmap
-- Mobile application with React Native
-- Offline study mode
-- AI-powered study recommendations
-- Live tutoring integration
-- Social study groups
-- Gamification elements
-- Advanced analytics dashboard
-- Multi-language support
-- Certification programs
-- Integration with learning management systems
-
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## Contact
-For support or inquiries, please contact support@caexamplatform.com
+For support or inquiries, please reach out to the development team.
