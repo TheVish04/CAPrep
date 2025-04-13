@@ -12,7 +12,7 @@
 
 /* Quiz Setup Styles */
 .quiz-setup {
-  background-color: var(--secondary-color);
+  background-color:#1E1E1E;
   border-radius: 10px;
   padding: 30px;
   margin-top: 30px;
@@ -645,6 +645,7 @@
   text-overflow: clip !important;
   display: block !important;
   -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
   -webkit-box-orient: unset !important;
 }
 
