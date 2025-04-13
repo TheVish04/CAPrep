@@ -22,6 +22,9 @@ import QuizReview from './pages/QuizReview';
 import Dashboard from './components/Dashboard';
 import AdminAnnouncements from './components/AdminAnnouncements';
 import ChatBotPage from './pages/ChatBotPage';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -93,6 +96,9 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/chat" element={<ChatBotPage />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/refund" element={<RefundPolicy />} />
             
             {/* Protected Routes */}
             <Route

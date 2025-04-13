@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Navbar.css';
@@ -7,8 +7,23 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPoliciesOpen, setIsPoliciesOpen] = useState(false);
+  const policiesRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Close policies dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (policiesRef.current && !policiesRef.current.contains(event.target)) {
+        setIsPoliciesOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -44,6 +59,10 @@ const Navbar = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const togglePolicies = () => {
+    setIsPoliciesOpen(!isPoliciesOpen);
   };
 
   return (
@@ -189,6 +208,59 @@ const Navbar = () => {
                 <Link to="/register" className="nav-button register-btn" onClick={() => setIsMenuOpen(false)}>
                   Register
                 </Link>
+              </motion.li>
+
+              {/* Policies links for mobile menu when logged out */}
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/terms" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Terms & Conditions
+                </Link>
+              </motion.li>
+              
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/privacy" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Privacy Policy
+                </Link>
+              </motion.li>
+              
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/refund" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Refund Policy
+                </Link>
+              </motion.li>
+
+              {/* Policies dropdown for desktop menu when logged out */}
+              <motion.li 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="desktop-only policies-dropdown"
+                ref={policiesRef}
+              >
+                <button onClick={togglePolicies} className="nav-link policies-btn">
+                  Policies {isPoliciesOpen ? '▲' : '▼'}
+                </button>
+                {isPoliciesOpen && (
+                  <div className="policies-menu">
+                    <Link to="/terms" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
+                      Terms & Conditions
+                    </Link>
+                    <Link to="/privacy" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
+                      Privacy Policy
+                    </Link>
+                    <Link to="/refund" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
+                      Refund Policy
+                    </Link>
+                  </div>
+                )}
               </motion.li>
             </>
           )}

@@ -247,4 +247,47 @@
   .chat-nav-item {
     margin: 10px auto !important;
   }
+  
+  .desktop-only {
+    display: none;
+  }
+}
+
+/* Policies dropdown styles */
+.policies-dropdown {
+  position: relative;
+}
+
+.policies-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.policies-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #1e1e1e;
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 10px 0;
+  min-width: 180px;
+  z-index: 10;
+}
+
+.policy-link {
+  display: block;
+  padding: 8px 15px;
+  color: #b0b0b0;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.policy-link:hover {
+  background-color: #121212;
+  color: #239ecf;
 }
