@@ -468,7 +468,7 @@ const Quiz = () => {
             <option value="">-- Select Subject --</option>
             {availableSubjects.map((subj) => (
               <option key={subj.subject || subj} value={subj.subject || subj}>
-                {subj.subject || subj} {subj.count ? `(${subj.count} MCQs)` : ''}
+                {subj.subject || subj}
               </option>
             ))}
           </select>
