@@ -317,7 +317,7 @@ section {
   min-width: 300px;
   max-width: 350px;
   padding: 40px 30px;
-  background: #121212;
+  background: #1E1E1E;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   transition: var(--transition);
@@ -445,7 +445,7 @@ section {
 }
 
 .feature-item {
-  background: #121212;
+  background: #1E1E1E;
   padding: 30px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -557,7 +557,7 @@ section {
 /* Call to Action Section */
 .call-to-action {
   position: relative;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #2196f3 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1E1E1E 100%);
   padding: 80px 0;
   text-align: center;
 }
