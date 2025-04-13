@@ -78,6 +78,17 @@ router.get('/', [authMiddleware, cacheMiddleware(300)], async (req, res) => {
   }
 });
 
+// GET count of all resources
+router.get('/count', cacheMiddleware(300), async (req, res) => {
+  try {
+    const count = await Resource.countDocuments({});
+    res.status(200).json({ count });
+  } catch (error) {
+    logger.error(`Error counting resources: ${error.message}`);
+    res.status(500).json({ error: 'Failed to count resources' });
+  }
+});
+
 // GET a single resource by ID
 router.get('/:id', [authMiddleware, cacheMiddleware(3600)], async (req, res) => {
   try {

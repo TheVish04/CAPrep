@@ -10,6 +10,7 @@ import DonationButton from '../components/DonationButton';
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [resourceCount, setResourceCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -63,7 +64,24 @@ const LandingPage = () => {
       }
     };
     
+    // Fetch resource count from the backend
+    const fetchResourceCount = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/resources/count`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch resource count');
+        }
+        const data = await response.json();
+        setResourceCount(data.count);
+      } catch (error) {
+        console.error('Error fetching resource count:', error);
+        // Set a fallback value if fetch fails
+        setResourceCount(3);
+      }
+    };
+    
     fetchQuestionCount();
+    fetchResourceCount();
     AOS.refresh();
   }, []);
 
@@ -97,8 +115,16 @@ const LandingPage = () => {
               <span className="stat-label">QUESTIONS</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">3</span>
-              <span className="stat-label">EXAM LEVELS</span>
+              <span className="stat-number">
+                <CountUp 
+                  end={resourceCount} 
+                  duration={2.5} 
+                  separator="," 
+                  enableScrollSpy
+                  style={{ color: 'var(--primary-color)' }}
+                />
+              </span>
+              <span className="stat-label">RESOURCES</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">24/7</span>
