@@ -369,6 +369,36 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
     // Clear the cache for this endpoint to reflect changes immediately
     clearCache(`/api/questions/all-subjects?examStage=${examStage}`);
     
+    // Define default subjects for each exam stage
+    let defaultSubjects = [];
+    
+    if (examStage === 'Foundation') {
+      defaultSubjects = [
+        { subject: 'Accounting', count: 0 },
+        { subject: 'Business Laws', count: 0 },
+        { subject: 'Quantitative Aptitude', count: 0 },
+        { subject: 'Business Economics', count: 0 }
+      ];
+    } else if (examStage === 'Intermediate') {
+      defaultSubjects = [
+        { subject: 'Advanced Accounting', count: 0 },
+        { subject: 'Corporate Laws', count: 0 },
+        { subject: 'Cost and Management Accounting', count: 0 },
+        { subject: 'Taxation', count: 0 },
+        { subject: 'Auditing and Code of Ethics', count: 0 },
+        { subject: 'Financial and Strategic Management', count: 0 }
+      ];
+    } else if (examStage === 'Final') {
+      defaultSubjects = [
+        { subject: 'Financial Reporting', count: 0 },
+        { subject: 'Advanced Financial Management', count: 0 },
+        { subject: 'Advanced Auditing', count: 0 },
+        { subject: 'Direct and International Tax Laws', count: 0 },
+        { subject: 'Indirect Tax Laws', count: 0 },
+        { subject: 'Integrated Business Solutions', count: 0 }
+      ];
+    }
+    
     // Find all unique subjects for the given exam stage regardless of question type
     const foundSubjects = await Question.aggregate([
       {
@@ -394,51 +424,22 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
       }
     ]);
     
-    // Define default subjects for each exam stage
-    let defaultSubjects = [];
+    // Create a map of default subjects for quick lookup
+    const mergedSubjects = [...defaultSubjects];
+    const defaultSubjectMap = new Map(defaultSubjects.map(s => [s.subject, s]));
     
-    if (examStage === 'Foundation') {
-      defaultSubjects = [
-        { subject: 'Accounting', count: 0 },
-        { subject: 'Business Laws', count: 0 },
-        { subject: 'Quantitative Aptitude', count: 0 },
-        { subject: 'Business Economics', count: 0 }
-      ];
-    } else if (examStage === 'Intermediate') {
-      defaultSubjects = [
-        { subject: 'Accounting', count: 0 },
-        { subject: 'Corporate and Other Laws', count: 0 },
-        { subject: 'Cost and Management Accounting', count: 0 },
-        { subject: 'Taxation', count: 0 },
-        { subject: 'Advanced Accounting', count: 0 },
-        { subject: 'Auditing and Assurance', count: 0 },
-        { subject: 'Enterprise Information Systems & Strategic Management', count: 0 },
-        { subject: 'Financial Management & Economics for Finance', count: 0 }
-      ];
-    } else if (examStage === 'Final') {
-      defaultSubjects = [
-        { subject: 'Financial Reporting', count: 0 },
-        { subject: 'Strategic Financial Management', count: 0 },
-        { subject: 'Advanced Auditing and Professional Ethics', count: 0 },
-        { subject: 'Corporate and Economic Laws', count: 0 },
-        { subject: 'Strategic Cost Management and Performance Evaluation', count: 0 },
-        { subject: 'Direct Tax Laws & International Taxation', count: 0 },
-        { subject: 'Indirect Tax Laws', count: 0 },
-        { subject: 'Financial Services & Capital Markets', count: 0 }
-      ];
-    }
-    
-    // Always merge found subjects with default subjects
-    const foundSubjectNames = foundSubjects.map(s => s.subject);
-    const mergedSubjects = [];
-    
-    // Add all found subjects first
-    mergedSubjects.push(...foundSubjects);
-    
-    // Add default subjects that aren't in found subjects
-    defaultSubjects.forEach(defaultSubj => {
-      if (!foundSubjectNames.includes(defaultSubj.subject)) {
-        mergedSubjects.push(defaultSubj);
+    // Update counts for subjects that exist in the database
+    foundSubjects.forEach(foundSubj => {
+      const defaultSubj = defaultSubjectMap.get(foundSubj.subject);
+      if (defaultSubj) {
+        // Update the count for existing default subject
+        const index = mergedSubjects.findIndex(s => s.subject === foundSubj.subject);
+        if (index !== -1) {
+          mergedSubjects[index].count = foundSubj.count;
+        }
+      } else if (examStage === foundSubj.examStage) {
+        // Add any additional subjects from the database that aren't in default list
+        mergedSubjects.push(foundSubj);
       }
     });
     
