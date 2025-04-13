@@ -42,8 +42,11 @@ const createOrder = async (amount, currency = 'INR', notes = {}) => {
       receipt: `receipt_${Date.now()}`,
       notes: {
         ...notes,
-        purpose: 'donation'
+        purpose: 'donation',
+        preferred_vpa: 'caprep548377.rzp@rxairtel' // Set the preferred VPA
       },
+      // Adding partial payment settings to prevent UPI QR scan issues
+      partial_payment: false,
     };
     
     const order = await razorpay.orders.create(options);
@@ -99,6 +102,14 @@ const getPaymentDetails = async (paymentId) => {
   try {
     console.log('Fetching payment details for ID:', paymentId);
     const payment = await razorpay.payments.fetch(paymentId);
+    
+    // Log payment method details to help debug UPI QR code payment issues
+    console.log('Payment method:', payment.method);
+    console.log('Payment vpa:', payment.vpa);
+    console.log('Payment upi details:', payment.upi);
+    console.log('Payment wallet:', payment.wallet);
+    console.log('Payment bank:', payment.bank);
+    
     return payment;
   } catch (error) {
     console.error('Error fetching payment details:', error);

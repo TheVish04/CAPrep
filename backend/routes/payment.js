@@ -47,8 +47,16 @@ router.post('/create-order', authMiddleware, async (req, res) => {
         // return res.status(400).json({ success: false, message: 'User information missing.' });
     }
     
+    // Add the specific VPA to use in the notes
+    const orderNotes = {
+      ...notes,
+      purpose: 'donation',
+      preferred_vpa: 'caprep548377.rzp@rxairtel',
+      description: 'Donationof20tosupportCAprep'
+    };
+    
     // Pass notes when creating order in the service
-    const order = await createOrder(amount, 'INR', notes); 
+    const order = await createOrder(amount, 'INR', orderNotes); 
     
     res.status(200).json({
       success: true,
@@ -99,8 +107,40 @@ router.post('/verify-payment', authMiddleware, async (req, res) => {
           payment_id: razorpay_payment_id,
           amount: paymentDetails.amount, // Amount in paise
           status: paymentDetails.status,
-          userId: orderDetails.notes?.userId
+          userId: orderDetails.notes?.userId,
+          method: paymentDetails.method,
+          description: paymentDetails.description,
+          vpa: paymentDetails.vpa,
+          upi: paymentDetails.upi
         });
+
+        // Additional check for QR code UPI payments which might not report 'captured' status immediately
+        const isUpiQrScan = 
+          paymentDetails.method === 'upi' && 
+          paymentDetails.vpa?.includes('qrcode') ||
+          paymentDetails.description?.toLowerCase().includes('qr');
+        
+        if (isUpiQrScan) {
+          console.log('UPI QR code payment detected. Adding fallback check for payment status.');
+          
+          // For QR code payments, we'll double-check by retrieving payment again
+          try {
+            // Wait a moment for payment to settle
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Re-fetch payment to get latest status
+            const refreshedPayment = await getPaymentDetails(razorpay_payment_id);
+            console.log('Refreshed payment status:', refreshedPayment.status);
+            
+            // Update paymentDetails with refreshed data
+            if (refreshedPayment.status === 'captured') {
+              paymentDetails.status = 'captured';
+              console.log('UPI QR payment status updated to captured');
+            }
+          } catch (refreshError) {
+            console.error('Error refreshing payment status:', refreshError);
+          }
+        }
 
         // 4. Check payment status and update user contribution
         if (paymentDetails.status === 'captured' && orderDetails.notes?.userId) {

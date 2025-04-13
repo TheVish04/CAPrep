@@ -146,6 +146,22 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
           ondismiss: function() {
             setLoading(false);
           }
+        },
+        // Configuration to better handle UPI payments
+        config: {
+          display: {
+            hide: [], // Don't hide any payment methods
+            sequence: ['upi', 'card', 'netbanking', 'wallet'], // Prioritize UPI
+            preferences: {
+              show_default_blocks: true // Show all payment options
+            }
+          }
+        },
+        // Specify the correct VPA to use for all UPI payments
+        upi: {
+          flow: 'collect', // Use collect flow which is more reliable
+          vpa: 'caprep548377.rzp@rxairtel', // Force using the working VPA
+          description: 'Donationof20tosupportCAprep' // Add description that works
         }
       };
       
