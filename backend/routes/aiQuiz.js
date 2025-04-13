@@ -49,8 +49,8 @@ router.post('/generate', authMiddleware, async (req, res) => {
     // Random sampling logic for example questions
     let exampleQuestions = [];
     if (totalQuestions > 0) {
-      // Determine how many examples to use (up to 20)
-      const sampleSize = Math.min(totalQuestions, 20);
+      // Determine how many examples to use (up to 30)
+      const sampleSize = Math.min(totalQuestions, 30);
       console.log(`Found ${totalQuestions} total questions, will sample ${sampleSize} random questions for AI context.`);
       
       // Use MongoDB's aggregate with $sample for truly random selection
@@ -61,7 +61,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
     }
     
     if (!exampleQuestions || exampleQuestions.length === 0) {
-      console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Proceeding without examples.`);
+      console.warn(`No example questions found for Subject: ${subject}, Stage: ${examStage}. Will generate questions using AI's general knowledge.`);
     } else {
       console.log(`Using ${exampleQuestions.length} random example questions for AI prompt context.`);
     }
@@ -106,6 +106,14 @@ router.post('/generate', authMiddleware, async (req, res) => {
         
         prompt += "\n"; // Add a blank line between examples
       });
+    } else {
+      // Additional instructions when no examples are available
+      prompt += "You don't have any specific examples for this subject, but please use your knowledge of " + 
+                "CA curriculum to create realistic and challenging questions for " + examStage + " level " + 
+                "students studying " + subject + ".\n\n" +
+                "For this subject, focus on the key concepts, calculations, and applications that would be " +
+                "appropriate for the " + examStage + " level of CA exams in India. Be specific to the subject " +
+                "matter and avoid generic questions.\n\n";
     }
 
     // Reinforce JSON output format instructions

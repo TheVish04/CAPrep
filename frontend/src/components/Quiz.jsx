@@ -70,20 +70,26 @@ const Quiz = () => {
       setWarning(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${API_BASE_URL}/api/questions/available-subjects?examStage=${encodeURIComponent(examStage)}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
+        
+        // For AI quizzes, fetch all subjects even if they don't have MCQs
+        const endpoint = quizMode === 'ai' 
+          ? `${API_BASE_URL}/api/questions/all-subjects?examStage=${encodeURIComponent(examStage)}`
+          : `${API_BASE_URL}/api/questions/available-subjects?examStage=${encodeURIComponent(examStage)}`;
+        
+        const response = await axios.get(endpoint, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         
         const data = response.data;
         setAvailableSubjects(data);
         
         if (data.length === 0) {
-          setWarning(`No subjects with MCQ questions available for ${examStage} exam stage.`);
+          const message = quizMode === 'ai'
+            ? `No subjects configured for ${examStage} exam stage.`
+            : `No subjects with MCQ questions available for ${examStage} exam stage.`;
+          setWarning(message);
         } else {
           setWarning(null);
         }
@@ -97,7 +103,7 @@ const Quiz = () => {
     };
     
     fetchAvailableSubjects();
-  }, [examStage, API_BASE_URL]);
+  }, [examStage, API_BASE_URL, quizMode]); // Added quizMode as dependency
   
   // Save Quiz History
   const saveQuizHistory = useCallback(async (quizResult) => {

@@ -351,6 +351,86 @@ router.get('/available-subjects', [authMiddleware, cacheMiddleware(3600)], async
   }
 });
 
+// Route to get ALL subjects for an exam stage (for AI quiz)
+router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req, res) => {
+  try {
+    const { examStage } = req.query;
+    
+    if (!examStage) {
+      return res.status(400).json({ error: 'Exam stage is required' });
+    }
+    
+    // Find all unique subjects for the given exam stage regardless of question type
+    const allSubjects = await Question.aggregate([
+      {
+        $match: {
+          examStage
+        }
+      },
+      {
+        $group: {
+          _id: '$subject',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }  // Sort alphabetically by subject name
+      },
+      {
+        $project: {
+          subject: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]);
+    
+    // If no subjects found in the database for this exam stage,
+    // return a default list based on the exam stage
+    if (allSubjects.length === 0) {
+      let defaultSubjects = [];
+      
+      if (examStage === 'Foundation') {
+        defaultSubjects = [
+          { subject: 'Principles and Practice of Accounting', count: 0 },
+          { subject: 'Business Laws and Business Correspondence and Reporting', count: 0 },
+          { subject: 'Business Mathematics and Logical Reasoning & Statistics', count: 0 },
+          { subject: 'Business Economics & Business and Commercial Knowledge', count: 0 }
+        ];
+      } else if (examStage === 'Intermediate') {
+        defaultSubjects = [
+          { subject: 'Accounting', count: 0 },
+          { subject: 'Corporate and Other Laws', count: 0 },
+          { subject: 'Cost and Management Accounting', count: 0 },
+          { subject: 'Taxation', count: 0 },
+          { subject: 'Advanced Accounting', count: 0 },
+          { subject: 'Auditing and Assurance', count: 0 },
+          { subject: 'Enterprise Information Systems & Strategic Management', count: 0 },
+          { subject: 'Financial Management & Economics for Finance', count: 0 }
+        ];
+      } else if (examStage === 'Final') {
+        defaultSubjects = [
+          { subject: 'Financial Reporting', count: 0 },
+          { subject: 'Strategic Financial Management', count: 0 },
+          { subject: 'Advanced Auditing and Professional Ethics', count: 0 },
+          { subject: 'Corporate and Economic Laws', count: 0 },
+          { subject: 'Strategic Cost Management and Performance Evaluation', count: 0 },
+          { subject: 'Direct Tax Laws & International Taxation', count: 0 },
+          { subject: 'Indirect Tax Laws', count: 0 },
+          { subject: 'Financial Services & Capital Markets', count: 0 }
+        ];
+      }
+      
+      return res.json(defaultSubjects);
+    }
+    
+    res.json(allSubjects);
+  } catch (error) {
+    console.error('Error fetching all subjects:', error);
+    res.status(500).json({ error: `Failed to fetch subjects: ${error.message}` });
+  }
+});
+
 // Add new batch endpoint to fetch multiple questions by ID
 router.post('/batch', [authMiddleware], async (req, res) => {
   try {
