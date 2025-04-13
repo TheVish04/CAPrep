@@ -62,12 +62,12 @@ const Contact = () => {
             <div className="contact-details">
               <div className="contact-item">
                 <h3>Email</h3>
-                <p><a href="mailto:support@caprep.com">support@caprep.com</a></p>
+                <p><a href="mailto:support@caprep.com">caprep8@gmail.com</a></p>
               </div>
               
               <div className="contact-item">
                 <h3>Phone</h3>
-                <p>+91 98765 43210</p>
+                <p>+91 8591061249</p>
               </div>
               
               <div className="contact-item">
