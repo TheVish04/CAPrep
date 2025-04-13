@@ -128,7 +128,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
     // 4. Call Google Gemini API
     console.log("Sending prompt to Google Gemini API...");
     console.log("Prompt length:", prompt.length, "characters");
-    // console.log("Prompt:", prompt); // Uncomment for debugging
+    console.log("Prompt:", prompt); // Uncomment for debugging
 
     try {
       const model = genAI.getGenerativeModel({ 
