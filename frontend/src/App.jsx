@@ -25,6 +25,7 @@ import ChatBotPage from './pages/ChatBotPage';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
+import FAQ from './pages/FAQ';
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
@@ -99,6 +100,7 @@ const App = () => {
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund" element={<RefundPolicy />} />
+            <Route path="/faq" element={<FAQ />} />
             
             {/* Protected Routes */}
             <Route

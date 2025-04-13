@@ -318,8 +318,7 @@ const LandingPage = () => {
               <ul>
                 <li><Link to="/register">Register</Link></li>
                 <li><Link to="/login">Login</Link></li>
-                <li><a href="#">FAQ</a></li>
-                <li><a href="#">Blog</a></li>
+                <li><Link to="/faq">FAQ</Link></li>
               </ul>
             </div>
             <div className="footer-column">
