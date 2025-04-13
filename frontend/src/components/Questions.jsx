@@ -244,12 +244,17 @@ const Questions = () => {
       }
 
       if (response.data && response.data.bookmarkedQuestionIds) {
-        setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
-      }
-      
-      // Refetch if viewing bookmarks and one was removed
-      if (isCurrentlyBookmarked && filters.bookmarked) {
-          fetchQuestions(token, filters); // Make sure fetchQuestions is correctly defined and in scope
+        // Update the bookmarked IDs in state
+        const newBookmarkedIds = new Set(response.data.bookmarkedQuestionIds);
+        setBookmarkedQuestionIds(newBookmarkedIds);
+        
+        // If we're removing a bookmark and the bookmarked filter is active,
+        // remove this question from the current list immediately
+        if (isCurrentlyBookmarked && filters.bookmarked) {
+          setQuestions(prevQuestions => 
+            prevQuestions.filter(question => question._id !== questionId)
+          );
+        }
       }
 
     } catch (err) {
