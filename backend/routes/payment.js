@@ -52,16 +52,25 @@ router.post('/create-order', authMiddleware, async (req, res) => {
       ...notes,
       purpose: 'donation',
       preferred_vpa: 'caprep548377.rzp@rxairtel',
-      description: 'Donationof20tosupportCAprep'
+      description: 'Donationof20tosupportCAprep',
+      upi_provider: 'rxairtel', // Specify the UPI provider
+      qr_vpa: 'caprep548377.rzp@rxairtel' // Explicitly set QR VPA
     };
     
     // Pass notes when creating order in the service
     const order = await createOrder(amount, 'INR', orderNotes); 
     
+    // Send additional parameters with the response
     res.status(200).json({
       success: true,
       order,
-      key_id: process.env.RAZORPAY_KEY_ID
+      key_id: process.env.RAZORPAY_KEY_ID,
+      qr_vpa: 'caprep548377.rzp@rxairtel', // Include QR VPA in response
+      upi_settings: {
+        vpa: 'caprep548377.rzp@rxairtel',
+        payee_name: 'CAprep',
+        provider: 'rxairtel'
+      }
     });
   } catch (error) {
     console.error('Error in create-order route:', error);

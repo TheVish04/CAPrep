@@ -161,7 +161,19 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
         upi: {
           flow: 'collect', // Use collect flow which is more reliable
           vpa: 'caprep548377.rzp@rxairtel', // Force using the working VPA
-          description: 'Donationof20tosupportCAprep' // Add description that works
+          description: 'Donationof20tosupportCAprep', // Add description that works
+          generateQR: true // Ensure QR code is generated
+        },
+        // Override Razorpay's default QR code VPA selection
+        _: {
+          integration: {
+            upi: {
+              vpa: 'caprep548377.rzp@rxairtel', // Force QR code to use this VPA
+              payeeName: 'CAprep',
+              mcc: '',
+              flow: 'intent'
+            }
+          }
         }
       };
       

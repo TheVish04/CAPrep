@@ -43,11 +43,23 @@ const createOrder = async (amount, currency = 'INR', notes = {}) => {
       notes: {
         ...notes,
         purpose: 'donation',
-        preferred_vpa: 'caprep548377.rzp@rxairtel' // Set the preferred VPA
+        preferred_vpa: 'caprep548377.rzp@rxairtel', // Set the preferred VPA
+        qr_code_vpa: 'caprep548377.rzp@rxairtel' // Explicitly for QR code
       },
       // Adding partial payment settings to prevent UPI QR scan issues
       partial_payment: false,
+      // Adding specific UPI settings
+      upi: {
+        vpa: 'caprep548377.rzp@rxairtel',
+        flow: 'intent'
+      }
     };
+
+    console.log('Order options with VPA settings:', JSON.stringify({
+      amount: options.amount,
+      vpa: options.notes.preferred_vpa,
+      qr_vpa: options.notes.qr_code_vpa
+    }));
     
     const order = await razorpay.orders.create(options);
     console.log('Razorpay order created successfully:', order.id);
