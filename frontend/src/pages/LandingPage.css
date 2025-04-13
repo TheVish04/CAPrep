@@ -48,7 +48,7 @@ body {
 section {
   padding: 100px 5%;
   position: relative;
-  background-color: var(--dark-color);
+  background-color: #121212;
 }
 
 .section-heading {
@@ -296,7 +296,7 @@ section {
 
 /* Exam Levels Section */
 .exam-levels {
-  background: var(--dark-color);
+  background: #121212;
 }
 
 .exam-levels h2 {
@@ -317,7 +317,7 @@ section {
   min-width: 300px;
   max-width: 350px;
   padding: 40px 30px;
-  background: var(--secondary-color);
+  background: #121212;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   transition: var(--transition);
@@ -411,7 +411,7 @@ section {
 
 /* Features Section */
 .features {
-  background: var(--dark-color);
+  background: #121212;
   position: relative;
 }
 
@@ -445,7 +445,7 @@ section {
 }
 
 .feature-item {
-  background: var(--secondary-color);
+  background: #121212;
   padding: 30px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
@@ -497,7 +497,7 @@ section {
 
 /* How It Works Section */
 .how-it-works {
-  background: var(--secondary-color);
+  background: #121212;
 }
 
 .steps-container {
@@ -536,7 +536,7 @@ section {
 
 .step-content {
   flex: 1;
-  background: var(--dark-color);
+  background: #1e1e1e;
   padding: 30px;
   border-radius: 10px;
   box-shadow: var(--box-shadow);
