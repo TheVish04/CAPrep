@@ -216,7 +216,7 @@ h1, h2, h3, h4, h5, h6 {
 .support-section {
   margin-top: 40px;
   padding: 30px;
-  background-color: var(--secondary-color);
+  background-color: #1e1e1e;
   border-radius: var(--border-radius);
   border: 1px solid #2d2d2d;
   border-left: 5px solid var(--primary-color);
