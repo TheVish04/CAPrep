@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import './Content.css';
 import DonationButton from '../components/DonationButton';
 
-const Contact = () => {
+const ContactUs = () => {
   const [reportData, setReportData] = useState({
     name: '',
     email: '',
@@ -171,4 +171,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default ContactUs; 

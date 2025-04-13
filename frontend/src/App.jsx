@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 // Statically import all components
 import LandingPage from './pages/LandingPage';
 import About from './pages/About';
-import Contact from './pages/Contact';
+import ContactUs from './pages/ContactUs';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
@@ -94,7 +94,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/contact" element={<ContactUs />} />
             <Route path="/chat" element={<ChatBotPage />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
