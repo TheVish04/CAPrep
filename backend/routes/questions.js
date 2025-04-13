@@ -360,8 +360,11 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
       return res.status(400).json({ error: 'Exam stage is required' });
     }
     
+    // Clear the cache for this endpoint to reflect changes immediately
+    clearCache(`/api/questions/all-subjects?examStage=${examStage}`);
+    
     // Find all unique subjects for the given exam stage regardless of question type
-    const allSubjects = await Question.aggregate([
+    const foundSubjects = await Question.aggregate([
       {
         $match: {
           examStage
@@ -385,46 +388,55 @@ router.get('/all-subjects', [authMiddleware, cacheMiddleware(3600)], async (req,
       }
     ]);
     
-    // If no subjects found in the database for this exam stage,
-    // return a default list based on the exam stage
-    if (allSubjects.length === 0) {
-      let defaultSubjects = [];
-      
-      if (examStage === 'Foundation') {
-        defaultSubjects = [
-          { subject: 'Principles and Practice of Accounting', count: 0 },
-          { subject: 'Business Laws and Business Correspondence and Reporting', count: 0 },
-          { subject: 'Business Mathematics and Logical Reasoning & Statistics', count: 0 },
-          { subject: 'Business Economics & Business and Commercial Knowledge', count: 0 }
-        ];
-      } else if (examStage === 'Intermediate') {
-        defaultSubjects = [
-          { subject: 'Accounting', count: 0 },
-          { subject: 'Corporate and Other Laws', count: 0 },
-          { subject: 'Cost and Management Accounting', count: 0 },
-          { subject: 'Taxation', count: 0 },
-          { subject: 'Advanced Accounting', count: 0 },
-          { subject: 'Auditing and Assurance', count: 0 },
-          { subject: 'Enterprise Information Systems & Strategic Management', count: 0 },
-          { subject: 'Financial Management & Economics for Finance', count: 0 }
-        ];
-      } else if (examStage === 'Final') {
-        defaultSubjects = [
-          { subject: 'Financial Reporting', count: 0 },
-          { subject: 'Strategic Financial Management', count: 0 },
-          { subject: 'Advanced Auditing and Professional Ethics', count: 0 },
-          { subject: 'Corporate and Economic Laws', count: 0 },
-          { subject: 'Strategic Cost Management and Performance Evaluation', count: 0 },
-          { subject: 'Direct Tax Laws & International Taxation', count: 0 },
-          { subject: 'Indirect Tax Laws', count: 0 },
-          { subject: 'Financial Services & Capital Markets', count: 0 }
-        ];
-      }
-      
-      return res.json(defaultSubjects);
+    // Define default subjects for each exam stage
+    let defaultSubjects = [];
+    
+    if (examStage === 'Foundation') {
+      defaultSubjects = [
+        { subject: 'Principles and Practice of Accounting', count: 0 },
+        { subject: 'Business Laws and Business Correspondence and Reporting', count: 0 },
+        { subject: 'Business Mathematics and Logical Reasoning & Statistics', count: 0 },
+        { subject: 'Business Economics & Business and Commercial Knowledge', count: 0 }
+      ];
+    } else if (examStage === 'Intermediate') {
+      defaultSubjects = [
+        { subject: 'Accounting', count: 0 },
+        { subject: 'Corporate and Other Laws', count: 0 },
+        { subject: 'Cost and Management Accounting', count: 0 },
+        { subject: 'Taxation', count: 0 },
+        { subject: 'Advanced Accounting', count: 0 },
+        { subject: 'Auditing and Assurance', count: 0 },
+        { subject: 'Enterprise Information Systems & Strategic Management', count: 0 },
+        { subject: 'Financial Management & Economics for Finance', count: 0 }
+      ];
+    } else if (examStage === 'Final') {
+      defaultSubjects = [
+        { subject: 'Financial Reporting', count: 0 },
+        { subject: 'Strategic Financial Management', count: 0 },
+        { subject: 'Advanced Auditing and Professional Ethics', count: 0 },
+        { subject: 'Corporate and Economic Laws', count: 0 },
+        { subject: 'Strategic Cost Management and Performance Evaluation', count: 0 },
+        { subject: 'Direct Tax Laws & International Taxation', count: 0 },
+        { subject: 'Indirect Tax Laws', count: 0 },
+        { subject: 'Financial Services & Capital Markets', count: 0 }
+      ];
     }
     
-    res.json(allSubjects);
+    // Always merge found subjects with default subjects
+    const foundSubjectNames = foundSubjects.map(s => s.subject);
+    const mergedSubjects = [];
+    
+    // Add all found subjects first
+    mergedSubjects.push(...foundSubjects);
+    
+    // Add default subjects that aren't in found subjects
+    defaultSubjects.forEach(defaultSubj => {
+      if (!foundSubjectNames.includes(defaultSubj.subject)) {
+        mergedSubjects.push(defaultSubj);
+      }
+    });
+    
+    res.json(mergedSubjects);
   } catch (error) {
     console.error('Error fetching all subjects:', error);
     res.status(500).json({ error: `Failed to fetch subjects: ${error.message}` });
