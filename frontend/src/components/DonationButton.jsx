@@ -5,7 +5,7 @@ import './DonationButton.css';
 const DonationButton = ({ buttonText = 'Support Us' }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [amount, setAmount] = useState(100); // Default amount in rupees
+  const [amount, setAmount] = useState(101); // Default amount in rupees
   const [showAmountInput, setShowAmountInput] = useState(false);
   
   const loadRazorpayScript = () => {
@@ -31,7 +31,7 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
     
     const value = parseInt(e.target.value, 10);
     if (isNaN(value)) {
-      setAmount(20); // Set to minimum if not a valid number
+      setAmount(11); // Set to minimum if not a valid number
     } else {
       setAmount(value);
     }
@@ -43,9 +43,9 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
   
   const handleDonation = async () => {
     try {
-      // Validate amount (minimum ₹20)
-      if (amount < 20) {
-        setError('Minimum donation amount is ₹20');
+      // Validate amount (minimum ₹11)
+      if (amount < 11) {
+        setError('Minimum donation amount is ₹11');
         return;
       }
       
@@ -170,10 +170,10 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
       {showAmountInput ? (
         <div className="donation-amount-container">
           <label className="donation-amount-label">
-            Enter amount (min ₹20):
+            Enter amount (min ₹11):
             <input 
               type="number" 
-              min="20"
+              min="11"
               value={amount}
               onChange={handleAmountChange}
               className="donation-amount-input"
