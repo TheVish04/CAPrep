@@ -142,6 +142,38 @@ router.get('/', authMiddleware, async (req, res) => {
       
       // Sort daily data by date
       studyHoursSummary.daily.sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      // Ensure we have data for all days in the last 7 days (for the Weekly Study Hours chart)
+      // This ensures we don't have gaps in the chart even if there are no study hours for some days
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Check if this date already exists in our data
+        const existingDay = studyHoursSummary.daily.find(d => d.date === dateStr);
+        if (!existingDay) {
+          // Add a zero entry for this date
+          last7Days.push({ date: dateStr, hours: 0 });
+        } else {
+          last7Days.push(existingDay);
+        }
+      }
+      
+      // Replace daily with the complete 7-day sequence
+      if (last7Days.length === 7) {
+        studyHoursSummary.daily = last7Days;
+      }
+    } else {
+      // If no study hours data, provide empty data for the last 7 days
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        studyHoursSummary.daily.push({ date: dateStr, hours: 0 });
+      }
     }
     
     // Format resource usage statistics
@@ -162,10 +194,26 @@ router.get('/', authMiddleware, async (req, res) => {
         .sort((a, b) => b.accessCount - a.accessCount)
         .slice(0, 5);
       
+      // Get ALL resource Ids for type categorization
+      const allResourceIds = user.resourceEngagement.map(item => item.resourceId);
+      
+      // Find all resources to categorize by type
+      const allResources = await Resource.find({
+        _id: { $in: allResourceIds }
+      }).select('_id resourceType timeSpent');
+      
+      // Process time spent by resource type (for ALL resources, not just top 5)
+      user.resourceEngagement.forEach(usage => {
+        const resourceDetails = allResources.find(r => r._id.toString() === usage.resourceId.toString());
+        if (resourceDetails && resourceDetails.resourceType) {
+          const type = resourceDetails.resourceType;
+          resourceStats.timeSpentByType[type] = (resourceStats.timeSpentByType[type] || 0) + usage.timeSpent;
+        }
+      });
+      
       // Populate resource details for most used
-      const resourceIds = sortedByUsage.map(item => item.resourceId);
       const resources = await Resource.find({
-        _id: { $in: resourceIds }
+        _id: { $in: sortedByUsage.map(item => item.resourceId) }
       }).select('title resourceType subject');
       
       // Combine usage data with resource details
@@ -178,10 +226,6 @@ router.get('/', authMiddleware, async (req, res) => {
             resourceType: resourceDetails.resourceType,
             subject: resourceDetails.subject
           });
-          
-          // Add to time spent by type
-          const type = resourceDetails.resourceType;
-          resourceStats.timeSpentByType[type] = (resourceStats.timeSpentByType[type] || 0) + usage.timeSpent;
         }
       });
     }
@@ -199,7 +243,7 @@ router.get('/', authMiddleware, async (req, res) => {
       subjectStrengths: user.subjectStrengths || [],
       announcements: announcements || [],
       newResources: newResources || [],
-      resourceStats: formatResourceStats(user.resourceEngagement)
+      resourceStats: resourceStats
     };
     
     res.status(200).json({ success: true, data: dashboardData });
@@ -523,15 +567,16 @@ function formatStudyHours(studyHours) {
     bySubject: {}
   };
   
+  const today = new Date();
+  
   if (studyHours && studyHours.length > 0) {
-    const today = new Date();
     const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
     
     const filteredHours = studyHours.filter(entry => 
       new Date(entry.date) >= last30Days
     );
     
-    // Daily tracking for last 30 days
+    // Process study hours data
     filteredHours.forEach(entry => {
       const date = new Date(entry.date);
       const dateStr = date.toISOString().split('T')[0];
@@ -561,10 +606,28 @@ function formatStudyHours(studyHours) {
         studyHoursSummary.bySubject[entry.subject] += entry.hours;
       }
     });
-    
-    // Sort daily data by date
-    studyHoursSummary.daily.sort((a, b) => new Date(a.date) - new Date(b.date));
   }
+  
+  // Ensure we have data for all days in the last 7 days
+  // This ensures no gaps in the weekly study hours chart
+  const last7Days = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // Check if this date exists in our processed data
+    const existingDay = studyHoursSummary.daily.find(d => d.date === dateStr);
+    if (existingDay) {
+      last7Days.push(existingDay);
+    } else {
+      // Add a zero entry for this date
+      last7Days.push({ date: dateStr, hours: 0 });
+    }
+  }
+  
+  // Replace daily data with our complete 7-day sequence
+  studyHoursSummary.daily = last7Days;
   
   return studyHoursSummary;
 }
@@ -582,6 +645,25 @@ function formatResourceStats(resourceEngagement) {
     resourceStats.totalTimeSpent = resourceEngagement.reduce(
       (total, resource) => total + (resource.timeSpent || 0), 0
     );
+    
+    // We need to collect resource details from the database
+    // This needs to be done where the function is called, as this function
+    // doesn't have direct access to the database
+    
+    // Sort by access count for most used calculation
+    const sortedByUsage = [...resourceEngagement]
+      .sort((a, b) => b.accessCount - a.accessCount)
+      .slice(0, 5);
+    
+    // Just add basic data to mostUsed
+    sortedByUsage.forEach(usage => {
+      resourceStats.mostUsed.push({
+        resourceId: usage.resourceId,
+        timeSpent: usage.timeSpent,
+        accessCount: usage.accessCount,
+        lastAccessed: usage.lastAccessed
+      });
+    });
   }
   
   return resourceStats;
