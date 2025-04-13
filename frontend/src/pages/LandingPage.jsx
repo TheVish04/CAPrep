@@ -11,7 +11,6 @@ const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     AOS.init({

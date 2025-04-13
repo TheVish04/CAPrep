@@ -196,8 +196,8 @@ const Navbar = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link to="/register" className="nav-button register-btn" onClick={() => setIsMenuOpen(false)}>
-                  Register
+                <Link to="/login" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                  Login
                 </Link>
               </motion.li>
 
@@ -205,8 +205,8 @@ const Navbar = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link to="/login" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                  Login
+                <Link to="/register" className="nav-button register-btn" onClick={() => setIsMenuOpen(false)}>
+                  Register
                 </Link>
               </motion.li>
 
