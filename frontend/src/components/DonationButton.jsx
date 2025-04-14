@@ -39,7 +39,9 @@ const DonationButton = ({ buttonText = 'Support Us' }) => {
                   <li>Develop new features to enhance your exam preparation</li>
                   <li>Keep our content up-to-date with the latest exam patterns</li>
                 </ul>
-                <p>Every contribution, no matter how small, makes a difference in our ability to support CA students.</p>
+                <p>Every contribution, no matter how small, makes a difference in our ability to support CA students. 
+                  Please be advised that in the absence of adequate financial support, the continued operation and availability
+                   of this educational platform may be compromised in the foreseeable future.</p>
               </div>
               <img src={gpyImage} alt="Donation QR Code" className="donation-image" />
             </div>

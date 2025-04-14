@@ -208,20 +208,20 @@
 .donation-description p {
   margin-bottom: 15px;
   line-height: 1.5;
-  color: #e0e0e0;
+  color: #000000;
 }
 
 .donation-description ul {
   text-align: left;
   margin-bottom: 15px;
   padding-left: 20px;
-  color: #e0e0e0;
+  color: #000000;
 }
 
 .donation-description li {
   margin-bottom: 8px;
   line-height: 1.4;
-  color: #e0e0e0;
+  color: #000000;
 }
 
 .donation-image {
