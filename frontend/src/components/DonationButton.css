@@ -156,6 +156,9 @@
   max-width: 90%;
   width: 500px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-close-button {
@@ -187,33 +190,38 @@
   align-items: center;
   padding: 15px;
   text-align: center;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .donation-description {
   margin-bottom: 20px;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .donation-description h3 {
   margin-bottom: 10px;
-  color: #2c3e50;
+  color: #03a9f4;
   font-size: 1.5rem;
 }
 
 .donation-description p {
   margin-bottom: 15px;
   line-height: 1.5;
+  color: #e0e0e0;
 }
 
 .donation-description ul {
   text-align: left;
   margin-bottom: 15px;
   padding-left: 20px;
+  color: #e0e0e0;
 }
 
 .donation-description li {
   margin-bottom: 8px;
   line-height: 1.4;
+  color: #e0e0e0;
 }
 
 .donation-image {
