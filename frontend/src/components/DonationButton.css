@@ -194,6 +194,7 @@
   overflow-x:hidden;
   max-height: 80vh;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .donation-description {
