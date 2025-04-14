@@ -186,10 +186,12 @@
 .modal-content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 15px;
   text-align: center;
+  overflow-y: auto;
+  overflow-x:hidden;
   max-height: 80vh;
   overflow-y: auto;
 }
