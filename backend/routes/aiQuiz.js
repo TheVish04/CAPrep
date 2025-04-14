@@ -82,16 +82,22 @@ router.post('/generate', authMiddleware, async (req, res) => {
     if (exampleQuestions.length > 0) {
       prompt += "Here are some examples of existing questions to understand the style and format:\n\n";
       exampleQuestions.forEach((q, index) => {
-        prompt += "Example " + (index + 1) + ":\nQuestion: " + q.questionText + "\n";
+        // Check if this is an empty question with subquestions
+        const isEmptyMainQuestion = q.questionText.trim().length < 20 && q.subQuestions && q.subQuestions.length > 0;
         
-        // Process main question options if available
-        if (q.options && q.options.length > 0) {
-          prompt += "Options: ";
-          q.options.forEach((opt, i) => {
-            prompt += String.fromCharCode(65 + i) + ") " + opt;
-            if (i < q.options.length - 1) prompt += ", ";
-          });
-          prompt += "\n";
+        // Only add the main question if it's not empty
+        if (!isEmptyMainQuestion) {
+          prompt += "Example " + (index + 1) + ":\nQuestion: " + q.questionText + "\n";
+          
+          // Process main question options if available
+          if (q.options && q.options.length > 0) {
+            prompt += "Options: ";
+            q.options.forEach((opt, i) => {
+              prompt += String.fromCharCode(65 + i) + ") " + opt;
+              if (i < q.options.length - 1) prompt += ", ";
+            });
+            prompt += "\n";
+          }
         }
         
         // Process subQuestions if available
@@ -99,8 +105,10 @@ router.post('/generate', authMiddleware, async (req, res) => {
           // First, check if there's only one subquestion with no main question content
           // This is a common pattern where the main question is empty and all content is in the subquestion
           if (q.questionText.trim().length < 20 && q.subQuestions.length === 1 && q.subQuestions[0].subQuestionText) {
-            // Replace the main question with the subquestion content
-            prompt = prompt.replace("Question: " + q.questionText, "Question: " + q.subQuestions[0].subQuestionText);
+            // Create a new question entry with the subquestion content instead of replacing
+            // This avoids modifying the prompt string that's already been built
+            const subQuestionText = q.subQuestions[0].subQuestionText;
+            prompt += "Example " + (index + 1) + " (Sub):\nQuestion: " + subQuestionText + "\n";
             
             // Process subQuestion options
             if (q.subQuestions[0].subOptions && q.subQuestions[0].subOptions.length > 0) {
@@ -111,6 +119,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
               });
               prompt += "\n";
             }
+            prompt += "\n"; // Add a blank line after this example
           } else {
             // Process all subquestions normally
             q.subQuestions.forEach((subQ, subIndex) => {
