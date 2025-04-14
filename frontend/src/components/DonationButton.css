@@ -182,13 +182,44 @@
 
 .modal-content {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 15px;
+  text-align: center;
+}
+
+.donation-description {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.donation-description h3 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.donation-description p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.donation-description ul {
+  text-align: left;
+  margin-bottom: 15px;
+  padding-left: 20px;
+}
+
+.donation-description li {
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .donation-image {
   max-width: 100%;
   border-radius: 5px;
+  margin-top: 10px;
 }
 
 /* Responsive adjustments */
@@ -206,5 +237,14 @@
   .donation-modal {
     width: 90%;
     padding: 15px;
+  }
+  
+  .donation-description h3 {
+    font-size: 1.3rem;
+  }
+  
+  .donation-description p,
+  .donation-description li {
+    font-size: 0.9rem;
   }
 }
