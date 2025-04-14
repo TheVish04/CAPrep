@@ -7,23 +7,10 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPoliciesOpen, setIsPoliciesOpen] = useState(false);
-  const policiesRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close policies dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (policiesRef.current && !policiesRef.current.contains(event.target)) {
-        setIsPoliciesOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,9 +48,7 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const togglePolicies = () => {
-    setIsPoliciesOpen(!isPoliciesOpen);
-  };
+
 
   return (
     <motion.nav 
@@ -228,30 +213,7 @@ const Navbar = () => {
                 </Link>
               </motion.li>
 
-              {/* Policies dropdown for all devices */}
-              <motion.li 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="policies-dropdown"
-                ref={policiesRef}
-              >
-                <button onClick={togglePolicies} className="nav-link policies-btn">
-                  Policies {isPoliciesOpen ? '▲' : '▼'}
-                </button>
-                {isPoliciesOpen && (
-                  <div className="policies-menu">
-                    <Link to="/terms" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
-                      Terms & Conditions
-                    </Link>
-                    <Link to="/privacy" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
-                      Privacy Policy
-                    </Link>
-                    <Link to="/refund" className="policy-link" onClick={() => {setIsPoliciesOpen(false); setIsMenuOpen(false);}}>
-                      Refund Policy
-                    </Link>
-                  </div>
-                )}
-              </motion.li>
+
 
               <motion.li 
                 whileHover={{ scale: 1.1 }}

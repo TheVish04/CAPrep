@@ -6,7 +6,6 @@ const Resource = require('./models/ResourceModel');
 const Discussion = require('./models/DiscussionModel');
 const authRoutes = require('./routes/auth');
 const questionRoutes = require('./routes/questions');
-const paymentRoutes = require('./routes/payment');
 const resourceRoutes = require('./routes/resources');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
@@ -219,7 +218,7 @@ const initializeDatabase = async () => {
     // Set up routes after successful initialization
     app.use('/api/auth', authRoutes);
     app.use('/api/questions', questionRoutes);
-    app.use('/api/payment', paymentRoutes);
+    // Payment routes removed
     app.use('/api/resources', resourceRoutes);
     app.use('/api/users', userRoutes);
     app.use('/api/admin', adminRoutes);
@@ -268,7 +267,7 @@ const initializeDatabase = async () => {
       console.warn('Attempting to continue server initialization despite errors');
       app.use('/api/auth', authRoutes);
       app.use('/api/questions', questionRoutes);
-      app.use('/api/payment', paymentRoutes);
+      // Payment routes removed
       app.use('/api/resources', resourceRoutes);
       app.use('/api/users', userRoutes);
       app.use('/api/admin', adminRoutes);
