@@ -76,32 +76,59 @@ router.post('/generate', authMiddleware, async (req, res) => {
                  "3. Make incorrect options plausible but clearly wrong to a knowledgeable student\n" +
                  "4. Provide a detailed explanation for the correct answer that explains both why it is correct and why other options are incorrect\n" +
                  "5. Aim for a mix of difficulty levels from straightforward to challenging\n" +
-                 "6. Ensure questions are relevant to the latest CA curriculum and reflect current accounting standards and practices\n\n";
+                 "6. Ensure questions are relevant to the latest CA curriculum and reflect current accounting standards and practices\n\n" +
+                 "IMPORTANT: When I provide example questions, pay close attention to both the main question content and any sub-questions. The sub-question content is critical for training you on the proper format and style.\n\n";
 
     if (exampleQuestions.length > 0) {
       prompt += "Here are some examples of existing questions to understand the style and format:\n\n";
       exampleQuestions.forEach((q, index) => {
         prompt += "Example " + (index + 1) + ":\nQuestion: " + q.questionText + "\n";
         
-        // Check for options within subQuestions
-        if (q.subQuestions && q.subQuestions.length > 0 && q.subQuestions[0].subOptions && q.subQuestions[0].subOptions.length > 0) {
-          const options = q.subQuestions[0].subOptions.map(opt => opt.optionText).filter(Boolean);
-          if (options.length > 0) {
-            prompt += "Options: ";
-            options.forEach((opt, i) => {
-              prompt += String.fromCharCode(65 + i) + ") " + opt;
-              if (i < options.length - 1) prompt += ", ";
-            });
-            prompt += "\n";
-          }
-        } else if (q.options && q.options.length > 0) {
-          // Fallback if options are directly on the question object
+        // Process main question options if available
+        if (q.options && q.options.length > 0) {
           prompt += "Options: ";
           q.options.forEach((opt, i) => {
             prompt += String.fromCharCode(65 + i) + ") " + opt;
             if (i < q.options.length - 1) prompt += ", ";
           });
           prompt += "\n";
+        }
+        
+        // Process subQuestions if available
+        if (q.subQuestions && q.subQuestions.length > 0) {
+          // First, check if there's only one subquestion with no main question content
+          // This is a common pattern where the main question is empty and all content is in the subquestion
+          if (q.questionText.trim().length < 20 && q.subQuestions.length === 1 && q.subQuestions[0].subQuestionText) {
+            // Replace the main question with the subquestion content
+            prompt = prompt.replace("Question: " + q.questionText, "Question: " + q.subQuestions[0].subQuestionText);
+            
+            // Process subQuestion options
+            if (q.subQuestions[0].subOptions && q.subQuestions[0].subOptions.length > 0) {
+              prompt += "Options: ";
+              q.subQuestions[0].subOptions.forEach((opt, i) => {
+                prompt += String.fromCharCode(65 + i) + ") " + opt.optionText;
+                if (i < q.subQuestions[0].subOptions.length - 1) prompt += ", ";
+              });
+              prompt += "\n";
+            }
+          } else {
+            // Process all subquestions normally
+            q.subQuestions.forEach((subQ, subIndex) => {
+              if (subQ.subQuestionText) {
+                prompt += "Sub Question " + (subIndex + 1) + ": " + subQ.subQuestionText + "\n";
+              }
+              
+              // Process subQuestion options
+              if (subQ.subOptions && subQ.subOptions.length > 0) {
+                prompt += "Options: ";
+                subQ.subOptions.forEach((opt, i) => {
+                  prompt += String.fromCharCode(65 + i) + ") " + opt.optionText;
+                  if (i < subQ.subOptions.length - 1) prompt += ", ";
+                });
+                prompt += "\n";
+              }
+            });
+          }
         }
         
         prompt += "\n"; // Add a blank line between examples
@@ -388,4 +415,4 @@ router.post('/ask', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
