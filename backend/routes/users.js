@@ -1,10 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const multer = require('multer');
+const cloudinary = require('../config/cloudinary'); // Import Cloudinary config
 const { authMiddleware } = require('../middleware/authMiddleware');
 const User = require('../models/UserModel');
 const Question = require('../models/QuestionModel');
 const Resource = require('../models/ResourceModel'); // Import Resource model
+
+// Multer setup for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Helper function to validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -270,59 +277,91 @@ router.get('/me/quiz-history', authMiddleware, async (req, res) => {
 
 // --- Profile Management ---
 
-// PUT Update user profile
+// PUT Update user profile (excluding profile picture)
 router.put('/me', authMiddleware, async (req, res) => {
     try {
         const { fullName } = req.body;
-        
-        // Validate input
-        if (fullName && (typeof fullName !== 'string' || fullName.trim() === '')) {
-            return res.status(400).json({ error: 'Full name must be a non-empty string' });
+        const updateData = {};
+
+        // Validate and add fullName if provided
+        if (fullName !== undefined) {
+            if (typeof fullName !== 'string' || fullName.trim() === '') {
+                return res.status(400).json({ error: 'Full name must be a non-empty string' });
+            }
+            updateData.fullName = fullName.trim();
         }
-        
+
+        // Add other updatable fields here if needed
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ error: 'No update data provided' });
+        }
+
         // Find user and update
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
-            { $set: { fullName: fullName.trim() } },
-            { new: true }
-        ).select('-password -quizHistory');
-        
+            { $set: updateData },
+            { new: true, runValidators: true } // Ensure validation rules are run
+        ).select('-password -quizHistory'); // Exclude sensitive fields
+
         if (!updatedUser) {
             return res.status(404).json({ error: 'User not found' });
         }
-        
+
         res.json(updatedUser);
     } catch (error) {
         console.error('Error updating user profile:', error);
+        // Handle potential validation errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: error.message });
+        }
         res.status(500).json({ error: 'Failed to update profile' });
     }
 });
 
-// POST Upload profile picture
-router.post('/me/profile-image', authMiddleware, async (req, res) => {
+// POST Upload profile picture using Cloudinary
+router.post('/me/profile-image', authMiddleware, upload.single('profileImage'), async (req, res) => {
     try {
-        // This would typically use multer middleware and cloudinary for image upload
-        // For this implementation, we'll assume the image URL is sent directly
-        const { profilePicture } = req.body;
-        
-        if (!profilePicture) {
-            return res.status(400).json({ error: 'Profile picture URL is required' });
+        if (!req.file) {
+            return res.status(400).json({ error: 'No profile image file uploaded' });
         }
-        
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user.id,
-            { $set: { profilePicture } },
-            { new: true }
-        ).select('-password -quizHistory');
-        
-        if (!updatedUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        res.json(updatedUser);
+
+        // Upload image to Cloudinary
+        const uploadStream = cloudinary.uploader.upload_stream(
+            { 
+                folder: 'caprep_profile_pictures', // Optional: specify a folder
+                public_id: `user_${req.user.id}_${Date.now()}`, // Unique public ID
+                transformation: [{ width: 150, height: 150, crop: "fill", gravity: "face" }] // Resize and crop
+            },
+            async (error, result) => {
+                if (error) {
+                    console.error('Cloudinary upload error:', error);
+                    return res.status(500).json({ error: 'Failed to upload profile picture' });
+                }
+
+                // Update user's profilePicture URL in the database
+                const updatedUser = await User.findByIdAndUpdate(
+                    req.user.id,
+                    { $set: { profilePicture: result.secure_url } },
+                    { new: true }
+                ).select('-password -quizHistory');
+
+                if (!updatedUser) {
+                    // Attempt to delete the uploaded image if user update fails
+                    await cloudinary.uploader.destroy(result.public_id);
+                    return res.status(404).json({ error: 'User not found after upload' });
+                }
+
+                res.json(updatedUser); // Return updated user profile
+            }
+        );
+
+        // Pipe the buffer from multer memory storage to Cloudinary's upload stream
+        uploadStream.end(req.file.buffer);
+
     } catch (error) {
-        console.error('Error updating profile picture:', error);
-        res.status(500).json({ error: 'Failed to update profile picture' });
+        console.error('Error processing profile picture upload:', error);
+        res.status(500).json({ error: 'Server error during profile picture upload' });
     }
 });
 
@@ -342,10 +381,8 @@ router.delete('/me', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // Verify password (this would typically use bcrypt.compare)
-        // For this implementation, we'll assume password verification
-        // const isMatch = await bcrypt.compare(password, user.password);
-        const isMatch = password === user.password; // Simplified for demo
+        // Verify password using bcrypt
+        const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid password' });
