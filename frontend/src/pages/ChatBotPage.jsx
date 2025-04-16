@@ -6,9 +6,9 @@ import './ChatBotPage.css';
 
 const ChatBotPage = () => {
   const [messages, setMessages] = useState([
-    { 
-      type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info. Please dont rely on answers blindly. Check the official ICAI publications for the most up-to-date information.',
+    {
+      type: 'bot',
+      content: 'Welcome! I am your dedicated CA Prep Assistant, here to guide you through your Chartered Accountancy studies on this website. Ask me anything related to the CA curriculum, exam stages (Foundation, Intermediate, Final), or specific subjects. My purpose is to help you navigate CA preparation topics effectively. \n\nWhile I strive for accuracy based on the current curriculum, please remember that accounting standards and laws evolve. Always consult official ICAI materials for the definitive, up-to-date information. Consider me your study companion, not a substitute for comprehensive learning and official resources.\n\nFor the most relevant assistance, please mention the specific Exam Stage and Subject you\'re inquiring about.\n\nNote: As an AI, I can occasionally make mistakes. Please verify critical information independently.',
       timestamp: new Date()
     }
   ]);
@@ -73,8 +73,8 @@ const ChatBotPage = () => {
   
   const createNewChat = () => {
     setMessages([{ 
-      type: 'bot', 
-      content: 'Hello! I\'m your CA Assistant. Ask me any questions about Chartered Accountancy. My knowledge is based on the existing CA curriculum. However, remember that accounting standards and legal provisions are subject to change, so always refer to the official ICAI publications for the most up-to-date information. I am a tool to assist your learning, not a replacement for thorough study and engagement with official resources.\n\nPlease mention your Exam Stage and Subject with every question for best results.\nCA Assistant can make mistakes. Check important info. Please dont rely on answers blindly. Check the official ICAI publications for the most up-to-date information.',
+      type: 'bot',
+      content: 'Welcome! I am your dedicated CA Prep Assistant, here to guide you through your Chartered Accountancy studies on this website. Ask me anything related to the CA curriculum, exam stages (Foundation, Intermediate, Final), or specific subjects. My purpose is to help you navigate CA preparation topics effectively. \n\nWhile I strive for accuracy based on the current curriculum, please remember that accounting standards and laws evolve. Always consult official ICAI materials for the definitive, up-to-date information. Consider me your study companion, not a substitute for comprehensive learning and official resources.\n\nFor the most relevant assistance, please mention the specific Exam Stage and Subject you\'re inquiring about.\n\nNote: As an AI, I can occasionally make mistakes. Please verify critical information independently.',
       timestamp: new Date()
     }]);
     setSelectedConversation(null);
@@ -431,4 +431,4 @@ const ChatBotPage = () => {
   );
 };
 
-export default ChatBotPage; 
+export default ChatBotPage;
