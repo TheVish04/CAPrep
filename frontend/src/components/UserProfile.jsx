@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
-import './UserProfile.css'; // Create this CSS file
+import './UserProfile.css';
 import DonationButton from './DonationButton';
+import EditProfile from './EditProfile';
 
 const UserProfile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleteError, setDeleteError] = useState(null);
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
 
     useEffect(() => {
@@ -42,6 +47,28 @@ const UserProfile = () => {
         localStorage.removeItem('token');
         navigate('/login');
         // Optionally, add a call to a backend logout endpoint if one exists
+    };
+    
+    const handleDeleteAccount = async () => {
+        if (!deletePassword) {
+            setDeleteError('Password is required to delete your account');
+            return;
+        }
+        
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`${API_BASE_URL}/api/users/me`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                data: { password: deletePassword }
+            });
+            
+            // On successful deletion
+            localStorage.removeItem('token');
+            navigate('/login', { state: { message: 'Your account has been successfully deleted' } });
+        } catch (err) {
+            console.error('Error deleting account:', err);
+            setDeleteError(err.response?.data?.error || 'Failed to delete account. Please try again.');
+        }
     };
 
     if (loading) {
@@ -83,12 +110,25 @@ const UserProfile = () => {
                 <h1>My Profile</h1>
 
                 <div className="profile-details card">
-                    <h2>Account Information</h2>
-                    <p><strong>Name:</strong> {userData.fullName}</p>
-                    <p><strong>Email:</strong> {userData.email}</p>
-                    {/* Add role or registration date if needed */}
-                    {/* <p><strong>Role:</strong> {userData.role}</p> */}
-                    {/* <p><strong>Member Since:</strong> {new Date(userData.createdAt).toLocaleDateString()}</p> */} 
+                    <div className="profile-header">
+                        <div className="profile-picture-container">
+                            <img 
+                                src={userData.profilePicture || 'https://res.cloudinary.com/demo/image/upload/v1/samples/default-avatar.png'} 
+                                alt="Profile" 
+                                className="profile-picture" 
+                            />
+                        </div>
+                        <div className="profile-info">
+                            <h2>Account Information</h2>
+                            <p><strong>Name:</strong> {userData.fullName}</p>
+                            <p><strong>Email:</strong> {userData.email}</p>
+                            <p><strong>Role:</strong> {userData.role}</p>
+                            <p><strong>Member Since:</strong> {new Date(userData.createdAt).toLocaleDateString()}</p>
+                            <div className="profile-actions-inline">
+                                <button className="edit-profile-btn" onClick={() => setShowEditModal(true)}>Edit Profile</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="profile-summary card">
@@ -137,13 +177,67 @@ const UserProfile = () => {
                 </div>
                 
                 <div className="profile-actions">
-                    {/* Add links to edit profile, change password later if needed */}
                     <button onClick={handleLogout} className="logout-button">Logout</button>
+                    <button onClick={() => setShowDeleteConfirm(true)} className="delete-account-button">Delete Account</button>
                 </div>
+                
+                {showEditModal && (
+                    <EditProfile 
+                        userData={userData} 
+                        onClose={() => setShowEditModal(false)} 
+                        onUpdate={(updatedData) => {
+                            setUserData(updatedData);
+                            setShowEditModal(false);
+                        }} 
+                    />
+                )}
+                
+                {showDeleteConfirm && (
+                    <div className="delete-account-modal">
+                        <div className="delete-account-content">
+                            <h2>Delete Account</h2>
+                            <p className="warning-text">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
+                            
+                            {deleteError && <div className="error-message">{deleteError}</div>}
+                            
+                            <div className="form-group">
+                                <label htmlFor="password">Enter your password to confirm:</label>
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    value={deletePassword}
+                                    onChange={(e) => setDeletePassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button 
+                                    type="button" 
+                                    className="cancel-button" 
+                                    onClick={() => {
+                                        setShowDeleteConfirm(false);
+                                        setDeletePassword('');
+                                        setDeleteError(null);
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="delete-button" 
+                                    onClick={handleDeleteAccount}
+                                >
+                                    Delete My Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </div>
     );
 };
 
-export default UserProfile; 
+export default UserProfile;

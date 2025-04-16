@@ -58,6 +58,10 @@ const UserSchema = new Schema({
     match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
     index: true // Add explicit index for email queries
   },
+  profilePicture: {
+    type: String,
+    default: 'https://res.cloudinary.com/demo/image/upload/v1/samples/default-avatar.png'
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
