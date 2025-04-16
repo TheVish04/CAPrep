@@ -50,7 +50,7 @@ const UserProfile = () => {
         };
 
         fetchUserProfile();
-    }, [navigate, API_BASE_URL]);
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
