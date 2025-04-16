@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosConfig';
 import Navbar from './Navbar';
 import './UserProfile.css';
 import DonationButton from './DonationButton';
@@ -15,7 +15,7 @@ const UserProfile = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
     const [deleteError, setDeleteError] = useState(null);
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caprep.onrender.com';
+    // API base URL is handled by axiosConfig
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -28,13 +28,22 @@ const UserProfile = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/users/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await api.get('/api/users/me');
                 setUserData(response.data);
             } catch (err) {
                 console.error("Error fetching user profile:", err);
                 setError(err.response?.data?.error || "Failed to load profile.");
+                
+                // If token expired, redirect to login
+                if (err.response?.status === 401) {
+                    localStorage.removeItem('token');
+                    navigate('/login', { 
+                        state: { 
+                            message: 'Your session has expired. Please log in again.',
+                            alertType: 'info'
+                        } 
+                    });
+                }
             } finally {
                 setLoading(false);
             }
@@ -56,9 +65,7 @@ const UserProfile = () => {
         }
         
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`${API_BASE_URL}/api/users/me`, {
-                headers: { 'Authorization': `Bearer ${token}` },
+            await api.delete('/api/users/me', {
                 data: { password: deletePassword }
             });
             
