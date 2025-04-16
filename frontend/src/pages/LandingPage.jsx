@@ -141,14 +141,10 @@ const LandingPage = () => {
             </div>
             <h3>Foundation</h3>
             <ul>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Principles and Practices of Accounting" : "/login"}>Principles and Practices of Accounting</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Law" : "/login"}>Business Law</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Mathematics" : "/login"}>Business Mathematics</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Accounting" : "/login"}>Accounting</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Laws" : "/login"}>Business Laws</Link></li>
+              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Quantitative Aptitude" : "/login"}>Quantitative Aptitude</Link></li>
               <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Economics" : "/login"}>Business Economics</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business Correspondence and Reporting" : "/login"}>Business Correspondence and Reporting</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Logical Reasoning" : "/login"}>Logical Reasoning</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Statistics" : "/login"}>Statistics</Link></li>
-              <li><Link to={isLoggedIn ? "/questions?examStage=Foundation&subject=Business and Commercial Knowledge" : "/login"}>Business and Commercial Knowledge</Link></li>
             </ul>
             <Link to={isLoggedIn ? "/questions?examStage=Foundation" : "/login"} className="level-btn">Start Learning</Link>
           </div>
