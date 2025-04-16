@@ -1,8 +1,8 @@
 /* UserProfile.css */
 
-.user-profile-page {
+/* .user-profile-page {
     /* Uses .page-wrapper styles for overall background */
-}
+ */
 
 .profile-container {
     background-color: #1e1e1e;
@@ -261,10 +261,10 @@
     color: #f44336;
 }
 
-.profile-contribution.card {
+/* Remove empty ruleset and merge with existing .profile-contribution styles */
     /* Add any specific card styling if needed */
     /* Example: background-color: #f9f9f9; */
-}
+
 
 .profile-contribution h2 {
     margin-bottom: 1rem; /* Add space below heading */
