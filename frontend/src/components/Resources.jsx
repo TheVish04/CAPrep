@@ -6,6 +6,7 @@ import DonationButton from './DonationButton';
 import axios from 'axios';
 import MoreMenu from './MoreMenu';
 import DiscussionModal from './DiscussionModal';
+import BookmarkFolderSelector from './BookmarkFolderSelector';
 
 // Paper Title with View PDF button component
 const PaperViewHeader = ({ title, paperType, month, year, examStage, subject, onViewPDF, isLoading }) => {
@@ -60,6 +61,8 @@ const Resources = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
   const [currentDiscussionResource, setCurrentDiscussionResource] = useState(null);
   const [showDiscussionModal, setShowDiscussionModal] = useState(false);
+  const [showBookmarkFolderSelector, setShowBookmarkFolderSelector] = useState(false);
+  const [resourceToBookmark, setResourceToBookmark] = useState(null);
 
   // Download a resource and increment download count
   const handleDownload = useCallback(async (resource) => {
@@ -268,40 +271,55 @@ const Resources = () => {
     if (!token) return navigate('/login');
 
     const isCurrentlyBookmarked = bookmarkedResourceIds.has(resourceId);
-    const method = isCurrentlyBookmarked ? 'delete' : 'post';
-    const url = `${API_BASE_URL}/api/users/me/bookmarks/resource/${resourceId}`;
-
-    try {
-      let response;
-      if (method === 'delete') {
-        // For DELETE, headers are in the config object (second argument)
-        response = await axios.delete(url, {
+    
+    if (isCurrentlyBookmarked) {
+      // If already bookmarked, remove the bookmark
+      const url = `${API_BASE_URL}/api/users/me/bookmarks/resource/${resourceId}`;
+      
+      try {
+        const response = await axios.delete(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-      } else {
-        // For POST, data is the second argument, headers are in the config (third argument)
-        response = await axios.post(url, {}, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
 
-      if (response.data && response.data.bookmarkedResourceIds) {
-        // Update the bookmarked IDs in state
-        const newBookmarkedIds = new Set(response.data.bookmarkedResourceIds);
-        setBookmarkedResourceIds(newBookmarkedIds);
-        
-        // If we're removing a bookmark and the bookmarked filter is active,
-        // remove this resource from the current list immediately
-        if (isCurrentlyBookmarked && filters.bookmarked) {
-          setResources(prevResources => 
-            prevResources.filter(resource => resource._id !== resourceId)
-          );
+        if (response.data && response.data.bookmarkedResourceIds) {
+          // Update the bookmarked IDs in state
+          const newBookmarkedIds = new Set(response.data.bookmarkedResourceIds);
+          setBookmarkedResourceIds(newBookmarkedIds);
+          
+          // If the bookmarked filter is active, remove this resource from the current list immediately
+          if (filters.bookmarked) {
+            setResources(prevResources => 
+              prevResources.filter(resource => resource._id !== resourceId)
+            );
+          }
         }
+      } catch (err) {
+        console.error('Error removing resource bookmark:', err);
+        alert(err.response?.data?.error || 'Failed to remove bookmark');
       }
-
-    } catch (err) {
-      console.error('Error updating resource bookmark:', err);
-      alert(err.response?.data?.error || 'Failed to update bookmark');
+    } else {
+      // If not bookmarked, show the folder selector
+      const resource = resources.find(r => r._id === resourceId);
+      setResourceToBookmark(resource);
+      setShowBookmarkFolderSelector(true);
+    }
+  };
+  
+  // Handle successful bookmark to folder
+  const handleBookmarkSuccess = async () => {
+    // Refresh bookmark IDs
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/users/me/bookmarks/resources/ids`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.data && response.data.bookmarkedResourceIds) {
+          setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
+        }
+      } catch (err) {
+        console.error('Error refreshing resource bookmark IDs:', err);
+      }
     }
   };
 
@@ -524,6 +542,19 @@ const Resources = () => {
           itemType="resource"
           itemId={currentDiscussionResource._id}
           itemTitle={currentDiscussionResource.title}
+        />
+      )}
+      
+      {/* Bookmark Folder Selector Modal */}
+      {showBookmarkFolderSelector && resourceToBookmark && (
+        <BookmarkFolderSelector
+          itemId={resourceToBookmark._id}
+          itemType="resource"
+          onClose={() => {
+            setShowBookmarkFolderSelector(false);
+            setResourceToBookmark(null);
+          }}
+          onSuccess={handleBookmarkSuccess}
         />
       )}
     </div>

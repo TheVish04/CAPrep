@@ -8,6 +8,7 @@ import DonationButton from './DonationButton';
 import axios from 'axios';
 import MoreMenu from './MoreMenu';
 import DiscussionModal from './DiscussionModal';
+import BookmarkFolderSelector from './BookmarkFolderSelector';
 
 // Add a Bookmark icon component (simple example)
 const BookmarkIcon = ({ filled }) => (
@@ -43,6 +44,8 @@ const Questions = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://caprep.onrender.com';
   const [currentDiscussionQuestion, setCurrentDiscussionQuestion] = useState(null);
   const [showDiscussionModal, setShowDiscussionModal] = useState(false);
+  const [showBookmarkFolderSelector, setShowBookmarkFolderSelector] = useState(false);
+  const [questionToBookmark, setQuestionToBookmark] = useState(null);
 
   // --- Fetch Bookmarked Question IDs --- 
   const fetchBookmarkIds = useCallback(async (token) => {
@@ -228,42 +231,59 @@ const Questions = () => {
     if (!token) return navigate('/login');
 
     const isCurrentlyBookmarked = bookmarkedQuestionIds.has(questionId);
-    const url = `${API_BASE_URL}/api/users/me/bookmarks/${questionId}`;
-    const config = {
-        headers: { 'Authorization': `Bearer ${token}` }
-    };
+    
+    if (isCurrentlyBookmarked) {
+      // If already bookmarked, remove the bookmark
+      const url = `${API_BASE_URL}/api/users/me/bookmarks/${questionId}`;
+      const config = {
+          headers: { 'Authorization': `Bearer ${token}` }
+      };
 
-    try {
-      let response;
-      if (isCurrentlyBookmarked) {
-        // Use axios.delete for clarity
-        response = await axios.delete(url, config);
-      } else {
-        // POST request might not need a body, send empty object
-        response = await axios.post(url, {}, config);
-      }
+      try {
+        const response = await axios.delete(url, config);
 
-      if (response.data && response.data.bookmarkedQuestionIds) {
-        // Update the bookmarked IDs in state
-        const newBookmarkedIds = new Set(response.data.bookmarkedQuestionIds);
-        setBookmarkedQuestionIds(newBookmarkedIds);
-        
-        // If we're removing a bookmark and the bookmarked filter is active,
-        // remove this question from the current list immediately
-        if (isCurrentlyBookmarked && filters.bookmarked) {
-          setQuestions(prevQuestions => 
-            prevQuestions.filter(question => question._id !== questionId)
-          );
+        if (response.data && response.data.bookmarkedQuestionIds) {
+          // Update the bookmarked IDs in state
+          const newBookmarkedIds = new Set(response.data.bookmarkedQuestionIds);
+          setBookmarkedQuestionIds(newBookmarkedIds);
+          
+          // If the bookmarked filter is active, remove this question from the current list immediately
+          if (filters.bookmarked) {
+            setQuestions(prevQuestions => 
+              prevQuestions.filter(question => question._id !== questionId)
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Error removing bookmark:', err);
+        if (err.response) {
+            console.error('Error response data:', err.response.data);
+            console.error('Error response status:', err.response.status);
+            console.error('Error response headers:', err.response.headers);
         }
       }
-
-    } catch (err) {
-      console.error('Error updating bookmark:', err);
-      // Log the full error response for more details on 401
-      if (err.response) {
-          console.error('Error response data:', err.response.data);
-          console.error('Error response status:', err.response.status);
-          console.error('Error response headers:', err.response.headers);
+    } else {
+      // If not bookmarked, show the folder selector
+      const question = questions.find(q => q._id === questionId);
+      setQuestionToBookmark(question);
+      setShowBookmarkFolderSelector(true);
+    }
+  };
+  
+  // Handle successful bookmark to folder
+  const handleBookmarkSuccess = async () => {
+    // Refresh bookmark IDs
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/users/me/bookmarks/ids`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.data && response.data.bookmarkedQuestionIds) {
+          setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
+        }
+      } catch (err) {
+        console.error('Error refreshing bookmark IDs:', err);
       }
     }
   };
@@ -582,6 +602,19 @@ const Questions = () => {
           itemType="question"
           itemId={currentDiscussionQuestion._id}
           itemTitle={`Question ${currentDiscussionQuestion.questionNumber} - ${currentDiscussionQuestion.subject}`}
+        />
+      )}
+      
+      {/* Bookmark Folder Selector Modal */}
+      {showBookmarkFolderSelector && questionToBookmark && (
+        <BookmarkFolderSelector
+          itemId={questionToBookmark._id}
+          itemType="question"
+          onClose={() => {
+            setShowBookmarkFolderSelector(false);
+            setQuestionToBookmark(null);
+          }}
+          onSuccess={handleBookmarkSuccess}
         />
       )}
     </div>
