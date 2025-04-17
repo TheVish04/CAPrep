@@ -56,6 +56,48 @@ const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
 
     // Handle adding bookmark to selected folder
     const handleAddToFolder = async () => {
+        // If in create folder view and folder name is provided, create folder first
+        if (showCreateNew && newFolderName.trim()) {
+            try {
+                setLoading(true);
+                const res = await api.post('/api/users/me/bookmark-folders', { 
+                    name: newFolderName, 
+                    type: itemType 
+                });
+                
+                // Get the newly created folder
+                const newFolder = res.data.bookmarkFolders.find(f => f.name === newFolderName.trim() && f.type === itemType);
+                if (newFolder) {
+                    // Set the selected folder to the newly created one
+                    setSelectedFolderId(newFolder._id);
+                    
+                    // Add the bookmark to the new folder
+                    await api.post(`/api/users/me/bookmark-folders/${newFolder._id}/items`, {
+                        itemId,
+                        note
+                    });
+                    
+                    // Also add to general bookmarks based on item type
+                    if (itemType === 'question') {
+                        await api.post(`/api/users/me/bookmarks/${itemId}`, {});
+                    } else if (itemType === 'resource') {
+                        await api.post(`/api/users/me/bookmarks/resource/${itemId}`, {});
+                    }
+                    
+                    onSuccess && onSuccess();
+                    onClose && onClose();
+                } else {
+                    setError('Failed to create folder');
+                }
+            } catch (err) {
+                setError(err.response?.data?.error || 'Failed to create folder and add bookmark');
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+        
+        // Regular flow for existing folder
         if (!selectedFolderId) {
             setError('Please select a folder');
             return;
@@ -175,7 +217,7 @@ const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
                             <button 
                                 onClick={handleAddToFolder} 
                                 className="add-to-folder-btn"
-                                disabled={loading || (!selectedFolderId && !showCreateNew)}
+                                disabled={loading || (!selectedFolderId && !showCreateNew) || (showCreateNew && !newFolderName.trim())}
                             >
                                 Add to Folder
                             </button>
