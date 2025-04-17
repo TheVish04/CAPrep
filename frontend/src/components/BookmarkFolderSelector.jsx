@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/axiosConfig';
 import './UserProfile.css'; // Reuse existing styles
+import './BookmarkFolderSelector.css'; // Add specific styles for this component
 
 const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
     const [folders, setFolders] = useState([]);
@@ -62,10 +63,19 @@ const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
         
         try {
             setLoading(true);
+            // Add the bookmark to the folder
             await api.post(`/api/users/me/bookmark-folders/${selectedFolderId}/items`, {
                 itemId,
                 note
             });
+            
+            // Also add to general bookmarks based on item type
+            if (itemType === 'question') {
+                await api.post(`/api/users/me/bookmarks/${itemId}`, {});
+            } else if (itemType === 'resource') {
+                await api.post(`/api/users/me/bookmarks/resource/${itemId}`, {});
+            }
+            
             onSuccess && onSuccess();
             onClose && onClose();
         } catch (err) {
@@ -120,8 +130,7 @@ const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
                                 
                                 <button 
                                     onClick={() => setShowCreateNew(true)}
-                                    className="cancel-delete-button"
-                                    style={{ marginBottom: '15px' }}
+                                    className="create-folder-btn"
                                 >
                                     Create New Folder
                                 </button>
@@ -165,12 +174,12 @@ const BookmarkFolderSelector = ({ itemId, itemType, onClose, onSuccess }) => {
                         <div className="modal-actions">
                             <button 
                                 onClick={handleAddToFolder} 
-                                className="confirm-delete-btn"
+                                className="add-to-folder-btn"
                                 disabled={loading || (!selectedFolderId && !showCreateNew)}
                             >
                                 Add to Folder
                             </button>
-                            <button onClick={onClose} className="cancel-delete-button">Cancel</button>
+                            <button onClick={onClose} className="cancel-button">Cancel</button>
                         </div>
                     </>
                 )}

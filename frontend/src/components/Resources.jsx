@@ -316,6 +316,13 @@ const Resources = () => {
         });
         if (response.data && response.data.bookmarkedResourceIds) {
           setBookmarkedResourceIds(new Set(response.data.bookmarkedResourceIds));
+          
+          // If we have a resource that was just bookmarked, make sure it's in the set
+          if (resourceToBookmark) {
+            const updatedSet = new Set(response.data.bookmarkedResourceIds);
+            updatedSet.add(resourceToBookmark._id);
+            setBookmarkedResourceIds(updatedSet);
+          }
         }
       } catch (err) {
         console.error('Error refreshing resource bookmark IDs:', err);

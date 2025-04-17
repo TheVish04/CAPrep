@@ -437,9 +437,9 @@
     background-color: #757575;
 }
 
-/* Bookmark Folders Styling */
+/* Bookmark Folders */
 .profile-bookmark-folders {
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .profile-bookmark-folders h2 {
@@ -454,38 +454,62 @@
 }
 
 .bookmark-folder-create input {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 4px;
-    border: 1px solid #444;
-    background-color: #333;
+    flex: 2;
+    padding: 12px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #252525;
     color: #e0e0e0;
-    font-size: 0.95rem;
+    font-size: 14px;
+}
+
+.bookmark-folder-create input:focus {
+    border-color: #03a9f4;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(3, 169, 244, 0.2);
 }
 
 .bookmark-folder-create select {
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #444;
-    background-color: #333;
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #252525;
     color: #e0e0e0;
-    font-size: 0.95rem;
+    font-size: 14px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+}
+
+.bookmark-folder-create select:focus {
+    border-color: #03a9f4;
+    outline: none;
 }
 
 .bookmark-folder-create button {
-    padding: 10px 15px;
+    padding: 12px 20px;
     background-color: #03a9f4;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
 .bookmark-folder-create button:hover {
     background-color: #0288d1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bookmark-folder-create button:active {
+    transform: translateY(0);
 }
 
 .bookmark-folder-create button:disabled {
@@ -498,7 +522,7 @@
     max-height: 300px;
     overflow-y: auto;
     border: 1px solid #444;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 10px;
     background-color: #2a2a2a;
 }
@@ -507,9 +531,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
+    padding: 15px;
     border-bottom: 1px solid #444;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .bookmark-folder-item:last-child {
@@ -518,6 +542,7 @@
 
 .bookmark-folder-item:hover {
     background-color: #333;
+    transform: translateX(3px);
 }
 
 .bookmark-folder-item.selected {
@@ -533,12 +558,12 @@
 }
 
 .bookmark-folder-item button {
-    padding: 6px 10px;
+    padding: 8px 12px;
     margin-left: 8px;
     background-color: #333;
     color: #ccc;
     border: 1px solid #555;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.85em;
     transition: all 0.2s ease;
@@ -551,9 +576,9 @@
 
 .bookmark-folder-details {
     margin-top: 20px;
-    padding: 15px;
+    padding: 20px;
     border: 1px solid #444;
-    border-radius: 4px;
+    border-radius: 8px;
     background-color: #2a2a2a;
 }
 
@@ -563,14 +588,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
 }
 
 .bookmark-folder-details button {
-    padding: 6px 12px;
+    padding: 8px 15px;
     background-color: #333;
     color: #ccc;
     border: 1px solid #555;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.85em;
     transition: all 0.2s ease;
@@ -591,10 +618,17 @@
 
 .bookmark-item {
     padding: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     border: 1px solid #444;
-    border-radius: 4px;
+    border-radius: 8px;
     background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.bookmark-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .bookmark-item span {
@@ -603,21 +637,66 @@
     color: #ccc;
 }
 
+.bookmark-item-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bookmark-item-header h4 {
+    margin: 0;
+    color: #03a9f4;
+    font-size: 16px;
+}
+
+.bookmark-date {
+    font-size: 12px;
+    color: #888;
+}
+
+.bookmark-item-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.view-bookmark-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #03a9f4;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.view-bookmark-btn:hover {
+    background-color: #0288d1;
+    transform: translateY(-1px);
+}
+
 .bookmark-note-section {
     margin-top: 10px;
 }
 
 .bookmark-note-section textarea {
     width: 100%;
-    padding: 10px;
-    border-radius: 4px;
+    padding: 12px;
+    border-radius: 6px;
     border: 1px solid #555;
     background-color: #2a2a2a;
     color: #e0e0e0;
-    font-size: 0.95rem;
+    font-size: 14px;
     min-height: 80px;
     resize: vertical;
     margin-bottom: 10px;
+}
+
+.bookmark-note-section textarea:focus {
+    border-color: #03a9f4;
+    outline: none;
 }
 
 .bookmark-note-section button {
@@ -625,11 +704,10 @@
     background-color: #03a9f4;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.9em;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .bookmark-note-section button:hover {

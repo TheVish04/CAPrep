@@ -289,8 +289,18 @@ const UserProfile = () => {
                                 {selectedFolder.items.length === 0 && <li>No bookmarks in this folder.</li>}
                                 {selectedFolder.items.map(item => (
                                     <li key={item.itemId} className="bookmark-item">
-                                        <span>ID: {item.itemId}</span>
-                                        <span>Added: {item.addedAt ? new Date(item.addedAt).toLocaleString() : ''}</span>
+                                        <div className="bookmark-item-header">
+                                            <h4>{item.title || 'Bookmarked Item'}</h4>
+                                            <span className="bookmark-date">Added: {item.addedAt ? new Date(item.addedAt).toLocaleString() : ''}</span>
+                                        </div>
+                                        <div className="bookmark-item-actions">
+                                            {selectedFolder.type === 'question' && (
+                                                <Link to={`/questions?preSelectedQuestion=${item.itemId}`} className="view-bookmark-btn">View Question</Link>
+                                            )}
+                                            {selectedFolder.type === 'resource' && (
+                                                <Link to={`/resources?preSelectedResource=${item.itemId}`} className="view-bookmark-btn">View Resource</Link>
+                                            )}
+                                        </div>
                                         <div className="bookmark-note-section">
                                             <textarea
                                                 value={noteEdit[item.itemId] !== undefined ? noteEdit[item.itemId] : item.note || ''}

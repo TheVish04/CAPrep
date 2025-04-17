@@ -281,6 +281,13 @@ const Questions = () => {
         });
         if (response.data && response.data.bookmarkedQuestionIds) {
           setBookmarkedQuestionIds(new Set(response.data.bookmarkedQuestionIds));
+          
+          // If we have a question that was just bookmarked, make sure it's in the set
+          if (questionToBookmark) {
+            const updatedSet = new Set(response.data.bookmarkedQuestionIds);
+            updatedSet.add(questionToBookmark._id);
+            setBookmarkedQuestionIds(updatedSet);
+          }
         }
       } catch (err) {
         console.error('Error refreshing bookmark IDs:', err);
