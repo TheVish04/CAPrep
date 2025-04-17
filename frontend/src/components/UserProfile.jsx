@@ -323,14 +323,20 @@ const UserProfile = () => {
                 {/* Delete Account Modal */}
                 {showDeleteConfirm && (
                     <div className="modal-overlay">
-                        <div className="modal-content">
+                        <div className="modal-content delete-confirmation-modal"> {/* Added specific class */}
                             <h2>Confirm Account Deletion</h2>
                             <p>This action is irreversible. Please enter your password to confirm:</p>
-                            <input type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} placeholder="Password" />
+                            <input 
+                                type="password" 
+                                value={deletePassword} 
+                                onChange={e => setDeletePassword(e.target.value)} 
+                                placeholder="Password" 
+                                className="delete-password-input" // Added class
+                            />
                             {deleteError && <div className="error-message">{deleteError}</div>}
                             <div className="modal-actions">
-                                <button onClick={handleDeleteAccount} className="delete-account-button">Delete</button>
-                                <button onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                                <button onClick={handleDeleteAccount} className="delete-account-button confirm-delete-btn">Delete</button> {/* Added specific class */}
+                                <button onClick={() => setShowDeleteConfirm(false)} className="cancel-delete-button">Cancel</button> {/* Added class */}
                             </div>
                         </div>
                     </div>
