@@ -399,3 +399,181 @@ router.delete('/me', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+
+// --- Bookmark Folders and Notes ---
+
+// GET all bookmark folders (questions/resources)
+router.get('/me/bookmark-folders', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('bookmarkFolders');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ bookmarkFolders: user.bookmarkFolders || [] });
+  } catch (error) {
+    console.error('Error fetching bookmark folders:', error);
+    res.status(500).json({ error: 'Failed to fetch bookmark folders' });
+  }
+});
+
+// POST create a new bookmark folder
+router.post('/me/bookmark-folders', authMiddleware, async (req, res) => {
+  const { name, type } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'Folder name is required' });
+  }
+  if (!['question', 'resource'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid folder type' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user.bookmarkFolders) user.bookmarkFolders = [];
+    if (user.bookmarkFolders.some(f => f.name === name && f.type === type)) {
+      return res.status(409).json({ error: 'Folder with this name already exists' });
+    }
+    user.bookmarkFolders.push({ name: name.trim(), type, items: [] });
+    await user.save();
+    res.status(201).json({ bookmarkFolders: user.bookmarkFolders });
+  } catch (error) {
+    console.error('Error creating bookmark folder:', error);
+    res.status(500).json({ error: 'Failed to create bookmark folder' });
+  }
+});
+
+// PUT rename a bookmark folder
+router.put('/me/bookmark-folders/:folderId', authMiddleware, async (req, res) => {
+  const { folderId } = req.params;
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'Folder name is required' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const folder = user.bookmarkFolders.id(folderId);
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+    folder.name = name.trim();
+    folder.updatedAt = new Date();
+    await user.save();
+    res.json({ bookmarkFolders: user.bookmarkFolders });
+  } catch (error) {
+    console.error('Error renaming bookmark folder:', error);
+    res.status(500).json({ error: 'Failed to rename bookmark folder' });
+  }
+});
+
+// DELETE a bookmark folder
+router.delete('/me/bookmark-folders/:folderId', authMiddleware, async (req, res) => {
+  const { folderId } = req.params;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const folder = user.bookmarkFolders.id(folderId);
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+    folder.remove();
+    await user.save();
+    res.json({ bookmarkFolders: user.bookmarkFolders });
+  } catch (error) {
+    console.error('Error deleting bookmark folder:', error);
+    res.status(500).json({ error: 'Failed to delete bookmark folder' });
+  }
+});
+
+// POST add a bookmark (question/resource) to a folder with optional note
+router.post('/me/bookmark-folders/:folderId/items', authMiddleware, async (req, res) => {
+  const { folderId } = req.params;
+  const { itemId, note } = req.body;
+  if (!itemId || !isValidObjectId(itemId)) {
+    return res.status(400).json({ error: 'Invalid item ID' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const folder = user.bookmarkFolders.id(folderId);
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+    if (folder.items.some(i => i.itemId.equals(itemId))) {
+      return res.status(409).json({ error: 'Item already bookmarked in this folder' });
+    }
+    folder.items.push({ itemId, note: note || '' });
+    folder.updatedAt = new Date();
+    await user.save();
+    res.status(201).json({ folder });
+  } catch (error) {
+    console.error('Error adding bookmark to folder:', error);
+    res.status(500).json({ error: 'Failed to add bookmark to folder' });
+  }
+});
+
+// DELETE remove a bookmark from a folder
+router.delete('/me/bookmark-folders/:folderId/items/:itemId', authMiddleware, async (req, res) => {
+  const { folderId, itemId } = req.params;
+  if (!isValidObjectId(itemId)) {
+    return res.status(400).json({ error: 'Invalid item ID' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const folder = user.bookmarkFolders.id(folderId);
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+    folder.items = folder.items.filter(i => !i.itemId.equals(itemId));
+    folder.updatedAt = new Date();
+    await user.save();
+    res.json({ folder });
+  } catch (error) {
+    console.error('Error removing bookmark from folder:', error);
+    res.status(500).json({ error: 'Failed to remove bookmark from folder' });
+  }
+});
+
+// PUT update note for a bookmark in a folder
+router.put('/me/bookmark-folders/:folderId/items/:itemId/note', authMiddleware, async (req, res) => {
+  const { folderId, itemId } = req.params;
+  const { note } = req.body;
+  if (!isValidObjectId(itemId)) {
+    return res.status(400).json({ error: 'Invalid item ID' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const folder = user.bookmarkFolders.id(folderId);
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+    const item = folder.items.find(i => i.itemId.equals(itemId));
+    if (!item) return res.status(404).json({ error: 'Bookmark not found in folder' });
+    item.note = note || '';
+    folder.updatedAt = new Date();
+    await user.save();
+    res.json({ folder });
+  } catch (error) {
+    console.error('Error updating bookmark note:', error);
+    res.status(500).json({ error: 'Failed to update bookmark note' });
+  }
+});
+
+// POST move a bookmark to another folder
+router.post('/me/bookmark-folders/:folderId/items/:itemId/move', authMiddleware, async (req, res) => {
+  const { folderId, itemId } = req.params;
+  const { targetFolderId } = req.body;
+  if (!isValidObjectId(itemId) || !isValidObjectId(targetFolderId)) {
+    return res.status(400).json({ error: 'Invalid item or target folder ID' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const sourceFolder = user.bookmarkFolders.id(folderId);
+    const targetFolder = user.bookmarkFolders.id(targetFolderId);
+    if (!sourceFolder || !targetFolder) return res.status(404).json({ error: 'Folder not found' });
+    const itemIdx = sourceFolder.items.findIndex(i => i.itemId.equals(itemId));
+    if (itemIdx === -1) return res.status(404).json({ error: 'Bookmark not found in source folder' });
+    if (targetFolder.items.some(i => i.itemId.equals(itemId))) {
+      return res.status(409).json({ error: 'Item already exists in target folder' });
+    }
+    const [item] = sourceFolder.items.splice(itemIdx, 1);
+    targetFolder.items.push(item);
+    sourceFolder.updatedAt = new Date();
+    targetFolder.updatedAt = new Date();
+    await user.save();
+    res.json({ sourceFolder, targetFolder });
+  } catch (error) {
+    console.error('Error moving bookmark:', error);
+    res.status(500).json({ error: 'Failed to move bookmark' });
+  }
+});

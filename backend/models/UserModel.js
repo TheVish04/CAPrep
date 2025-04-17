@@ -36,6 +36,25 @@ const StudyHourSchema = new Schema({
   subject: { type: String, required: false, index: true }
 }, { _id: false });
 
+// --- Bookmark Folder and Note Schemas ---
+const BookmarkNoteSchema = new Schema({
+  note: { type: String, maxlength: 1000, default: '' }
+}, { _id: false });
+
+const BookmarkItemSchema = new Schema({
+  itemId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Question or Resource ID
+  note: { type: String, maxlength: 1000, default: '' },
+  addedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
+const BookmarkFolderSchema = new Schema({
+  name: { type: String, required: true, maxlength: 100 },
+  type: { type: String, enum: ['question', 'resource'], required: true },
+  items: [BookmarkItemSchema],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { _id: true });
+
 const SubjectStrengthSchema = new Schema({
   subject: { type: String, required: true },
   strengthScore: { type: Number, required: true, min: 0, max: 100 },
@@ -93,6 +112,7 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now
   },
+
   bookmarkedQuestions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question'
@@ -171,6 +191,11 @@ const UserSchema = new Schema({
       },
       'Resource engagement cannot exceed 100 entries'
     ]
+  },
+  // --- Bookmark Folders ---
+  bookmarkFolders: {
+    type: [BookmarkFolderSchema],
+    default: []
   }
 }, {
   timestamps: true,
