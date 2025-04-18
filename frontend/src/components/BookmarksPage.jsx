@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import api from '../utils/axiosConfig';
 import Navbar from './Navbar';
 import './UserProfile.css'; // Reuse existing styles
+import './BookmarksPage.css'; // Use dedicated styles
 import './BookmarkFolderSelector.css'; // Reuse existing styles
 
 const BookmarksPage = () => {
     const [bookmarkFolders, setBookmarkFolders] = useState([]);
     const [folderLoading, setFolderLoading] = useState(false);
     const [folderError, setFolderError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [newFolderName, setNewFolderName] = useState('');
     const [newFolderType, setNewFolderType] = useState('question');
     const [selectedFolder, setSelectedFolder] = useState(null);
@@ -66,11 +68,34 @@ const BookmarksPage = () => {
         if (!window.confirm('Delete this folder and all its bookmarks?')) return;
         try {
             setFolderLoading(true);
+            setFolderError(null); // Clear any previous errors
+            
+            // Find the folder to be deleted (for error handling)
+            const folderToDelete = bookmarkFolders.find(f => f._id === folderId);
+            if (!folderToDelete) {
+                setFolderError('Folder not found');
+                setFolderLoading(false);
+                return;
+            }
+            
             const res = await api.delete(`/api/users/me/bookmark-folders/${folderId}`);
+            
+            // Update the local state with the response data
             setBookmarkFolders(res.data.bookmarkFolders);
-            setSelectedFolder(null);
+            
+            // If the currently selected folder is being deleted, clear the selection
+            if (selectedFolder && selectedFolder._id === folderId) {
+                setSelectedFolder(null);
+            }
+            
         } catch (err) {
-            setFolderError(err.response?.data?.error || 'Failed to delete folder');
+            console.error('Delete folder error:', err);
+            // Provide a more specific error message
+            if (err.response?.status === 404) {
+                setFolderError(`Folder "${bookmarkFolders.find(f => f._id === folderId)?.name || ''}" not found or already deleted`);
+            } else {
+                setFolderError(err.response?.data?.error || 'Failed to delete bookmark folder');
+            }
         } finally {
             setFolderLoading(false);
         }
@@ -99,10 +124,21 @@ const BookmarksPage = () => {
         <div className="page-wrapper user-profile-page">
             <Navbar />
             <div className="profile-container">
-                <h1>My Bookmarks</h1>
-                <div className="profile-bookmark-folders card">
+                <h1 className="bookmarks-title">My Bookmarks</h1>
+                <div className="profile-bookmark-folders card bookmark-container">
                     <h2>Bookmark Folders</h2>
                     {folderError && <div className="error-message">{folderError}</div>}
+                    
+                    <div className="bookmark-controls">
+                        <div className="search-container">
+                            <input 
+                                type="text" 
+                                placeholder="Search folders..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                            />
+                        </div>
                     
                     <div className="bookmark-folder-create">
                         <input 
@@ -127,13 +163,16 @@ const BookmarksPage = () => {
                             Create Folder
                         </button>
                     </div>
+                    </div>
 
                     {folderLoading && !selectedFolder ? (
                         <div className="loading-message">Loading folders...</div>
                     ) : (
                         <div className="bookmark-folder-list">
                             {bookmarkFolders.length === 0 && <div className="empty-state">No bookmark folders yet. Create your first folder above!</div>}
-                            {bookmarkFolders.map(folder => (
+                            {bookmarkFolders
+                                .filter(folder => folder.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                .map(folder => (
                                 <div key={folder._id} className={`bookmark-folder-item${selectedFolder && selectedFolder._id === folder._id ? ' selected' : ''}`}> 
                                     {editingFolderId === folder._id ? (
                                         <div className="folder-edit-mode">
@@ -179,7 +218,10 @@ const BookmarksPage = () => {
                                                     Rename
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleDeleteFolder(folder._id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent folder selection when clicking delete
+                                                        handleDeleteFolder(folder._id);
+                                                    }}
                                                     className="delete-btn"
                                                 >
                                                     Delete
