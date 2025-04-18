@@ -18,6 +18,7 @@ import Resources from './components/Resources';
 import ResourceUploader from './components/ResourceUploader';
 import QuizHistory from './components/QuizHistory';
 import UserProfile from './components/UserProfile';
+import BookmarksPage from './components/BookmarksPage';
 import QuizReview from './pages/QuizReview';
 import Dashboard from './components/Dashboard';
 import AdminAnnouncements from './components/AdminAnnouncements';
@@ -118,6 +119,10 @@ const App = () => {
             <Route
               path="/profile"
               element={<ProtectedRoute element={<UserProfile />} />}
+            />
+            <Route
+              path="/bookmarks"
+              element={<ProtectedRoute element={<BookmarksPage />} />}
             />
             <Route
               path="/resources"
