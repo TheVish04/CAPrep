@@ -467,10 +467,15 @@ router.delete('/me/bookmark-folders/:folderId', authMiddleware, async (req, res)
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    // Check if folder exists
     const folder = user.bookmarkFolders.id(folderId);
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
-    folder.remove();
+    
+    // Use pull method instead of remove() which is deprecated
+    user.bookmarkFolders.pull({ _id: folderId });
     await user.save();
+    
     res.json({ bookmarkFolders: user.bookmarkFolders });
   } catch (error) {
     console.error('Error deleting bookmark folder:', error);
